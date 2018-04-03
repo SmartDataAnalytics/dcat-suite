@@ -16,7 +16,7 @@ mvn clean install
 *After the build* run
 
 ```bash
-./reinstall-deps.sh
+./reinstall-debs.sh
 ```
 
 
