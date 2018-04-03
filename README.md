@@ -46,10 +46,10 @@ git clone https://github.com/QROWD/QROWD-RDF-Data-Integration.git qrowd-rdf-data
 cd qrowd-rdf-data-integration/datasets/1046-1051
 
 sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
-ckan-deploy --host=http://ckan.qrowd.aksw.orga --apikey=yourApiKey dataset.nq
+ckan-deploy --host=yourCkanInstance --apikey=yourApiKey dataset.nq
 ```
 
-The datasets should now be available at http://ckan.qrowd.aksw.org/dataset/trento-railway-time-tables
+The dataset entry on our CKAN: http://ckan.qrowd.aksw.org/dataset/trento-railway-time-tables
 
 For explanations about the transformations using the `*.sparql` files, please refer to [this page](https://github.com/QROWD/QROWD-RDF-Data-Integration/tree/master/datasets/1046-1051).
 
