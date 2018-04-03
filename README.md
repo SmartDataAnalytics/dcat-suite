@@ -45,8 +45,8 @@ cd /tmp
 git clone https://github.com/QROWD/QROWD-RDF-Data-Integration.git qrowd-rdf-data-integration
 cd qrowd-rdf-data-integration/datasets/1046-1051
 
-sparql-integrate sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
-ckan-deploy --host=http://ckan.qrowd.aksw.org -apikey=yourApiKey dataset.nq
+sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
+ckan-deploy --host=http://ckan.qrowd.aksw.orga --apikey=yourApiKey dataset.nq
 ```
 
 
