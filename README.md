@@ -50,7 +50,7 @@ ckan-deploy --host=http://ckan.qrowd.aksw.orga --apikey=yourApiKey dataset.nq
 ```
 
 The datasets should now be available at http://ckan.qrowd.aksw.org/dataset/trento-railway-time-tables
-
+For explanations about the transformations using the `*.sparql` files, please refer to [this page](https://github.com/QROWD/QROWD-RDF-Data-Integration/tree/master/datasets/1046-1051).
 
 ## TODOs
 
