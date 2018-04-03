@@ -49,6 +49,7 @@ sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
 ckan-deploy --host=http://ckan.qrowd.aksw.orga --apikey=yourApiKey dataset.nq
 ```
 
+The datasets should now be available at http://ckan.qrowd.aksw.org/dataset/trento-railway-time-tables
 
 
 ## TODOs
