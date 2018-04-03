@@ -43,7 +43,7 @@ This example assumes that the debian packages of `ckan-deploy` and [`sparql-inte
 cd /tmp
 
 git clone https://github.com/QROWD/QROWD-RDF-Data-Integration.git qrowd-rdf-data-integration
-cd datasets/1046-1051
+cd qrowd-rdf-data-integration/datasets/1046-1051
 
 sparql-integrate sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
 ckan-deploy --host=http://ckan.qrowd.aksw.org -apikey=yourApiKey dataset.nq
