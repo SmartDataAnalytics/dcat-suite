@@ -4,7 +4,8 @@ import java.util.Set;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.aksw.jena_sparql_api.utils.model.SetFromResourceAndProperty;
+import org.aksw.jena_sparql_api.utils.model.SetFromLiteralPropertyValues;
+import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.DCAT;
@@ -19,7 +20,12 @@ public class DatasetImpl
 
 	@Override
 	public Set<DcatDistribution> getDistributions() {
-		return new SetFromResourceAndProperty<>(this, DCAT.distribution, DcatDistribution.class);
+		return new SetFromPropertyValues<>(this, DCAT.distribution, DcatDistribution.class);
+	}
+
+	@Override
+	public Set<String> getKeywords() {
+		return new SetFromLiteralPropertyValues<>(this, DCAT.keyword, String.class);
 	}
 
 }

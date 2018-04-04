@@ -1,17 +1,17 @@
 package org.aksw.ckan_deploy.core;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,6 +33,7 @@ import eu.trentorise.opendata.jackan.exceptions.CkanNotFoundException;
 import eu.trentorise.opendata.jackan.internal.org.apache.http.entity.ContentType;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
+import eu.trentorise.opendata.jackan.model.CkanTag;
 
 public class DcatCkanDeployUtils {
 
@@ -74,8 +75,42 @@ public class DcatCkanDeployUtils {
 		Optional.ofNullable(dataset.getName()).ifPresent(remoteCkanDataset::setName);
 		Optional.ofNullable(dataset.getTitle()).ifPresent(remoteCkanDataset::setTitle);
 		Optional.ofNullable(dataset.getDescription()).ifPresent(remoteCkanDataset::setNotes);
+
+		// Append tags
+		// TODO Add switch whether to overwrite instead of append
+		boolean replaceTags = false; // true = appendTags
+
+		Optional<List<CkanTag>> existingTags = Optional.ofNullable(remoteCkanDataset.getTags());		
 		
-		
+		Optional<List<CkanTag>> newTags;
+		if(replaceTags) {
+			newTags = Optional.of(dataset.getKeywords().stream().map(CkanTag::new).collect(Collectors.toList()));
+		} else {
+			// Index existing tags by name
+			Map<String, CkanTag> nameToTag = existingTags.orElse(Collections.emptyList()).stream()
+					.filter(tag -> tag.getVocabularyId() == null)
+					.collect(Collectors.toMap(CkanTag::getName, x -> x));
+
+			// Allocate new ckan tags objects for non-covered keywords
+			List<CkanTag> addedTags = dataset.getKeywords().stream()
+					.filter(keyword -> !nameToTag.containsKey(keyword))
+					.map(CkanTag::new)
+					.collect(Collectors.toList());
+			
+			// If there was no change, leave the original value (whether null or empty list)
+			// Otherwise, reuse the existing tag list or allocate a new one
+			newTags = addedTags.isEmpty()
+					? existingTags
+					: Optional.of(existingTags.orElse(new ArrayList<>()));
+			
+			// If there were changes, append the added tags
+			if(newTags.isPresent()) {
+				newTags.get().addAll(addedTags);
+			}
+		}
+
+		newTags.ifPresent(remoteCkanDataset::setTags);
+				
 		System.out.println("After: " + remoteCkanDataset);
 		
 		if(isDatasetCreationRequired) {

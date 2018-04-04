@@ -6,4 +6,5 @@ public interface DcatDataset
 	extends DcatEntity
 {	
 	Set<DcatDistribution> getDistributions();
+	Set<String> getKeywords();
 }
