@@ -1,9 +1,34 @@
-# ckan-deploy
-Deploy datasets to CKAN using DCAT descriptions
+# DCAT Suite
+DCAT APIs and CLIs for downloading, transforming and deploying datasets
 
-## Quick Usage
+
+### CLI Quick Usage
+
+* Show all DCAT related information from an RDF URI or filename
+
 ```bash
-ckan-deploy --apikey=yourApiKey --host=yourCkanUrl mySelfDescribingDataset.nq
+dcat show my-dcat.nt
+```
+
+* Deploy datasets based on a DCAT description to CKAN
+
+```bash
+dcat deploy ckan --apikey=yourApiKey --host=yourCkanUrl my-dcat.nt
+```
+
+* Deploy a self-describing dataset (see below) to CKAN
+
+```bash
+dcat deploy ckan --apikey=yourApiKey --host=yourCkanUrl mySelfDescribingDataset.nq
+```
+
+* Expand the graphs of a self-describing dataset to individual files based on its contained DCAT description
+```bash
+dcat expand mySelfDescribingDataset.nq
+
+# Now you can also deploy the expanded form:
+cd target/dcat/mySelfDescribingDataset
+dcat deploy ckan dcat.nt --host=yourCkanUrl --apikey=yourSecretKey
 ```
 
 ## Building
@@ -46,7 +71,7 @@ git clone https://github.com/QROWD/QROWD-RDF-Data-Integration.git qrowd-rdf-data
 cd qrowd-rdf-data-integration/datasets/1046-1051
 
 sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
-ckan-deploy --host=yourCkanInstance --apikey=yourApiKey dataset.nq
+dcat deploy ckan --host=yourCkanInstance --apikey=yourApiKey dataset.nq
 ```
 
 The dataset entry on our CKAN: http://ckan.qrowd.aksw.org/dataset/trento-railway-time-tables
