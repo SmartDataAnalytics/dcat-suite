@@ -29,24 +29,24 @@ public class DcatEntityImpl
 	
 	@Override
 	public String getName() {
-		String result = ResourceUtils.getLiteral(this, DCTerms.identifier, Literal::getString).orElse(null);
+		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.identifier, String.class).orElse(null);
 		return result;
 	}
 	
 	@Override
 	public void setName(String identifier) {
-		ResourceUtils.setLiteral(this, DCTerms.identifier, String.class, identifier);
+		ResourceUtils.setLiteralProperty(this, DCTerms.identifier, identifier);
 	}
 
 	@Override
 	public String getTitle() {
-		String result = ResourceUtils.getLiteral(this, DCTerms.title, Literal::getString).orElse(null);
+		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.title, String.class).orElse(null);
 		return result;
 	}
 
 	@Override
 	public String getDescription() {
-		String result = ResourceUtils.getLiteral(this, DCTerms.description, Literal::getString).orElse(null);
+		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.description, String.class).orElse(null);
 		return result;
 	}
 
