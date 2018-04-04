@@ -18,7 +18,7 @@ eg:myDataset
     dcat:distribution eg:myFirstDistribution-of-myDataset ;
     .
 
-eg: eg:myFirstDistribution-of-myDataset
+eg:myFirstDistribution-of-myDataset
     a dcat:Distribution ;
     dct:title "My Distribution" ;
     dct:description "Download of my distribution" ;
