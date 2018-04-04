@@ -5,8 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.aksw.ckan-deploy</groupId>
-		<artifactId>ckan-deploy-parent</artifactId>
+		<groupId>org.aksw.dcat-suite</groupId>
+		<artifactId>dcat-suite-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
@@ -21,7 +21,7 @@
 <!-- 		</dependency> -->
 
 		<dependency>
-			<groupId>org.aksw.ckan-deploy</groupId>
+			<groupId>org.aksw.dcat-suite</groupId>
 			<artifactId>dcat-api-jena-core</artifactId>
 		</dependency>
 

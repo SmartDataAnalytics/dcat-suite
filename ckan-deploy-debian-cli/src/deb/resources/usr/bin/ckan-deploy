@@ -1,9 +1,0 @@
-#!/bin/sh
-
-#WORK_DIR=`dirname "$0"`
-
-LIB_DIR="/usr/share/lib/ckan-deploy/"
-MAIN_CLASS="org.aksw.ckan_deploy.cli.MainCliCkanDeploy"
-
-java -cp "$LIB_DIR:$LIB_DIR/lib/*" "-Dloader.main=${MAIN_CLASS}" "org.springframework.boot.loader.PropertiesLauncher" "$@"
-

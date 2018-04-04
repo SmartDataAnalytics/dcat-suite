@@ -4,22 +4,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.aksw.ckan-deploy</groupId>
-	<artifactId>ckan-deploy-parent</artifactId>
+	<groupId>org.aksw.dcat-suite</groupId>
+	<artifactId>dcat-suite-parent</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
-	<name>CKAN Deploy</name>
-	<description> Deploy datasets to CKAN using DCAT descriptions</description>
-	<url>https://github.com/SmartDataAnalytics/ckan-deploy</url>
+	<name>DCAT Tools</name>
+	<description>DCAT APIs and CLIs for downloading, transforming and deploying datasets</description>
+	<url>https://github.com/SmartDataAnalytics/dcat-suite</url>
 
 	<modules>
 		<module>dcat-api-jena-core</module>
 
 		<module>ckan-deploy-core</module>
-		<module>ckan-deploy-cli</module>
-		<module>ckan-deploy-debian-cli</module>
+		<module>dcat-suite-cli</module>
+		<module>dcat-suite-debian-cli</module>
 	</modules>
 
 	<issueManagement>
@@ -73,7 +73,8 @@
 	<dependencyManagement>
 		<dependencies>
 
-			<!-- Conflict resolutions: Use Jackson version of jena ; conflict with jackan -->
+			<!-- Conflict resolutions: Use Jackson version of jena ; conflict with 
+				jackan -->
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
@@ -86,22 +87,27 @@
 				<version>2.9.0</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.beust</groupId>
+				<artifactId>jcommander</artifactId>
+				<version>1.72</version>
+			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.ckan-deploy</groupId>
+				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-api-jena-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.ckan-deploy</groupId>
+				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>ckan-deploy-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.aksw.ckan-deploy</groupId>
-				<artifactId>ckan-deploy-cli</artifactId>
+				<groupId>org.aksw.dcat-suite</groupId>
+				<artifactId>dcat-suite-cli</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

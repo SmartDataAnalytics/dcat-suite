@@ -4,16 +4,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.aksw.ckan-deploy</groupId>
-		<artifactId>ckan-deploy-parent</artifactId>
+		<groupId>org.aksw.dcat-suite</groupId>
+		<artifactId>dcat-suite-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>ckan-deploy-debian-cli</artifactId>
+	<artifactId>dcat-suite-debian-cli</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
-		<deb.packageName>ckan-deploy</deb.packageName>
+		<deb.packageName>dcat-suite</deb.packageName>
 		<!-- <deb.jarFile>${project.artifactId}-${project.version}.jar</deb.jarFile> -->
 <!-- 		<deb.jarFile>${project.artifactId}-${project.version}-jar-with-dependencies.jar</deb.jarFile> -->
 		<deb.jarFile>${project.artifactId}-${project.version}.jar</deb.jarFile>
@@ -136,8 +136,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.aksw.ckan-deploy</groupId>
-			<artifactId>ckan-deploy-cli</artifactId>
+			<groupId>org.aksw.dcat-suite</groupId>
+			<artifactId>dcat-suite-cli</artifactId>
 		</dependency>
 	</dependencies>
 </project>
