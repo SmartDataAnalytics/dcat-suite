@@ -1,20 +1,27 @@
 package org.aksw.ckan_deploy.core;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.vocabulary.DCAT;
 
 import com.google.common.collect.Multimap;
@@ -29,20 +36,21 @@ import eu.trentorise.opendata.jackan.model.CkanResource;
 
 public class DcatCkanDeployUtils {
 
-	public static Model deploy(CkanClient ckanClient, Model dcatModel) {
+	public static Model deploy(CkanClient ckanClient, Model dcatModel, IRIResolver iriResolver) {
 		// List dataset descriptions
 		Model result = DcatUtils.createModelWithDcatFragment(dcatModel);
 		Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(result);
 		
 		for(DcatDataset d : dcatDatasets) {
 			System.out.println("Processing: " + d.getTitle());
-			deploy(ckanClient, d);
+			deploy(ckanClient, d, iriResolver);
 		}
 		
 		return result;
 	}
 
-	public static void deploy(CkanClient ckanClient, DcatDataset dataset) {
+		
+	public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver) {
 		String datasetName = dataset.getName();
 		CkanDataset remoteCkanDataset;
 		
@@ -83,11 +91,29 @@ public class DcatCkanDeployUtils {
 			// Check if there is a graph in the dataset that matches the distribution
 			String distributionName = dcatDistribution.getTitle();
 						
+
 			Set<Resource> accessURLs = dcatDistribution.getAccessURLs();
 
-			Optional<Path> pathReference = accessURLs.stream()
-				.filter(Resource::isURIResource)
-				.map(Resource::getURI)
+			List<String> resolvedAccessURLs = accessURLs.stream()
+					.filter(Resource::isURIResource)
+					.map(Resource::getURI)
+					.map(iriResolver::resolveToStringSilent)
+					.collect(Collectors.toList());
+			
+			List<URI> resolvedValidAccessURLs = resolvedAccessURLs.stream()
+					.map(str -> {
+						URI r = null;
+						try {
+							r = new URI(str);
+						} catch (URISyntaxException e) {
+							// Ignore
+						}
+						return r;
+					})
+					.filter(r -> r != null)
+					.collect(Collectors.toList());
+			
+			Optional<Path> pathReference = resolvedValidAccessURLs.stream()
 				.map(Paths::get)
 				.filter(Files::exists)
 				.findFirst();

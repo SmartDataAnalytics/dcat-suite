@@ -1,14 +1,11 @@
 package org.aksw.dcat_suite.cli.main;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatInstallUtils;
@@ -17,12 +14,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.Banner;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.apache.jena.riot.system.IRIResolver;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -32,47 +24,6 @@ import com.google.common.collect.Streams;
 import eu.trentorise.opendata.jackan.CkanClient;
 
 public class MainCliDcatSuite {
-	@Configuration
-	public static class ConfigSparqlIntegrate {
-
-		@Bean
-		public ApplicationRunner applicationRunner() {
-			return args -> {
-				String apiKey = Optional.ofNullable(args.getOptionValues("apikey")).orElse(Collections.emptyList())
-						.stream().findFirst().orElseThrow(() -> new RuntimeException("API key must be given"));
-
-				String host = Optional.ofNullable(args.getOptionValues("host")).orElse(Collections.emptyList()).stream()
-						.findFirst().orElseThrow(() -> new RuntimeException("Host must be given"));
-
-				CkanClient ckanClient = new CkanClient(host, apiKey);
-
-				Collection<String> dcatSources = Optional.ofNullable(args.getNonOptionArgs())
-						.orElseThrow(() -> new RuntimeException("No dataset sources specified"));
-
-				for (String dcatSource : dcatSources) {
-
-					Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
-					if (!Files.exists(dcatPath)) {
-						throw new FileNotFoundException(dcatPath + " does not exist");
-					}
-
-					Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
-					Files.createDirectories(targetFolder);
-
-					Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
-
-					// CkanRdfDatasetProcessor processor = new CkanRdfDatasetProcessor(ckanClient);
-
-					// processor.process(dataset);
-					Model exportDcatModel = DcatInstallUtils.export(dataset, targetFolder);
-					DcatInstallUtils.writeSortedNtriples(exportDcatModel, targetFolder.resolve("dcat.nt"));
-
-					Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel);
-					DcatInstallUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
-				}
-			};
-		}
-	}
 
 	@Parameters(separators = "=", commandDescription = "Show DCAT information")
 	public static class CommandMain {
@@ -162,9 +113,6 @@ public class MainCliDcatSuite {
 		}
 	}
 
-	public static void processDeploy(CkanClient ckanClient, Collection<String> dcatSources) throws IOException {
-	}
-
 	public static Path processExpand(String dcatSource) throws IOException {
 		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
 		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
@@ -183,6 +131,9 @@ public class MainCliDcatSuite {
 		Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
 		Files.createDirectories(targetFolder);
 
+		String baseIRI = targetFolder.toUri().toString();
+		IRIResolver iriResolver = IRIResolver.create(baseIRI);
+		
 		// If the dataset has named graphs, we perform export
 		boolean hasNamedGraphs = Streams.stream(dataset.listNames()).findFirst().isPresent();
 
@@ -193,8 +144,9 @@ public class MainCliDcatSuite {
 		} else {
 			exportDcatModel = dataset.getDefaultModel();
 		}
+		
 
-		Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel);
+		Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel, iriResolver);
 		DcatInstallUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
 	}
 }
