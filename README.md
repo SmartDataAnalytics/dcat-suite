@@ -29,6 +29,11 @@ eg:myFirstDistribution-of-myDataset
 
 ### CLI Quick Usage
 
+* Show help
+```
+dcat --help
+```
+
 * Show all DCAT related information from an RDF URI or filename
 
 ```bash
