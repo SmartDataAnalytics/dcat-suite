@@ -2,6 +2,31 @@
 DCAT APIs and CLIs for downloading, transforming and deploying datasets
 
 
+### DCAT Example
+Here is a short example of a DCAT dataset description in order to give you an impression of what we are talking about.
+
+```turtle
+@prefix eg: <http://example.org/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+eg:myDataset
+    a dcat:Dataset ;
+    dct:identifier "my-dataset" ;
+    dct:title "My Dataset" ;
+    dct:description "Really useful dataset" ;
+    dcat:distribution eg:myFirstDistribution-of-myDataset ;
+    .
+
+eg: eg:myFirstDistribution-of-myDataset
+    a dcat:Distribution ;
+    dct:title "My Distribution" ;
+    dct:description "Download of my distribution" ;
+    dcat:accessURL <a/relative/path/or/a/url/of/a/web/resource/or/a/named/graph> ;
+    .
+
+```
+
 ### CLI Quick Usage
 
 * Show all DCAT related information from an RDF URI or filename
@@ -15,6 +40,8 @@ dcat show my-dcat.nt
 ```bash
 dcat deploy ckan --apikey=yourApiKey --host=yourCkanUrl my-dcat.nt
 ```
+
+This will create a copy of the input DCAT file under `target/ckan/deploy-dcat.nt` file with the `dcat:accessURL` replaced by the CKAN resources. If you host this file anywhere on the Web, it will give you working download links - neat!
 
 * Deploy a self-describing dataset (see below) to CKAN
 
