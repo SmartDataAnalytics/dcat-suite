@@ -21,4 +21,9 @@ public class DcatDistributionImpl
 	public Set<Resource> getAccessURLs() {
 		return new SetFromPropertyValues<>(this, DCAT.accessURL, Resource.class);
 	}
+
+	@Override
+	public Set<Resource> getDownloadURLs() {
+		return new SetFromPropertyValues<>(this, DCAT.downloadURL, Resource.class);
+	}
 }

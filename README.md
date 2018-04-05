@@ -63,6 +63,7 @@ cd target/dcat/mySelfDescribingDataset
 dcat deploy ckan dcat.nt --host=yourCkanUrl --apikey=yourSecretKey
 ```
 
+
 ## Building
 ```bash
 mvn clean install
@@ -110,10 +111,30 @@ The dataset entry on our CKAN: http://ckan.qrowd.aksw.org/dataset/trento-railway
 
 For explanations about the transformations using the `*.sparql` files, please refer to [this page](https://github.com/QROWD/QROWD-RDF-Data-Integration/tree/master/datasets/1046-1051).
 
+
+## CLI Roadmap
+
+These commands are not yet implemented, but appear to be useful. These descriptions are not final.
+
+* Generate a meta dcat file that treats another dcat file as a dataset. The meta file can be used to deploy the described file.
+```
+dcat meta my-datasests.dcat.nt > meta.dcat.nt
+```
+
+* Upload rdf files to a local virtuoso triple store (using virtuoso's bulk loader)
+```
+dcat deploy virtuoso --user=dba --pass=dba --port=1111 dcat.nt
+```
+
+* Upload rdf file via SPARQL Update
+```
+dcat deploy sparql --user=dba --pass=dba --host=http://example.org/sparql dcat.nt
+```
+
+
+
 ## TODOs
 
-* Make it possible to use extraction and deploy as separate phases. This step would take as input an SDD, and yield an RDF file with the dcat descriptions, together with relative urls to the written out dataset files. Currently, the file extraction takes place with temporary files that are deleted after deployment.
-* Add support for more DCAT / CKAN fields; especially tags
 * Add support for user agent field on upload
 * Possibly add support for profiles that bundle commonly needed information, such as apikey and user agent
 

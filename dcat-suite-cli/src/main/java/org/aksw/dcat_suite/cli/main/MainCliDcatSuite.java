@@ -4,17 +4,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.List;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
+import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
+import org.aksw.ckan_deploy.core.DcatExpandUtils;
 import org.aksw.ckan_deploy.core.DcatInstallUtils;
 import org.aksw.ckan_deploy.core.DcatUtils;
+import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -22,9 +26,15 @@ import com.beust.jcommander.Parameters;
 import com.google.common.collect.Streams;
 
 import eu.trentorise.opendata.jackan.CkanClient;
+import eu.trentorise.opendata.jackan.model.CkanDataset;
+import eu.trentorise.opendata.jackan.model.CkanResource;
 
 public class MainCliDcatSuite {
 
+	
+	private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
+
+	
 	@Parameters(separators = "=", commandDescription = "Show DCAT information")
 	public static class CommandMain {
 		@Parameter(description = "Non option args")
@@ -41,6 +51,13 @@ public class MainCliDcatSuite {
 		protected String file;
 	}
 
+	@Parameters(separators = "=", commandDescription = "Download datasets to local repository based on DCAT information")
+	public static class CommandInstall {
+		@Parameter(description = "A DCAT file")
+		protected String file;
+	}
+
+	
 	@Parameters(separators = "=", commandDescription = "Expand quad datasets")
 	public static class CommandExpand {
 
@@ -50,6 +67,27 @@ public class MainCliDcatSuite {
 
 	@Parameters(separators = "=", commandDescription = "Deploy DCAT datasets")
 	public static class CommandDeploy {
+	}
+
+	@Parameters(separators = "=", commandDescription = "Retrieve DCAT descriptions")
+	public static class CommandImport {
+	}
+
+	@Parameters(separators = "=", commandDescription = "Retrieve DCAT descriptions from CKAN")
+	public static class CommandImportCkan {
+
+		@Parameter(names="--host", description="The URL of the CKAN instance", required=true)
+		protected String host;
+
+		@Parameter(names="--apikey", description="Your API key for the CKAN instance")
+		protected String apikey;
+		
+		
+		@Parameter(names = "--prefix", description = "Allocate URIs using this prefix")
+		protected String prefix;
+
+		// TODO Add arguments to filter datastes
+	
 	}
 
 	@Parameters(separators = "=", commandDescription = "Deploy DCAT datasets")
@@ -65,24 +103,78 @@ public class MainCliDcatSuite {
 		protected String apikey;
 	}
 
+	@Parameters(separators = "=", commandDescription = "Deploy datasets to a local Virtuoso via OBDC")
+	public static class CommandDeployVirtuoso {
+
+		@Parameter(description = "The DCAT file which to deploy", required = true)
+		protected String file;
+
+		@Parameter(names = "--port", description = "The URL of the CKAN instance")
+		protected int port = 1111;
+
+		@Parameter(names = "--user", description = "Username")
+		protected String user = "dba";
+		
+		@Parameter(names = "--pass", description = "Password")
+		protected String pass = "dba";
+		
+	}
+
+	public static void showCkanDatasets(CkanClient ckanClient) {
+		List<String> ds = ckanClient.getDatasetList(10, 0);
+
+		for (String s : ds) {
+			System.out.println();
+			System.out.println("DATASET: " + s);
+			CkanDataset d = ckanClient.getDataset(s);
+			System.out.println(" RESOURCES:");
+			for (CkanResource r : d.getResources()) {
+				System.out.println(" " + r.getName());
+				System.out.println(" FORMAT: " + r.getMimetype());
+				System.out.println(" FORMAT: " + r.getMimetypeInner());
+				System.out.println(" FORMAT: " + r.getFormat());
+				System.out.println(" URL: " + r.getUrl());
+			}
+		}
+
+	}
+	
 	public static void main(String[] args) throws IOException {
+
+		
 		CommandMain cm = new CommandMain();
 		CommandShow cmShow = new CommandShow();
 		CommandExpand cmExpand = new CommandExpand();
-		CommandDeploy cmDeploy = new CommandDeploy();
-		CommandDeployCkan cmDeployCkan = new CommandDeployCkan();
+		CommandDeploy cmDeploy = new CommandDeploy();		
+		CommandImport cmImport = new CommandImport();
+		CommandInstall cmInstall = new CommandInstall();
 
+		
 		// CommandCommit commit = new CommandCommit();
 		JCommander jc = JCommander.newBuilder()
 				.addObject(cm)
 				.addCommand("show", cmShow)
 				.addCommand("expand", cmExpand)
 				.addCommand("deploy", cmDeploy)
+				.addCommand("import", cmImport)
+				.addCommand("install", cmInstall)
 				.build();
 
 		JCommander deploySubCommands = jc.getCommands().get("deploy");
-		deploySubCommands.addCommand("ckan", cmDeployCkan);
 
+		CommandDeployCkan cmDeployCkan = new CommandDeployCkan();
+		deploySubCommands.addCommand("ckan", cmDeployCkan);
+		
+		CommandDeployVirtuoso cmDeployVirtuoso = new CommandDeployVirtuoso();
+		deploySubCommands.addCommand("virtuoso", cmDeployVirtuoso);
+
+		
+		JCommander importSubCommands = jc.getCommands().get("import");
+
+		CommandImportCkan cmImportCkan = new CommandImportCkan();
+		importSubCommands.addCommand("ckan", cmImportCkan);
+
+		
 		jc.parse(args);
 
         if (cm.help) {
@@ -90,6 +182,7 @@ public class MainCliDcatSuite {
             return;
         }
 
+        // TODO Change this to a plugin system - for now I hack this in statically
 		String cmd = jc.getParsedCommand();
 		switch (cmd) {
 		case "show": {
@@ -102,11 +195,64 @@ public class MainCliDcatSuite {
 			processExpand(cmExpand.file);
 			break;
 		}
-		case "deploy": {			
-			CkanClient ckanClient = new CkanClient(cmDeployCkan.host, cmDeployCkan.apikey);
-			processDeploy(ckanClient, cmDeployCkan.file);
+		case "deploy": {
+			String deployCmd = deploySubCommands.getParsedCommand();
+			switch(deployCmd) {
+			case "ckan": {
+				CkanClient ckanClient = new CkanClient(cmDeployCkan.host, cmDeployCkan.apikey);
+				//showCkanDatasets(ckanClient);
+				//if(false) {
+				processDeploy(ckanClient, cmDeployCkan.file);
+				//}
+				break;
+			}
+			case "virtuoso": {
+				//processDeployVirtuoso();
+				break;
+			}
+			default: {
+				throw new RuntimeException("Unknow deploy command: " + deployCmd);
+			}
+			}
+		}
+		
+		case "import": {
+			String importCmd = importSubCommands.getParsedCommand();
+			switch(importCmd) {
+			case "ckan": {
+				CkanClient ckanClient = new CkanClient(cmImportCkan.host, cmImportCkan.apikey);
+
+				processCkanImport(ckanClient, cmImportCkan.prefix);
+				
+				break;
+			}
+			default: {
+			}
+			}
+
 			break;
 		}
+
+		case "install": {
+			String dcatSource = cmInstall.file;
+			Model dcatModel = RDFDataMgr.loadModel(dcatSource);
+			//for(dcatModel.listSubjects(null, DCAT.distribution, null)
+			String userDirStr = System.getProperty("user.home");
+			Path userFolder = Paths.get(userDirStr);
+			if(!Files.exists(userFolder)) {
+				throw new RuntimeException("Failed to find user directory");
+			}
+			
+			Path repoFolder = userFolder.resolve(".dcat").resolve("repository");
+			Files.createDirectories(repoFolder);
+			
+			for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
+				DcatInstallUtils.install(repoFolder, dcatDataset, false);
+			}
+			break;
+		}
+		
+		
 		default:
 			throw new RuntimeException("Unknown command: " + cmd);
 
@@ -119,9 +265,9 @@ public class MainCliDcatSuite {
 		Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
 		Files.createDirectories(targetFolder);
 
-		Model model = DcatInstallUtils.export(dataset, targetFolder);
+		Model model = DcatExpandUtils.export(dataset, targetFolder);
 		Path result = targetFolder.resolve("dcat.nt");
-		DcatInstallUtils.writeSortedNtriples(model, result);
+		DcatExpandUtils.writeSortedNtriples(model, result);
 		return result;
 	}
 
@@ -139,28 +285,54 @@ public class MainCliDcatSuite {
 
 		Model exportDcatModel;
 		if (hasNamedGraphs) {
-			exportDcatModel = DcatInstallUtils.export(dataset, targetFolder);
-			DcatInstallUtils.writeSortedNtriples(exportDcatModel, targetFolder.resolve("dcat.nt"));
+			exportDcatModel = DcatExpandUtils.export(dataset, targetFolder);
+			DcatExpandUtils.writeSortedNtriples(exportDcatModel, targetFolder.resolve("dcat.nt"));
 		} else {
 			exportDcatModel = dataset.getDefaultModel();
 		}
 		
 
 		Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel, iriResolver);
-		DcatInstallUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
+		DcatExpandUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
 	}
+	
+	
+	public static void processCkanImport(CkanClient ckanClient, String prefix) {
+		
+		//String host = ckanClient.getCatalogUrl();
+		//String host = "http://localhost/dataset/";
+
+		List<String> ds = ckanClient.getDatasetList();
+
+		for (String s : ds) {
+			logger.info("Importing dataset " + s);
+			
+			CkanDataset ckanDataset = ckanClient.getDataset(s);
+			
+			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset);
+
+			try {
+				DcatCkanRdfUtils.assignDefaultIris(dcatDataset);
+				if(prefix != null) {
+					DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix);
+				}
+			} catch(Exception e) {
+				logger.warn("Error processing dataset " + s, e);
+			}
+			
+			RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
+		}
+	}
+	
+	public static void processDeployVirtuoso(
+			CkanClient ckanClient,
+			String dcatSource,
+			int port,
+			String user,
+			String pass
+			) {
+		
+	}
+	
 }
 
-// List<String> ds = ckanClient.getDatasetList(10, 0);
-//
-// for (String s : ds) {
-// System.out.println();
-// System.out.println("DATASET: " + s);
-// CkanDataset d = ckanClient.getDataset(s);
-// System.out.println(" RESOURCES:");
-// for (CkanResource r : d.getResources()) {
-// System.out.println(" " + r.getName());
-// System.out.println(" FORMAT: " + r.getFormat());
-// System.out.println(" URL: " + r.getUrl());
-// }
-// }
