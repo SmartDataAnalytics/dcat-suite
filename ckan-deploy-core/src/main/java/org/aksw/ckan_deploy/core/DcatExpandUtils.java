@@ -133,8 +133,11 @@ public class DcatExpandUtils {
 			writeSortedNtriples(combinedModel, distributionPath);
 			
 			// Make the accessURL point to the newly created file
-			Resource newAccessURL = ResourceFactory.createResource(relativeDistributionPath.toString());
-			org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatDistribution, DCAT.accessURL, newAccessURL);
+			Resource newDownloadUrl = ResourceFactory.createResource(relativeDistributionPath.toString());
+			org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
+		
+			// Remove the prior accessURLs
+			graphAccessURLs.forEach(o -> dcatDistribution.getModel().remove(dcatDistribution, DCAT.accessURL, o));
 		}
 	}
 	

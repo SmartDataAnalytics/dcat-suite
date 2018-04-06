@@ -20,6 +20,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,6 +107,10 @@ public class MainCliDcatSuite {
 
 		@Parameter(names = "--apikey", description = "Your API key for the CKAN instance")
 		protected String apikey;
+		
+		@Parameter(names = "--noupload", description = "Disable file upload")
+		protected boolean noupload = false;
+		
 	}
 
 	@Parameters(separators = "=", commandDescription = "Deploy datasets to a local Virtuoso via OBDC")
@@ -209,7 +215,7 @@ public class MainCliDcatSuite {
 				CkanClient ckanClient = new CkanClient(cmDeployCkan.host, cmDeployCkan.apikey);
 				//showCkanDatasets(ckanClient);
 				//if(false) {
-				processDeploy(ckanClient, cmDeployCkan.file);
+				processDeploy(ckanClient, cmDeployCkan.file, cmDeployCkan.noupload);
 				//}
 				break;
 			}
@@ -319,7 +325,7 @@ public class MainCliDcatSuite {
 		return result;
 	}
 
-	public static void processDeploy(CkanClient ckanClient, String dcatSource) throws IOException {
+	public static void processDeploy(CkanClient ckanClient, String dcatSource, boolean noFileUpload) throws IOException {
 		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
 		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
 		Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
@@ -340,7 +346,7 @@ public class MainCliDcatSuite {
 		}
 		
 
-		Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel, iriResolver);
+		Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel, iriResolver, noFileUpload);
 		DcatExpandUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
 	}
 	
@@ -357,10 +363,13 @@ public class MainCliDcatSuite {
 			
 			CkanDataset ckanDataset = ckanClient.getDataset(s);
 			
-			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset);
+			PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
+
+			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
 
 			try {
-				DcatCkanRdfUtils.assignDefaultIris(dcatDataset);
+				DcatCkanRdfUtils.skolemize(dcatDataset.getModel());
+				//DcatCkanRdfUtils.assignDefaultIris(dcatDataset);
 				if(prefix != null) {
 					DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix);
 				}

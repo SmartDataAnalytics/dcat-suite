@@ -24,6 +24,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.vocabulary.DCAT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -38,23 +40,25 @@ import eu.trentorise.opendata.jackan.model.CkanTag;
 
 public class DcatCkanDeployUtils {
 
+	private static final Logger logger = LoggerFactory.getLogger(DcatCkanDeployUtils.class);
+
 
 	
-	public static Model deploy(CkanClient ckanClient, Model dcatModel, IRIResolver iriResolver) {
+	public static Model deploy(CkanClient ckanClient, Model dcatModel, IRIResolver iriResolver, boolean noFileUpload) {
 		// List dataset descriptions
 		Model result = DcatUtils.createModelWithDcatFragment(dcatModel);
 		Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(result);
 		
 		for(DcatDataset d : dcatDatasets) {
-			System.out.println("Processing: " + d.getTitle());
-			deploy(ckanClient, d, iriResolver);
+			logger.info("Deploying dataset " + d.getTitle());
+			deploy(ckanClient, d, iriResolver, noFileUpload);
 		}
 		
 		return result;
 	}
 
 		
-	public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver) {
+	public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload) {
 		String datasetName = dataset.getName();
 		CkanDataset remoteCkanDataset;
 		
@@ -62,7 +66,7 @@ public class DcatCkanDeployUtils {
 		try {
 			remoteCkanDataset = ckanClient.getDataset(datasetName);
 		} catch(CkanNotFoundException e) {
-			System.out.println("Dataset does not yet exist");
+			logger.info("Dataset does not yet exist");
 			remoteCkanDataset = new CkanDataset();
 			isDatasetCreationRequired = true;
 		} catch(CkanException e) {
@@ -71,13 +75,12 @@ public class DcatCkanDeployUtils {
 			isDatasetCreationRequired = true;
 		}
 
-		System.out.println("Before: " + remoteCkanDataset);
+//		System.out.println("Before: " + remoteCkanDataset);
 
 		// Update existing attributes with non-null values
 		//dataset.getName(datasetId);
-		Optional.ofNullable(dataset.getName()).ifPresent(remoteCkanDataset::setName);
-		Optional.ofNullable(dataset.getTitle()).ifPresent(remoteCkanDataset::setTitle);
-		Optional.ofNullable(dataset.getDescription()).ifPresent(remoteCkanDataset::setNotes);
+		DcatCkanRdfUtils.convertToCkan(remoteCkanDataset, dataset);
+		
 
 		// Append tags
 		// TODO Add switch whether to overwrite instead of append
@@ -114,7 +117,7 @@ public class DcatCkanDeployUtils {
 
 		newTags.ifPresent(remoteCkanDataset::setTags);
 				
-		System.out.println("After: " + remoteCkanDataset);
+//		System.out.println("After: " + remoteCkanDataset);
 		
 		if(isDatasetCreationRequired) {
 			remoteCkanDataset = ckanClient.createDataset(remoteCkanDataset);
@@ -124,21 +127,23 @@ public class DcatCkanDeployUtils {
 		
 		for(DcatDistribution dcatDistribution : dataset.getDistributions()) {
 
+			
 			CkanResource remoteCkanResource = createOrUpdateResource(ckanClient, remoteCkanDataset, dataset, dcatDistribution);
 
 			// Check if there is a graph in the dataset that matches the distribution
 			String distributionName = dcatDistribution.getTitle();
-						
 
-			Set<Resource> accessURLs = dcatDistribution.getAccessURLs();
+			logger.info("Deploying distribution " + distributionName);
 
-			List<String> resolvedAccessURLs = accessURLs.stream()
+			Set<Resource> downloadUrls = dcatDistribution.getDownloadURLs();
+
+			List<String> resolvedUrls = downloadUrls.stream()
 					.filter(Resource::isURIResource)
 					.map(Resource::getURI)
 					.map(iriResolver::resolveToStringSilent)
 					.collect(Collectors.toList());
 			
-			List<URI> resolvedValidAccessURLs = resolvedAccessURLs.stream()
+			List<URI> resolvedValidUrls = resolvedUrls.stream()
 					.map(str -> {
 						URI r = null;
 						try {
@@ -151,7 +156,7 @@ public class DcatCkanDeployUtils {
 					.filter(r -> r != null)
 					.collect(Collectors.toList());
 			
-			Optional<Path> pathReference = resolvedValidAccessURLs.stream()
+			Optional<Path> pathReference = resolvedValidUrls.stream()
 				.map(Paths::get)
 				.filter(Files::exists)
 				.findFirst();
@@ -159,19 +164,24 @@ public class DcatCkanDeployUtils {
 
 			if(pathReference.isPresent()) {
 				Path path = pathReference.get();
-			
-				remoteCkanResource = CkanClientUtils.uploadFile(
-						ckanClient,
-						remoteCkanDataset.getName(),
-						remoteCkanResource.getId(),
-						path.toString(),
-						ContentType.create("application/n-triples"),
-						distributionName + ".nt");
+
+				if(!noFileUpload) {
+					logger.info("Uploading file " + path);
+					remoteCkanResource = CkanClientUtils.uploadFile(
+							ckanClient,
+							remoteCkanDataset.getName(),
+							remoteCkanResource.getId(),
+							path.toString(),
+							ContentType.create("application/n-triples"),
+							distributionName + ".nt");
+				} else {
+					logger.info("File upload disabled. Skipping " + path);
+				}
 			}
 		
-			Resource newAccessURL = ResourceFactory.createResource(remoteCkanResource.getUrl());
+			Resource newDownloadUrl = ResourceFactory.createResource(remoteCkanResource.getUrl());
 		
-			org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatDistribution, DCAT.accessURL, newAccessURL);
+			org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
 		}
 	}
 	
@@ -218,9 +228,7 @@ public class DcatCkanDeployUtils {
 		}
 		
 		// Update existing attributes with non-null values
-		Optional.ofNullable(res.getTitle()).ifPresent(remote::setName);
-		//Optional.ofNullable(res.getTitle()).ifPresent(remote::setna);
-		Optional.ofNullable(res.getDescription()).ifPresent(remote::setDescription);
+		DcatCkanRdfUtils.convertToCkan(remote, res);
 
 		if(isResourceCreationRequired) {
 			remote = ckanClient.createResource(remote);

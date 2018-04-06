@@ -12,7 +12,9 @@ import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.DCAT;
@@ -24,11 +26,16 @@ import com.google.common.collect.Streams;
 
 public class DcatUtils {
 	
-	public static Model addPrefixes(Model result) {
+	public static final String extraNs = "http://ckan.aksw.org/ontology/extra/";
+	public static final Property extraUri = ResourceFactory.createProperty(extraNs + "uri");
+	
+	public static <T extends PrefixMapping> T addPrefixes(T result) {
 		result
 			.setNsPrefixes(PrefixMapping.Extended)
 			.setNsPrefix("dcat", DCAT.NS)
-			.setNsPrefix("dct", DCTerms.NS);
+			.setNsPrefix("dct", DCTerms.NS)
+			.setNsPrefix("extra", extraNs);
+		
 
 		return result;
 	}
