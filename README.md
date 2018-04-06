@@ -151,11 +151,6 @@ These commands are not yet implemented, but appear to be useful. These descripti
 dcat meta my-datasests.dcat.nt > meta.dcat.nt
 ```
 
-* Upload rdf files to a local virtuoso triple store (using virtuoso's bulk loader)
-```
-dcat deploy virtuoso --user=dba --pass=dba --port=1111 dcat.nt
-```
-
 * Upload rdf file via SPARQL Update
 ```
 dcat deploy sparql --user=dba --pass=dba --host=http://example.org/sparql dcat.nt
