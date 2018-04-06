@@ -112,14 +112,12 @@ public class DcatDeployVirtuosoUtils {
 						if("application/x-bzip".equals(contentType)) {
 							
 	
-							String rawUnzippedFilename = com.google.common.io.Files.getNameWithoutExtension(filename);
-	
-							String unzippedFilename = ".tmp-" + rawUnzippedFilename;
-							
-							actualFile = allowedFolder.resolve(unzippedFilename);
+							String unzippedFilename = com.google.common.io.Files.getNameWithoutExtension(filename);
+								
+							actualFile = allowedFolder.resolve(".tmp-load-" + unzippedFilename);
 							
 							if(!Files.exists(actualFile)) {
-								Path tmpFile = allowedFolder.resolve(".tmp-unzipping-" + unzippedFilename);
+								Path tmpFile = allowedFolder.resolve(".tmp-unzip-" + unzippedFilename);
 	
 								logger.info("bzip archive detected, unzipping to " + tmpFile.toAbsolutePath());
 								
@@ -132,7 +130,7 @@ public class DcatDeployVirtuosoUtils {
 							
 							toDelete.add(actualFile);
 						} else {
-							actualFile = allowedFolder.resolve(".tmp-" + filename);
+							actualFile = allowedFolder.resolve(".tmp-load-" + filename);
 	
 							if(!Files.exists(actualFile)) {
 								Files.createSymbolicLink(actualFile, path);

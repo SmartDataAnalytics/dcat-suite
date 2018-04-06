@@ -12,6 +12,9 @@ public interface DcatDistribution
 
 	Set<Resource> getDownloadURLs();
 	
+	String getFormat();
+	void setFormat(String format);
+	
 	// Assumes that getDownloadURLs returns a set view
 	default void setDownloadURL(Resource r) {
 		getDownloadURLs().clear();

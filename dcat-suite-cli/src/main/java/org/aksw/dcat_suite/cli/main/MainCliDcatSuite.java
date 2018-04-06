@@ -129,6 +129,9 @@ public class MainCliDcatSuite {
 		@Parameter(names = "--port", description = "The URL of the CKAN instance")
 		protected int port = 1111;
 
+		@Parameter(names = "--host", description = "Hostname")
+		protected String host = "localhost";
+
 		@Parameter(names = "--user", description = "Username")
 		protected String user = "dba";
 		
@@ -302,7 +305,7 @@ public class MainCliDcatSuite {
 		
 		String dcatSource = cmDeployVirtuoso.file;
 		
-		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
+		//Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
 		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
 
 		String baseIRI = dcatPath.getParent().toUri().toString();
@@ -317,7 +320,7 @@ public class MainCliDcatSuite {
 		dataSource.setPassword(cmDeployVirtuoso.pass);
 		dataSource.setUser(cmDeployVirtuoso.user);
 		dataSource.setPortNumber(cmDeployVirtuoso.port);
-		dataSource.setServerName("localhost");
+		dataSource.setServerName(cmDeployVirtuoso.host);
 
 		try {
 			try(Connection conn = dataSource.getConnection()) {

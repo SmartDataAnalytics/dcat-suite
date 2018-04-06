@@ -272,6 +272,7 @@ public class DcatCkanRdfUtils {
 
 		dcatDistribution.setName(ckanResource.getName());
 		dcatDistribution.setDescription(ckanResource.getDescription());
+		dcatDistribution.setFormat(ckanResource.getFormat());
 
 		Optional.ofNullable(ckanResource.getUrl())
 				.ifPresent(url -> dcatDistribution.setDownloadURL(dcatDistribution.getModel().createResource(url)));
@@ -362,6 +363,9 @@ public class DcatCkanRdfUtils {
 
 		getUri(dcatDistribution, DcatDeployVirtuosoUtils.defaultGraph)
 				.ifPresent(v -> ckanResource.putOthers("dcat:defaultGraph", v));
+
+		Optional.ofNullable(dcatDistribution.getFormat())
+			.ifPresent(v -> ckanResource.setFormat(v));
 
 		if (dcatDistribution.isURIResource()) {
 			ckanResource.putOthers("extra:uri", dcatDistribution.getURI());

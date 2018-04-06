@@ -165,15 +165,49 @@ public class DcatCkanDeployUtils {
 			if(pathReference.isPresent()) {
 				Path path = pathReference.get();
 
+				//String filename = distributionName + ".nt";
+				String filename = path.getFileName().toString();
+				String probedContentType = null;
+				try {
+					probedContentType = Files.probeContentType(path);
+				} catch (IOException e) {
+					logger.warn("Failed to probe content type of " + path, e);
+				}
+				
+				String contentType = Optional.ofNullable(probedContentType).orElse(ContentType.APPLICATION_OCTET_STREAM.toString());
+				
 				if(!noFileUpload) {
 					logger.info("Uploading file " + path);
-					remoteCkanResource = CkanClientUtils.uploadFile(
+					CkanResource tmp = CkanClientUtils.uploadFile(
 							ckanClient,
 							remoteCkanDataset.getName(),
 							remoteCkanResource.getId(),
 							path.toString(),
-							ContentType.create("application/n-triples"),
-							distributionName + ".nt");
+							ContentType.create(contentType),
+							filename);
+
+					tmp.setOthers(remoteCkanResource.getOthers());
+					remoteCkanResource = ckanClient.updateResource(tmp);
+//					remoteCkanResource.setUrl(tmp.getUrl());
+//					remoteCkanResource.setUrlType(tmp.getUrlType());
+
+					//remoteCkanResource.set
+					//remoteCkanResource = ckanClient.getResource(tmp.getId());
+					// Run the metadata update again
+
+					// This works, but retrieves the whole dataset on each resource, which we want to avoid
+//					if(false) {
+//						remoteCkanDataset = ckanClient.getDataset(remoteCkanDataset.getId());
+//						remoteCkanResource = createOrUpdateResource(ckanClient, remoteCkanDataset, dataset, dcatDistribution);
+//					}
+					
+					//DcatCkanRdfUtils.convertToCkan(remoteCkanResource, dcatDistribution);
+
+					
+					// FIXME upload currently destroys custom tags, hence we update the metadata again
+					//remoteCkanResource = ckanClient.updateResource(remoteCkanResource);
+					
+					
 				} else {
 					logger.info("File upload disabled. Skipping " + path);
 				}
@@ -230,12 +264,12 @@ public class DcatCkanDeployUtils {
 		// Update existing attributes with non-null values
 		DcatCkanRdfUtils.convertToCkan(remote, res);
 
-		if(isResourceCreationRequired) {
+		if (isResourceCreationRequired) {
 			remote = ckanClient.createResource(remote);
 		} else {
 			remote = ckanClient.updateResource(remote);
-		}		
-		
+		}
+
 		return remote;
 	}
 	
