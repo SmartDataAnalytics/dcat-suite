@@ -30,6 +30,8 @@ dcat deploy virtuoso --allowed="/opt/virtuoso/db/" dcat.ttl
 | URL to DCAT resource       |      X         |      n/a   |    n/a         |
 
 
+. = future work
+
 ### DCAT Example
 Here is a short example of a DCAT dataset description in order to give you an impression of what we are talking about.
 
