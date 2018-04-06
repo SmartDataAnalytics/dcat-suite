@@ -3,7 +3,7 @@ DCAT APIs and CLIs for downloading, transforming and deploying datasets
 
 
 |                            | DCAT retrieval | Deploy RDF | Deploy non RDF |
-|----------------------------------------------------------------------------
+|----------------------------|----------------|------------|----------------|
 | CKAN                       |      x         |       x    |     x          |
 | Virtuoso RDF Bulk Loader   |                |       x    |    n/a         |
 | Generic SPARQL (soon)      |                |            |                |
