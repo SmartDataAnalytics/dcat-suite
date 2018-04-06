@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -37,6 +38,8 @@ import eu.trentorise.opendata.jackan.model.CkanTag;
 
 public class DcatCkanDeployUtils {
 
+
+	
 	public static Model deploy(CkanClient ckanClient, Model dcatModel, IRIResolver iriResolver) {
 		// List dataset descriptions
 		Model result = DcatUtils.createModelWithDcatFragment(dcatModel);

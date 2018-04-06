@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.util.List;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
+import org.aksw.ckan_deploy.core.DcatDeployVirtuosoUtils;
 import org.aksw.ckan_deploy.core.DcatExpandUtils;
 import org.aksw.ckan_deploy.core.DcatInstallUtils;
 import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
@@ -28,6 +31,7 @@ import com.google.common.collect.Streams;
 import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
+import virtuoso.jdbc4.VirtuosoDataSource;
 
 public class MainCliDcatSuite {
 
@@ -117,7 +121,10 @@ public class MainCliDcatSuite {
 		
 		@Parameter(names = "--pass", description = "Password")
 		protected String pass = "dba";
-		
+
+		@Parameter(names = "--allowed", description = "A folder which virtuoso is allowed to access")
+		protected String allowed = ".";
+
 	}
 
 	public static void showCkanDatasets(CkanClient ckanClient) {
@@ -206,14 +213,15 @@ public class MainCliDcatSuite {
 				//}
 				break;
 			}
-			case "virtuoso": {
-				//processDeployVirtuoso();
+			case "virtuoso": {				
+				processDeployVirtuoso(cmDeployVirtuoso);
 				break;
 			}
 			default: {
 				throw new RuntimeException("Unknow deploy command: " + deployCmd);
 			}
 			}
+			break;
 		}
 		
 		case "import": {
@@ -256,6 +264,46 @@ public class MainCliDcatSuite {
 		default:
 			throw new RuntimeException("Unknown command: " + cmd);
 
+		}
+	}
+
+	private static void processDeployVirtuoso(CommandDeployVirtuoso cmDeployVirtuoso) {
+		
+		String dcatSource = cmDeployVirtuoso.file;
+		
+		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
+		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
+
+		String baseIRI = dcatPath.getParent().toUri().toString();
+		IRIResolver iriResolver = IRIResolver.create(baseIRI);
+
+		
+		Model dcatModel = RDFDataMgr.loadModel(dcatSource);
+
+		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
+		
+		VirtuosoDataSource dataSource = new VirtuosoDataSource();
+		dataSource.setPassword(cmDeployVirtuoso.pass);
+		dataSource.setUser(cmDeployVirtuoso.user);
+		dataSource.setPortNumber(cmDeployVirtuoso.port);
+		dataSource.setServerName("localhost");
+
+		try {
+			try(Connection conn = dataSource.getConnection()) {
+				
+				VirtuosoBulkLoad.logEnable(conn, 2, 0);
+
+				for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
+				
+					DcatDeployVirtuosoUtils.deploy(dcatDataset, iriResolver, allowedFolder, conn);
+				}
+			
+				conn.commit();
+			}
+			
+			// TODO rollback on error
+		} catch(Exception e ) {
+			//conn.rollback();
 		}
 	}
 
@@ -322,16 +370,6 @@ public class MainCliDcatSuite {
 			
 			RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
 		}
-	}
-	
-	public static void processDeployVirtuoso(
-			CkanClient ckanClient,
-			String dcatSource,
-			int port,
-			String user,
-			String pass
-			) {
-		
 	}
 	
 }

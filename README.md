@@ -2,6 +2,14 @@
 DCAT APIs and CLIs for downloading, transforming and deploying datasets
 
 
+|                            | DCAT retrieval | Deploy RDF | Deploy non RDF |
+|----------------------------------------------------------------------------
+| CKAN                       |      x         |       x    |     x          |
+| Virtuoso RDF Bulk Loader   |                |       x    |    n/a         |
+| Generic SPARQL             |                   (soon)            
+
+
+
 ### DCAT Example
 Here is a short example of a DCAT dataset description in order to give you an impression of what we are talking about.
 
