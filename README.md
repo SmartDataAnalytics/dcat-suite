@@ -1,13 +1,33 @@
 # DCAT Suite
+
+*Java's maven feeling for DCAT*
+
 DCAT APIs and CLIs for downloading, transforming and deploying datasets
 
+## Highlights
 
-|                            | DCAT retrieval | Deploy RDF | Deploy non RDF |
+* Deploy local files referenced in a DCAT description to a CKAN
+
+```bash
+dcat deploy ckan --apikey=myApiKey --host=myCkanUrl dcat.nt
+```
+
+* Use Virtuoso's blazing fast RDF bulk loader to load all RDF distributions.
+  * Supports graph groups!
+
+```bash
+dcat deploy virtuoso --allowed="/opt/virtuoso/db/" dcat.ttl
+```
+
+
+## Feature overview
+
+| API                        | DCAT retrieval | Deploy RDF | Deploy non RDF |
 |----------------------------|----------------|------------|----------------|
-| CKAN                       |      x         |       x    |     x          |
-| Virtuoso RDF Bulk Loader   |                |       x    |    n/a         |
-| Generic SPARQL (soon)      |                |            |                |
-
+| CKAN                       |      X         |       X    |     x          |
+| Virtuoso RDF Bulk Loader   |      .         |       X    |    n/a         |
+| Generic SPARQL             |      .         |       .    |                |
+| URL to DCAT resource       |      X         |      n/a   |    n/a         |
 
 
 ### DCAT Example
