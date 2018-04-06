@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
@@ -87,7 +89,12 @@ public class MainCliDcatSuite {
 
 		@Parameter(names="--apikey", description="Your API key for the CKAN instance")
 		protected String apikey;
-		
+
+		@Parameter(names = { "--ds" ,"--dataset"} , description = "Import a specific datasets (ckan id or name)")
+		protected List<String> datasets = new ArrayList<>();
+
+		@Parameter(names="--all", description="Import everything")
+		protected boolean all = false;
 		
 		@Parameter(names = "--prefix", description = "Allocate URIs using this prefix")
 		protected String prefix;
@@ -236,7 +243,25 @@ public class MainCliDcatSuite {
 			case "ckan": {
 				CkanClient ckanClient = new CkanClient(cmImportCkan.host, cmImportCkan.apikey);
 
-				processCkanImport(ckanClient, cmImportCkan.prefix);
+				List<String> datasets;
+				
+				if(cmImportCkan.all) {
+					if(!cmImportCkan.datasets.isEmpty()) {
+						throw new RuntimeException("Options for import all and specific datasets mutually exclusive");
+					}
+					
+					logger.info("Retrieving the list of all datasets in the catalog");
+					datasets = ckanClient.getDatasetList();
+				} else {
+					if(cmImportCkan.datasets.isEmpty()) {
+						throw new RuntimeException("No datasets to import");
+					}
+					
+					datasets = cmImportCkan.datasets;
+				}
+				
+								
+				processCkanImport(ckanClient, cmImportCkan.prefix, datasets);
 				
 				break;
 			}
@@ -351,14 +376,10 @@ public class MainCliDcatSuite {
 	}
 	
 	
-	public static void processCkanImport(CkanClient ckanClient, String prefix) {
+	public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets) {
 		
-		//String host = ckanClient.getCatalogUrl();
-		//String host = "http://localhost/dataset/";
 
-		List<String> ds = ckanClient.getDatasetList();
-
-		for (String s : ds) {
+		for (String s : datasets) {
 			logger.info("Importing dataset " + s);
 			
 			CkanDataset ckanDataset = ckanClient.getDataset(s);
@@ -368,11 +389,12 @@ public class MainCliDcatSuite {
 			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
 
 			try {
-				DcatCkanRdfUtils.skolemize(dcatDataset.getModel());
-				//DcatCkanRdfUtils.assignDefaultIris(dcatDataset);
+				// Skolemize the resource first (so we have a reference to the resource)
+				dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
 				if(prefix != null) {
-					DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix);
+					dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
 				}
+				
 			} catch(Exception e) {
 				logger.warn("Error processing dataset " + s, e);
 			}

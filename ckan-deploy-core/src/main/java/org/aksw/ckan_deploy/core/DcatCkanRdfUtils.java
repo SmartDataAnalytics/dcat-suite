@@ -3,6 +3,7 @@ package org.aksw.ckan_deploy.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -18,8 +19,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.DCAT;
@@ -35,40 +34,64 @@ import eu.trentorise.opendata.jackan.model.CkanTag;
 public class DcatCkanRdfUtils {
 	private static final Logger logger = LoggerFactory.getLogger(DcatCkanRdfUtils.class);
 
-	public static void skolemize(Model dcatModel) {
-		Collection<Resource> rs = dcatModel.listSubjects().toList();
-		for(Resource r : rs) {
-			assignDefaultIris(r);
+	public static Resource skolemizeClosureUsingCkanConventions(Resource r) {
+		// Skolemize the entry resource
+		Resource result = DcatCkanRdfUtils.skolemizeUsingCkanConventions(r);
+
+		List<Resource> reachableSubjects = ResourceUtils.reachableClosure(result).listSubjects().toList();
+		for(Resource s : reachableSubjects) {
+			skolemizeUsingCkanConventions(s.inModel(result.getModel()));
 		}
+		
+		return result;
 	}
+	
+//	public static void skolemizeUsingCkanConventions(Model dcatModel) {
+//		Collection<Resource> rs = dcatModel.listSubjects().toList();
+//		for(Resource r : rs) {
+//			skolemizeUsingCkanConventions(r);
+//		}
+//	}
+
+//	public static Resource skolemizeClosure(Resource r) {
+//		Collection<Resource> rs = dcatModel.listSubjects().toList();
+//		for(Resource r : rs) {
+//			skolemizeUsingCkanConventions(r);
+//		}
+//	}
 
 	/**
-	 * TODO Read out extra:uri fields and such
+	 * Rename blank nodes that have an extra:uri property
 	 * 
 	 * @param dcatEntity
 	 * @return
 	 */
-	public static Resource assignDefaultIris(Resource dcatEntity) {
+	public static Resource skolemizeUsingCkanConventions(Resource dcatEntity) {
 		Resource result;
 		
-//		RDFDataMgr.write(System.err, dcatEntity.getModel(), RDFFormat.TURTLE_PRETTY);
-		
-		// Check if there is an extra:uri attribute
-		String uri = org.aksw.jena_sparql_api.utils.model.ResourceUtils.getPropertyValue(dcatEntity, DcatUtils.extraUri)
-			.filter(RDFNode::isURIResource)
-			.map(RDFNode::asResource)
-			.map(Resource::getURI)
-			.orElse(null);
-
-		if(uri != null) {
-			// remove the property
-			org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatEntity, DcatUtils.extraUri, null);
-		}
-		
-		result = uri == null
-				? dcatEntity
-				: ResourceUtils.renameResource(dcatEntity, uri);
+		if(dcatEntity.isAnon()) {
+			
+	//		RDFDataMgr.write(System.err, dcatEntity.getModel(), RDFFormat.TURTLE_PRETTY);
+			
+			// Check if there is an extra:uri attribute
+			String uri = org.aksw.jena_sparql_api.utils.model.ResourceUtils.getPropertyValue(dcatEntity, DcatUtils.extraUri)
+				.filter(RDFNode::isURIResource)
+				.map(RDFNode::asResource)
+				.map(Resource::getURI)
+				.orElse(null);
 	
+			if(uri != null) {
+				// remove the property
+				org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatEntity, DcatUtils.extraUri, null);
+			}
+			
+			result = uri == null
+					? dcatEntity
+					: ResourceUtils.renameResource(dcatEntity, uri);
+		} else {
+			result = dcatEntity;
+		}
+
 		return result;
 	}
 
