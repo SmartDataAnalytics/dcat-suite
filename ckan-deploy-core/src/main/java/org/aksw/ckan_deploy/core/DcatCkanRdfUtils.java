@@ -319,6 +319,7 @@ public class DcatCkanRdfUtils {
 		return collection;
 	}
 
+	// TODO Move to ResourceUtils
 	public static Optional<String> getUri(Resource r, Property p) {
 		Optional<String> result = org.aksw.jena_sparql_api.utils.model.ResourceUtils.getPropertyValue(r, p)
 				.filter(RDFNode::isURIResource).map(RDFNode::asResource).map(Resource::getURI);

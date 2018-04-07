@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -57,6 +56,16 @@ public class DcatCkanDeployUtils {
 		return result;
 	}
 
+	public static Optional<URI> newURI(String uri) {
+		Optional<URI> result;
+		try {
+			result = Optional.of(new URI(uri));
+		} catch (URISyntaxException e) {
+			result = Optional.empty();
+			//throw new RuntimeException(e);
+		}
+		return result;
+	}
 		
 	public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload) {
 		String datasetName = dataset.getName();
@@ -144,15 +153,7 @@ public class DcatCkanDeployUtils {
 					.collect(Collectors.toList());
 			
 			List<URI> resolvedValidUrls = resolvedUrls.stream()
-					.map(str -> {
-						URI r = null;
-						try {
-							r = new URI(str);
-						} catch (URISyntaxException e) {
-							// Ignore
-						}
-						return r;
-					})
+					.map(str -> DcatCkanDeployUtils.newURI(str).orElse(null))
 					.filter(r -> r != null)
 					.collect(Collectors.toList());
 			

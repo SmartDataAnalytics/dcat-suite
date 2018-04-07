@@ -8,11 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
@@ -24,7 +24,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,14 @@ public class DcatDeployVirtuosoUtils {
 	
 
 	
-	public static void deploy(DcatDataset dcatDataset, IRIResolver iriResolver, Path allowedFolder, Connection conn) throws SQLException, IOException, URISyntaxException {
+	public static void deploy(
+			DcatRepository dcatRepository,
+			DcatDataset dcatDataset,
+			Function<String, String> iriResolver,
+			//IRIResolver iriResolver,
+			Path allowedFolder,
+			boolean noSymlink,
+			Connection conn) throws SQLException, IOException, URISyntaxException {
 
 		String defaultGraphGroupIri = ResourceUtils.getPropertyValue(dcatDataset, defaultGraphGroup)
 				.filter(RDFNode::isURIResource)
@@ -74,8 +80,7 @@ public class DcatDeployVirtuosoUtils {
 		Set<Path> toDelete = new HashSet<>();
 		try {
 			for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
-				
-				
+
 				String graphIri = ResourceUtils.getPropertyValue(dcatDistribution, defaultGraph)
 						.filter(RDFNode::isURIResource)
 						.map(RDFNode::asResource)
@@ -90,16 +95,23 @@ public class DcatDeployVirtuosoUtils {
 				
 				if(graphIri != null) {
 					
-					String downloadURL = ResourceUtils.getPropertyValue(dcatDistribution, DCAT.downloadURL)
-							.filter(RDFNode::isURIResource)
-							.map(RDFNode::asResource)
-							.map(Resource::getURI)
-							.orElse(null);
+					URI dataUri = null;
+					try {
+						dataUri = dcatRepository.resolveDistribution(dcatDistribution, iriResolver).orElse(null);
+					} catch(Exception e) {
+						logger.warn("Error resolving distribution" + dcatDistribution, e);
+					}
+
+//					String downloadURL = ResourceUtils.getPropertyValue(dcatDistribution, DCAT.downloadURL)
+//							.filter(RDFNode::isURIResource)
+//							.map(RDFNode::asResource)
+//							.map(Resource::getURI)
+//							.orElse(null);
 	
-					if(downloadURL != null) {
+					if(dataUri != null) {
 					
-						String url = iriResolver.resolveToStringSilent(downloadURL);
-						Path path = Paths.get(new URI(url));
+						//String url = iriResolver.resolveToStringSilent(downloadURL);
+						Path path = Paths.get(dataUri);
 						
 						
 						String contentType = Files.probeContentType(path);
@@ -133,7 +145,11 @@ public class DcatDeployVirtuosoUtils {
 							actualFile = allowedFolder.resolve(".tmp-load-" + filename);
 	
 							if(!Files.exists(actualFile)) {
-								Files.createSymbolicLink(actualFile, path);
+								if(noSymlink) {
+									Files.copy(actualFile, path);								
+								} else {
+									Files.createSymbolicLink(actualFile, path);
+								}
 							}
 							
 							toDelete.add(actualFile);

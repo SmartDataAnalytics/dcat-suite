@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -26,10 +27,16 @@ public class DcatInstallUtils {
 	private static final Logger logger = LoggerFactory.getLogger(DcatInstallUtils.class);
 
 	
-	public static void install(Path repoFolder, DcatDataset dcatDataset, boolean forceReDownload) {
+	public static void install(DcatRepository repo, DcatDataset dcatDataset, Function<String, String> iriResolver, boolean forceReDownload) {
 		for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
+	
+			try {
+				repo.resolveDistribution(dcatDistribution, iriResolver);
+			} catch(Exception e) {
+				logger.warn("Error installing distribution", e);
+			}
 			
-			install(repoFolder, dcatDistribution, forceReDownload);
+//			install(repoFolder, dcatDistribution, forceReDownload);
 //			for(Resource r : dcatDistribution.getDownloadURLs()) {
 //			}
 		}
@@ -37,20 +44,20 @@ public class DcatInstallUtils {
 	
 	
 	
-	public static void install(Path repoFolder, DcatDistribution dcatDistribution, boolean forceReDownload) {
-		for(Resource r : dcatDistribution.getDownloadURLs()) {
-			if(!r.isURIResource()) {
-				logger.warn("Not a URI: " + r);
-				continue;
-			}
-
-			try {
-				download(repoFolder, dcatDistribution, r, forceReDownload);
-			} catch(Exception e) {
-				logger.warn("Failed to download " + r);
-			}
-		}
-	}
+//	public static void install(Path repoFolder, DcatDistribution dcatDistribution, boolean forceReDownload) {
+//		for(Resource r : dcatDistribution.getDownloadURLs()) {
+//			if(!r.isURIResource()) {
+//				logger.warn("Not a URI: " + r);
+//				continue;
+//			}
+//
+//			try {
+//				download(repoFolder, dcatDistribution, r, forceReDownload);
+//			} catch(Exception e) {
+//				logger.warn("Failed to download " + r);
+//			}
+//		}
+//	}
 	
 	public static void download(Path repoFolder, DcatDistribution dcatDistribution, Resource r, boolean forceReDownload) {
 		

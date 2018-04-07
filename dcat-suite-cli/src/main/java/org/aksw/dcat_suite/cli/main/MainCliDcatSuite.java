@@ -6,14 +6,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
 import org.aksw.ckan_deploy.core.DcatDeployVirtuosoUtils;
 import org.aksw.ckan_deploy.core.DcatExpandUtils;
 import org.aksw.ckan_deploy.core.DcatInstallUtils;
+import org.aksw.ckan_deploy.core.DcatRepository;
+import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
 import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
@@ -126,6 +128,9 @@ public class MainCliDcatSuite {
 		@Parameter(description = "The DCAT file which to deploy", required = true)
 		protected String file;
 
+		@Parameter(names = { "--ds" ,"--dataset"} , description = "Datasets which to deploy (iri, identifier or title)")
+		protected List<String> datasets = new ArrayList<>();
+
 		@Parameter(names = "--port", description = "The URL of the CKAN instance")
 		protected int port = 1111;
 
@@ -138,8 +143,11 @@ public class MainCliDcatSuite {
 		@Parameter(names = "--pass", description = "Password")
 		protected String pass = "dba";
 
-		@Parameter(names = "--allowed", description = "A folder which virtuoso is allowed to access")
+		@Parameter(names = "--allowed", description = "A writeable folder readable by virtuoso")
 		protected String allowed = ".";
+
+		@Parameter(names = "--nosymlinks", description = "Copy datsets to the allowed folder instead of linking them")
+		protected boolean nosymlinks = false;
 
 	}
 
@@ -277,19 +285,15 @@ public class MainCliDcatSuite {
 
 		case "install": {
 			String dcatSource = cmInstall.file;
+
 			Model dcatModel = RDFDataMgr.loadModel(dcatSource);
-			//for(dcatModel.listSubjects(null, DCAT.distribution, null)
-			String userDirStr = System.getProperty("user.home");
-			Path userFolder = Paths.get(userDirStr);
-			if(!Files.exists(userFolder)) {
-				throw new RuntimeException("Failed to find user directory");
-			}
+			Function<String, String> iriResolver = createIriResolver(dcatSource);
+			DcatRepository dcatRepository = createDcatRepository();
 			
-			Path repoFolder = userFolder.resolve(".dcat").resolve("repository");
-			Files.createDirectories(repoFolder);
+			//for(dcatModel.listSubjects(null, DCAT.distribution, null)
 			
 			for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
-				DcatInstallUtils.install(repoFolder, dcatDataset, false);
+				DcatInstallUtils.install(dcatRepository, dcatDataset, iriResolver, false);
 			}
 			break;
 		}
@@ -300,18 +304,37 @@ public class MainCliDcatSuite {
 
 		}
 	}
-
-	private static void processDeployVirtuoso(CommandDeployVirtuoso cmDeployVirtuoso) {
-		
-		String dcatSource = cmDeployVirtuoso.file;
-		
-		//Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
+	public static Function<String, String> createIriResolver(String dcatSource) {
 		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
-
 		String baseIRI = dcatPath.getParent().toUri().toString();
 		IRIResolver iriResolver = IRIResolver.create(baseIRI);
 
+		return iriResolver::resolveToStringSilent;
+	}
+	
+	public static DcatRepository createDcatRepository() throws IOException 
+	{
+		String userDirStr = System.getProperty("user.home");
+		Path userFolder = Paths.get(userDirStr);
+		if(!Files.exists(userFolder)) {
+			throw new RuntimeException("Failed to find user directory");
+		}
 		
+		Path repoFolder = userFolder.resolve(".dcat").resolve("repository");
+		Files.createDirectories(repoFolder);
+		
+		DcatRepository result = new DcatRepositoryDefault(repoFolder);
+
+		return result;
+	}
+
+	private static void processDeployVirtuoso(CommandDeployVirtuoso cmDeployVirtuoso) throws IOException {
+		
+		String dcatSource = cmDeployVirtuoso.file;
+		
+		Function<String, String> iriResolver = createIriResolver(dcatSource);
+		DcatRepository dcatRepository = createDcatRepository();
+
 		Model dcatModel = RDFDataMgr.loadModel(dcatSource);
 
 		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
@@ -329,7 +352,7 @@ public class MainCliDcatSuite {
 
 				for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
 				
-					DcatDeployVirtuosoUtils.deploy(dcatDataset, iriResolver, allowedFolder, conn);
+					DcatDeployVirtuosoUtils.deploy(dcatRepository, dcatDataset, iriResolver, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
 				}
 			
 				conn.commit();
