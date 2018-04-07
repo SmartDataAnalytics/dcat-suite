@@ -2,7 +2,7 @@
 
 Retrieving, publishing and loading data in a single DCAT-centric tool.
 
-One could say, DCAT is to datasets what the pom is the Java software projects.
+One could say, DCAT is to datasets what the pom is to Java software projects.
 
 ## In a nutshell
 
