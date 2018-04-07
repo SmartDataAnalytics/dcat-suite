@@ -14,7 +14,9 @@ dcat import ckan --host=http://ckan.qrowd.aksw.org --dataset=org-linkedgeodata-o
 dcat deploy virtuoso --allowed=/writeable/dir/readable/by/virtuoso /tmp/dcat.nt
 ```
 
+
 *Question:* _And how do I create a [graph group](http://docs.openlinksw.com/virtuoso/rdfgraphsecuritygroups/) so I can view all these files as a single graph?
+
 *Answer:* _It already happened._
 
 ## Feature overview
