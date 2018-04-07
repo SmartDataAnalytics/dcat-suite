@@ -268,8 +268,9 @@ public class DcatRepositoryDefault
 				//String url = iriResolver.resolveToStringSilent(downloadURL);
 
 				
+				logger.info("Downloading " + downloadUrl);
 				Path file = downloadFile(downloadUrl, dataFolder);
-				logger.info("Download:\n  Url: " + downloadUrl + "\n  File: " + file + "\n");
+				logger.info("Download finished:\n  Url: " + downloadUrl + "\n  File: " + file + "\n");
 			}
 		}
 

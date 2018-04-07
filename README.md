@@ -15,6 +15,10 @@ dcat import ckan --host=http://ckan.qrowd.aksw.org --dataset=org-linkedgeodata-o
 dcat deploy virtuoso --allowed=/writeable/dir/readable/by/virtuoso /tmp/dcat.nt
 ```
 
+Note: It works also for the DCAT based DBpedia DataID datasets:
+```
+dcat show http://downloads.dbpedia.org/2016-10/core-i18n/en/2016-10_dataid_en.ttl > /tmp/dcat.ttl
+```
 
 *Question:* _And how do I create a [graph group](http://docs.openlinksw.com/virtuoso/rdfgraphsecuritygroups/) so I can view all these files as a single graph?_
 

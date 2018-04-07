@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -336,6 +337,14 @@ public class MainCliDcatSuite {
 
 		Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(dcatSource);
 
+		Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
+		
+		logger.info("Detected datasets:");
+		for(DcatDataset dcatDataset: dcatDatasets) {
+			logger.info("  " + dcatDataset);
+		}
+		logger.info(dcatDatasets.size() + " datasets enqueued");
+		
 		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
 		
 		VirtuosoDataSource dataSource = new VirtuosoDataSource();
@@ -349,7 +358,7 @@ public class MainCliDcatSuite {
 				
 				VirtuosoBulkLoad.logEnable(conn, 2, 0);
 
-				for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
+				for(DcatDataset dcatDataset : dcatDatasets) {
 				
 					DcatDeployVirtuosoUtils.deploy(dcatRepository, dcatDataset, iriResolver, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
 				}
@@ -358,7 +367,8 @@ public class MainCliDcatSuite {
 			}
 			
 			// TODO rollback on error
-		} catch(Exception e ) {
+		} catch(Exception e) {
+			throw new RuntimeException(e);
 			//conn.rollback();
 		}
 	}

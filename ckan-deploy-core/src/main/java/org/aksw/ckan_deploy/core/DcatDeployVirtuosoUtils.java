@@ -160,7 +160,8 @@ public class DcatDeployVirtuosoUtils {
 							
 							if(!Files.exists(actualFile)) {
 								Path tmpFile = allowedFolder.resolve(".tmp-unzip-" + unzippedFilename);
-	
+								Files.deleteIfExists(tmpFile);
+								
 								logger.info("bzip archive detected, unzipping to " + tmpFile.toAbsolutePath());
 								
 								try(InputStream in = new MetaBZip2CompressorInputStream(Files.newInputStream(path))) {
