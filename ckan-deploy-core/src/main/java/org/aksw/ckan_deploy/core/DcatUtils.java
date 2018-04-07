@@ -15,6 +15,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.DCAT;
@@ -56,6 +57,19 @@ public class DcatUtils {
 		return result;
 	}
 
+	public static Model createModelWithNormalizedDcatFragment(String fileOrUrl) {
+		Dataset dataset = RDFDataMgr.loadDataset(fileOrUrl);
+		Model result = DcatUtils.createModelWithNormalizedDcatFragment(dataset);
+		return result;
+	}
+
+	public static Model createModelWithNormalizedDcatFragment(Dataset dataset) {
+		Model result = createModelWithDcatFragment(dataset);
+		DcatCkanRdfUtils.normalizeDcatModel(result);
+		DcatUtils.addPrefixes(result);
+		return result;
+	}
+	
 	public static Model createModelWithDcatFragment(Dataset dataset) {
 		Model result = ModelFactory.createDefaultModel();			
 		
@@ -75,9 +89,11 @@ public class DcatUtils {
 	}
 
 	public static Collection<DcatDataset> listDcatDatasets(Model model) {
-		Collection<DcatDataset> result = model
-				.listSubjectsWithProperty(RDF.type, DCAT.Dataset)
-				.mapWith(r -> r.as(DcatDataset.class)).toList();
+		Collection<DcatDataset> result = 
+				model.listSubjectsWithProperty(RDF.type, DCAT.Dataset).andThen(
+				model.listSubjectsWithProperty(DCAT.distribution))
+				.mapWith(r -> r.as(DcatDataset.class))
+				.toSet();
 
 		return result;
 	}

@@ -6,24 +6,23 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.jena_sparql_api.utils.model.ResourceUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
@@ -123,7 +122,7 @@ public class DcatRepositoryDefault
 		
 		Path result;
 		
-		Path path = DcatCkanDeployUtils.newURI(url).map(Paths::get).orElse(null);
+		Path path = DcatCkanDeployUtils.newURI(url).flatMap(DcatCkanDeployUtils::pathsGet).orElse(null);
 		if(path != null && Files.exists(path)) {
 			result = targetPath.resolve(path.getFileName());
 			Files.copy(path, result);
@@ -166,14 +165,16 @@ public class DcatRepositoryDefault
 		try {
 	        HttpEntity entity = response.getEntity();
 	
-	        String dispositionValue = response.getFirstHeader("Content-Disposition").getValue();
+	        Header disposition = response.getFirstHeader("Content-Disposition");
+	        String dispositionValue = disposition != null ? disposition.getValue() : "";
 	        String key = "filename=";
 	        int index = dispositionValue.indexOf(key);
 	
 		    String filename = index >= 0
 		    		? dispositionValue.substring(index + key.length(), dispositionValue.length() - 1)
-		    		: DcatCkanDeployUtils.newURI(url).map(uri -> Paths.get(uri).getFileName().toString()).orElse(null);
-
+		    		//: DcatCkanDeployUtils.newURI(url).map(uri -> Paths.get(uri).getFileName().toString()).orElse(null);
+		    		: DcatCkanDeployUtils.newURI(url).map(uri -> Paths.get(uri.getPath()).getFileName().toString()).orElse(null);
+		    		
 			result = filenameToPath.apply(filename);
 
 		    if(filename == null) {
@@ -212,7 +213,7 @@ public class DcatRepositoryDefault
 		return result;
 	}
 	
-	public Optional<URI> resolveDistribution(Resource dcatResource, Function<String, String> iriResolver) throws IOException {
+	public Collection<URI> resolveDistribution(Resource dcatResource, Function<String, String> iriResolver) throws IOException {
 		if(!dcatResource.isURIResource()) {
 			throw new RuntimeException("Non IRI distribution resources currently not supported");
 		}
@@ -250,9 +251,14 @@ public class DcatRepositoryDefault
 			Files.createDirectories(dataFolder);
 			
 			// TODO Use view method once its available
-			String downloadUrl = DcatCkanRdfUtils.getUri(dcatDistribution, DCAT.downloadURL).orElse(null);
+			Collection<String> downloadUrls = ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
+					.filter(RDFNode::isURIResource)
+					.map(RDFNode::asResource)
+					.map(Resource::getURI)
+					.collect(Collectors.toList());
 
-			if(downloadUrl != null) {
+			for(String downloadUrl : downloadUrls) {
+			
 				downloadUrl = iriResolver.apply(downloadUrl);
 //				List<String> resolvedUrls = downloadUrls.stream()
 //						.filter(Resource::isURIResource)
@@ -263,7 +269,7 @@ public class DcatRepositoryDefault
 
 				
 				Path file = downloadFile(downloadUrl, dataFolder);
-				logger.info("File " + file + " created from download of " + downloadUrl);
+				logger.info("Download:\n  Url: " + downloadUrl + "\n  File: " + file + "\n");
 			}
 		}
 
@@ -273,13 +279,13 @@ public class DcatRepositoryDefault
 		boolean dataFolderExists = Files.exists(dataFolder);
 
 		// ... for now we take the first file in the data folder
-		Optional<Path> dataFile = dataFolderExists
-				? Files.list(dataFolder).findFirst()
-				: Optional.empty();
+		Collection<Path> dataFiles = dataFolderExists
+				? Files.list(dataFolder).collect(Collectors.toList())
+				: Collections.emptyList();
 
-		Optional<URI> result = dataFile.map(Path::toUri);
+		Collection<URI> result = dataFiles.stream().map(Path::toUri).collect(Collectors.toList());
 		
-		logger.info("Resolved distribution " + str + " to " + result.orElse(null));
+		logger.info("Distribution resolution:\n  Source: " + str + "\n  Target(s): " + result + "\n");
 		
 		// TODO If the distribution folder exists, but the data folder does not
 		// we fail as another process might be working on it

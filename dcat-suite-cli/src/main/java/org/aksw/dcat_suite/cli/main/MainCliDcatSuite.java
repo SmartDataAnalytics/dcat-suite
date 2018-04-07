@@ -217,8 +217,7 @@ public class MainCliDcatSuite {
 		String cmd = jc.getParsedCommand();
 		switch (cmd) {
 		case "show": {
-			Dataset dataset = RDFDataMgr.loadDataset(cmShow.file);
-			Model dcatModel = DcatUtils.addPrefixes(DcatUtils.createModelWithDcatFragment(dataset));
+			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(cmShow.file);
 			RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
 			break;
 		}
@@ -286,7 +285,7 @@ public class MainCliDcatSuite {
 		case "install": {
 			String dcatSource = cmInstall.file;
 
-			Model dcatModel = RDFDataMgr.loadModel(dcatSource);
+			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(cmShow.file);
 			Function<String, String> iriResolver = createIriResolver(dcatSource);
 			DcatRepository dcatRepository = createDcatRepository();
 			
@@ -335,7 +334,7 @@ public class MainCliDcatSuite {
 		Function<String, String> iriResolver = createIriResolver(dcatSource);
 		DcatRepository dcatRepository = createDcatRepository();
 
-		Model dcatModel = RDFDataMgr.loadModel(dcatSource);
+		Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(dcatSource);
 
 		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
 		
@@ -375,7 +374,7 @@ public class MainCliDcatSuite {
 		DcatExpandUtils.writeSortedNtriples(model, result);
 		return result;
 	}
-
+	
 	public static void processDeploy(CkanClient ckanClient, String dcatSource, boolean noFileUpload) throws IOException {
 		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
 		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();

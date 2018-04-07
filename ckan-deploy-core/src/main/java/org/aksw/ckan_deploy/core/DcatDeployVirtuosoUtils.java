@@ -9,7 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -49,9 +52,27 @@ public class DcatDeployVirtuosoUtils {
 		return null;
 	}
 
-	public static final Property defaultGraphGroup = ResourceFactory.createProperty(DCAT.NS + "defaultGraphGroup");
-	public static final Property defaultGraph = ResourceFactory.createProperty(DCAT.NS + "defaultGraph");
+	public static final Property dcatDefaultGraphGroup = ResourceFactory.createProperty(DCAT.NS + "defaultGraphGroup");
+	public static final Property dcatDefaultGraph = ResourceFactory.createProperty(DCAT.NS + "defaultGraph");
 	
+	// Used by dataid
+	public static final Property sdDefaultGraph = ResourceFactory.createProperty("http://www.w3.org/ns/sparql-service-description#defaultGraph");
+
+	
+	public static final Set<Property> defaultGraphGroupProperties = new LinkedHashSet<>(Arrays.asList(dcatDefaultGraphGroup));
+	public static final Set<Property> defaultGraphProperties = new LinkedHashSet<>(Arrays.asList(dcatDefaultGraph, sdDefaultGraph));
+
+		
+	public static Optional<String> findUri(Resource r, Collection<Property> searchProperties) {
+				
+		Optional<String> result = searchProperties.stream().flatMap(p -> ResourceUtils.listPropertyValues(r, p))
+			.filter(RDFNode::isURIResource)
+			.map(RDFNode::asResource)
+			.map(Resource::getURI)
+			.findFirst();		
+
+		return result;
+	}
 
 	
 	public static void deploy(
@@ -63,12 +84,15 @@ public class DcatDeployVirtuosoUtils {
 			boolean noSymlink,
 			Connection conn) throws SQLException, IOException, URISyntaxException {
 
-		String defaultGraphGroupIri = ResourceUtils.getPropertyValue(dcatDataset, defaultGraphGroup)
-				.filter(RDFNode::isURIResource)
-				.map(RDFNode::asResource)
-				.map(Resource::getURI)
-				.orElse(null);
+		String datasetDefaultGraph = DcatCkanRdfUtils.getUri(dcatDataset, dcatDefaultGraph).orElse(null);
+		
+		String defaultGraphGroupIri = DcatCkanRdfUtils.getUri(dcatDataset, dcatDefaultGraphGroup).orElse(null);
 
+		// If both are specified, the graph group takes precedence by default - the interpretation is:
+		// If possible, create the group group, but should this be not supported, use the given graph instead
+		
+		// Issue what if dataset and distribution specify a defaultGraph?
+		// Right now the dataset level default graph takes precedence
 		
 		if(defaultGraphGroupIri != null) {
 			logger.info("Creating graph group <" + defaultGraphGroupIri + ">");
@@ -81,25 +105,31 @@ public class DcatDeployVirtuosoUtils {
 		try {
 			for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
 
-				String graphIri = ResourceUtils.getPropertyValue(dcatDistribution, defaultGraph)
-						.filter(RDFNode::isURIResource)
-						.map(RDFNode::asResource)
-						.map(Resource::getURI)
-						.orElse(null);
+				// If there is a group group, but the dataset does not declare a default graph, it is skipped
+				String distributionGraphIri = DcatCkanRdfUtils.getUri(dcatDistribution, dcatDefaultGraph).orElse(null);
+				
+				String effectiveGraphIri = defaultGraphGroupIri != null
+						// If there is a graph group, we enforce the graph on the distribution
+						? distributionGraphIri
+						// Otherwise, use the dataset graph first, and fallback to the one on the distribution
+						: Optional.ofNullable(datasetDefaultGraph).orElse(distributionGraphIri)
+						;
 				
 				
-				if(defaultGraphGroupIri != null && graphIri != null) {
-					logger.info("Adding graph <" + graphIri + "> as member of graph group <" + defaultGraphGroupIri + ">");
-					VirtuosoBulkLoad.graphGroupIns(conn, defaultGraphGroupIri, graphIri);
+				if(defaultGraphGroupIri != null && effectiveGraphIri != null) {
+					logger.info("Adding graph <" + effectiveGraphIri + "> as member of graph group <" + defaultGraphGroupIri + ">");
+					VirtuosoBulkLoad.graphGroupIns(conn, defaultGraphGroupIri, effectiveGraphIri);
 				}
 				
-				if(graphIri != null) {
+				if(effectiveGraphIri != null) {
 					
-					URI dataUri = null;
+					Collection<URI> dataUris;
 					try {
-						dataUri = dcatRepository.resolveDistribution(dcatDistribution, iriResolver).orElse(null);
+						dataUris = dcatRepository.resolveDistribution(dcatDistribution, iriResolver);
 					} catch(Exception e) {
 						logger.warn("Error resolving distribution" + dcatDistribution, e);
+						// TODO Require permissive=true flag to proceed
+						continue;
 					}
 
 //					String downloadURL = ResourceUtils.getPropertyValue(dcatDistribution, DCAT.downloadURL)
@@ -108,7 +138,7 @@ public class DcatDeployVirtuosoUtils {
 //							.map(Resource::getURI)
 //							.orElse(null);
 	
-					if(dataUri != null) {
+					for(URI dataUri : dataUris) {
 					
 						//String url = iriResolver.resolveToStringSilent(downloadURL);
 						Path path = Paths.get(dataUri);
@@ -154,13 +184,15 @@ public class DcatDeployVirtuosoUtils {
 							
 							toDelete.add(actualFile);
 						}
-						
-						logger.info("Registering " + actualFile.toAbsolutePath() + " with Virtuoso RDF Loader");
+
+						logger.info("Preparing Virtuoso Bulk load:\n  File: " + actualFile.toAbsolutePath() + "\n  Graph: " + effectiveGraphIri + "\n");
+
+						//logger.info("Registering " + actualFile.toAbsolutePath() + " with Virtuoso RDF Loader");
 						
 						String allowedDir = allowedFolder.toString();
 						String actualFilename = actualFile.getFileName().toString();
 						
-						VirtuosoBulkLoad.ldDir(conn, allowedDir, actualFilename, graphIri);
+						VirtuosoBulkLoad.ldDir(conn, allowedDir, actualFilename, effectiveGraphIri);
 					}
 				}
 			}

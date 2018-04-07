@@ -1,7 +1,7 @@
 package org.aksw.ckan_deploy.core;
 
 import java.net.URI;
-import java.util.Optional;
+import java.util.Collection;
 import java.util.function.Function;
 
 import org.apache.jena.rdf.model.Resource;
@@ -15,5 +15,5 @@ public interface DcatRepository {
 	 * @return
 	 * @throws Exception
 	 */
-	Optional<URI> resolveDistribution(Resource dcatDistribution, Function<String, String> iriResolver) throws Exception;
+	Collection<URI> resolveDistribution(Resource dcatDistribution, Function<String, String> iriResolver) throws Exception;
 }

@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
@@ -34,6 +35,38 @@ import eu.trentorise.opendata.jackan.model.CkanTag;
 public class DcatCkanRdfUtils {
 	private static final Logger logger = LoggerFactory.getLogger(DcatCkanRdfUtils.class);
 
+	
+	public static void copyPropertyValues(Resource r, Property target, Property source) {
+//		org.aksw.jena_sparql_api.utils.model.ResourceUtils
+//			.listPropertyValues(r, source)
+//			.forEach(v -> r.addProperty(target, v));		
+		List<RDFNode> values = org.aksw.jena_sparql_api.utils.model.ResourceUtils
+			.listPropertyValues(r, source).collect(Collectors.toList());
+		
+		values.forEach(v -> r.addProperty(target, v));		
+	}
+	
+	public static void normalizeDcatModel(Model model) {
+		DcatUtils.listDcatDatasets(model).forEach(DcatCkanRdfUtils::normalizeDataset);
+	}
+	
+	public static void normalizeDataset(DcatDataset dcatDataset) {
+		normalizeCommon(dcatDataset);
+
+		for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
+			normalizeDistribution(dcatDistribution);
+		}
+	}
+
+
+	public static void normalizeDistribution(DcatDistribution dcatDistribution) {
+		normalizeCommon(dcatDistribution);
+	}
+
+	public static void normalizeCommon(Resource r) {
+		copyPropertyValues(r, DcatDeployVirtuosoUtils.dcatDefaultGraph, DcatDeployVirtuosoUtils.sdDefaultGraph);
+	}
+	
 	public static Resource skolemizeClosureUsingCkanConventions(Resource r) {
 		// Skolemize the entry resource
 		Resource result = DcatCkanRdfUtils.skolemizeUsingCkanConventions(r);
@@ -336,11 +369,18 @@ public class DcatCkanRdfUtils {
 
 		Consumer<CkanPair> uniqueTagAdder = uniqueAdder(ckanDataset::getExtras, ckanDataset::setExtras, ArrayList::new);
 		//
-		getUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphGroup)
-				.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraphGroup", v)));
+//		getUri(dcatDataset, DcatDeployVirtuosoUtils.dcatDefaultGraphGroup)
+//				.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraphGroup", v)));
 
-		getUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraph)
+		DcatDeployVirtuosoUtils.findUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphGroupProperties)
+			.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraphGroup", v)));
+
+		// TODO Wrap these lookups with an interface
+		DcatDeployVirtuosoUtils.findUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphProperties)
 				.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraph", v)));
+
+//		getUri(dcatDataset, DcatDeployVirtuosoUtils.dcatDefaultGraph)
+//		.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraph", v)));
 
 		if (dcatDataset.isURIResource()) {
 			uniqueTagAdder.accept(new CkanPair("extra:uri", dcatDataset.getURI()));
@@ -360,10 +400,10 @@ public class DcatCkanRdfUtils {
 		// Optional.ofNullable(res.getTitle()).ifPresent(remote::setna);
 		Optional.ofNullable(dcatDistribution.getDescription()).ifPresent(ckanResource::setDescription);
 
-		getUri(dcatDistribution, DcatDeployVirtuosoUtils.defaultGraphGroup)
+		getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraphGroup)
 				.ifPresent(v -> ckanResource.putOthers("dcat:defaultGraphGroup", v));
 
-		getUri(dcatDistribution, DcatDeployVirtuosoUtils.defaultGraph)
+		getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraph)
 				.ifPresent(v -> ckanResource.putOthers("dcat:defaultGraph", v));
 
 		Optional.ofNullable(dcatDistribution.getFormat())
