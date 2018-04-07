@@ -19,6 +19,15 @@ dcat deploy virtuoso --allowed=/writeable/dir/readable/by/virtuoso /tmp/dcat.nt
 
 *Answer:* _It already happened_
 
+
+*Question:* _So I have this DCAT file with dcat:downloadURL pointing to local files. How can I publish it to CKAN?_
+
+*Answer: _Like this:_
+```bash
+dcat deploy ckan --host=http://ckan.example.org --apikey=my-ckan-api-key dcat.nt
+```
+
+
 ## Feature overview
 
 | API                        | DCAT retrieval | Deploy RDF | Deploy non RDF |
