@@ -15,9 +15,9 @@ dcat deploy virtuoso --allowed=/writeable/dir/readable/by/virtuoso /tmp/dcat.nt
 ```
 
 
-*Question:* _And how do I create a [graph group](http://docs.openlinksw.com/virtuoso/rdfgraphsecuritygroups/) so I can view all these files as a single graph?
+*Question:* _And how do I create a [graph group](http://docs.openlinksw.com/virtuoso/rdfgraphsecuritygroups/) so I can view all these files as a single graph?_
 
-*Answer:* _It already happened._
+*Answer:* _It already happened_
 
 ## Feature overview
 
