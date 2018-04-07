@@ -55,6 +55,18 @@ public class DcatCkanDeployUtils {
 		
 		return result;
 	}
+	
+	public static Optional<Path> pathsGet(URI uri) {
+		Optional<Path> result;
+		try {
+			result = Optional.of(Paths.get(uri));
+		} catch (Exception e) {
+			result = Optional.empty();
+			//throw new RuntimeException(e);
+		}
+		return result;
+	}
+
 
 	public static Optional<URI> newURI(String uri) {
 		Optional<URI> result;
@@ -157,8 +169,13 @@ public class DcatCkanDeployUtils {
 					.filter(r -> r != null)
 					.collect(Collectors.toList());
 			
+			// TODO This breaks if the downloadURLs are web urls.
+			// We need a flag whether to do a file upload for web urls, or whether to just update metadata
+			
 			Optional<Path> pathReference = resolvedValidUrls.stream()
-				.map(Paths::get)
+				.map(DcatCkanDeployUtils::pathsGet)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.filter(Files::exists)
 				.findFirst();
 

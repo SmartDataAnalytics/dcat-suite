@@ -1,24 +1,18 @@
-# DCAT Suite
+# DCAT - Easy RDF Data Management
 
-*Java's maven feeling for DCAT*
+Retrieving, publishing and loading data in a single tool.
 
-DCAT APIs and CLIs for downloading, transforming and deploying datasets
 
-## Highlights
+## In a nutshell
 
-* Deploy local files referenced in a DCAT description to a CKAN
+*Question* _How many commands does it take to load the 50+ files of [this ckan record](http://ckan.qrowd.aksw.org/dataset/org-linkedgeodata-osm-bremen-2018-04-04) into a virtuso triple store (with default port and credentials)?_
 
-```bash
-dcat deploy ckan --apikey=myApiKey --host=myCkanUrl dcat.nt
-```
-
-* Use Virtuoso's blazing fast RDF bulk loader to load all RDF distributions.
-  * Supports graph groups!
+*Answer* _2_
 
 ```bash
-dcat deploy virtuoso --allowed="/opt/virtuoso/db/" dcat.ttl
+dcat import ckan --host=http://ckan.qrowd.aksw.org --dataset=org-linkedgeodata-osm-bremen-2018-04-04 > /tmp/dcat.nt
+dcat deploy virtuoso --allowed=/writeable/dir/readable/by/virtuoso /tmp/dcat.nt
 ```
-
 
 ## Feature overview
 

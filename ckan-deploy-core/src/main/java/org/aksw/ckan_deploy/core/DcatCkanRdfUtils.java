@@ -270,7 +270,8 @@ public class DcatCkanRdfUtils {
 
 		dcatDistribution.addProperty(RDF.type, DCAT.Distribution);
 
-		dcatDistribution.setName(ckanResource.getName());
+		//dcatDistribution.setName(ckanResource.getName());
+		dcatDistribution.setTitle(ckanResource.getName());
 		dcatDistribution.setDescription(ckanResource.getDescription());
 		dcatDistribution.setFormat(ckanResource.getFormat());
 

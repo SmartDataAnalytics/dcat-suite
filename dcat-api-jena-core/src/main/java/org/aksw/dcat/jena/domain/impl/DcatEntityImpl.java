@@ -4,7 +4,6 @@ import org.aksw.dcat.jena.domain.api.DcatEntity;
 import org.aksw.jena_sparql_api.utils.model.ResourceUtils;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 import org.apache.jena.vocabulary.DCTerms;
 
@@ -53,15 +52,13 @@ public class DcatEntityImpl
 
 	@Override
 	public void setTitle(String title) {
-		// TODO Auto-generated method stub
-		
+		ResourceUtils.setLiteralProperty(this, DCTerms.title, title);
 	}
 
 
 	@Override
 	public void setDescription(String description) {
-		// TODO Auto-generated method stub
-		
+		ResourceUtils.setLiteralProperty(this, DCTerms.description, description);
 	}
 	
 	
