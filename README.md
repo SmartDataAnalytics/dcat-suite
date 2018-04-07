@@ -1,7 +1,7 @@
 # DCAT - Easy RDF Data Management
 
-Retrieving, publishing and loading data in a single tool.
-
+Retrieving, publishing and loading data in a single DCAT-centric tool.
+One could say, DCAT is to datasets what pom.xml is to (Java) software projects.
 
 ## In a nutshell
 
