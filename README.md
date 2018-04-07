@@ -5,7 +5,7 @@ Retrieving, publishing and loading data in a single tool.
 
 ## In a nutshell
 
-*Question:* _How many commands does it take to load the 50+ files of [this ckan record](http://ckan.qrowd.aksw.org/dataset/org-linkedgeodata-osm-bremen-2018-04-04) into a virtuso triple store (with default port and credentials)?_
+*Question:* _How many commands does it take to load the 50+ files of [this ckan record](http://ckan.qrowd.aksw.org/dataset/org-linkedgeodata-osm-bremen-2018-04-04) into a virtuoso triple store (with default port and credentials)?_
 
 *Answer:* _2_
 
