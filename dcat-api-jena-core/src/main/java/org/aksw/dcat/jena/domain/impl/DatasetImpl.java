@@ -28,4 +28,16 @@ public class DatasetImpl
 		return new SetFromLiteralPropertyValues<>(this, DCAT.keyword, String.class);
 	}
 
+//	@Override
+//	public FoafAgent getPublisher() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public VCardKind getContactPoint() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+
 }

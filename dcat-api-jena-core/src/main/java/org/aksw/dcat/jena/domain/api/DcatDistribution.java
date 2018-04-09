@@ -25,4 +25,11 @@ public interface DcatDistribution
 		getAccessURLs().clear();
 		getAccessURLs().add(r);
 	}
+	
+	
+	
+//	default SpdxChecksum getChecksum() {
+//		return null;
+//		//ResourceUtils.getProperty(this, Spdx.ge)
+//	}
 }

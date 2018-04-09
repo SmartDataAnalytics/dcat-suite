@@ -20,6 +20,9 @@
 		<module>ckan-deploy-core</module>
 		<module>dcat-suite-cli</module>
 		<module>dcat-suite-debian-cli</module>
+
+
+		<module>dcat-experimental</module>
 	</modules>
 
 	<issueManagement>
@@ -114,6 +117,12 @@
 			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-utils</artifactId>
+				<version>${jena-sparql-api.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-mapper</artifactId>
 				<version>${jena-sparql-api.version}</version>
 			</dependency>
 

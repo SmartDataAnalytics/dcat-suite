@@ -1,10 +1,12 @@
 package org.aksw.dcat.jena.domain.api;
 
-import java.util.Set;
-
+/**
+ * Binding of the core to jena
+ * 
+ * @author raven Apr 9, 2018
+ *
+ */
 public interface DcatDataset
-	extends DcatEntity
-{	
-	Set<DcatDistribution> getDistributions();
-	Set<String> getKeywords();
+	extends DcatEntity, DcatDatasetCore
+{		
 }
