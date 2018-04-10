@@ -2,11 +2,11 @@ package org.aksw.dcat.ap.playground.main;
 
 import java.util.Set;
 
-import org.aksw.dcat.ap.ckan.CkanPersonalities;
-import org.aksw.dcat.ap.ckan.Implementation;
-import org.aksw.dcat.ap.jena.domain.api.DcatApAgent;
-import org.aksw.dcat.ap.jena.domain.api.DcatApDatasetCore;
-import org.aksw.dcat.ap.jena.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.binding.ckan.domain.impl.CkanPersonalities;
+import org.aksw.dcat.ap.binding.ckan.domain.impl.Implementation;
+import org.aksw.dcat.ap.domain.api.DcatApAgent;
+import org.aksw.dcat.ap.domain.api.DcatApDataset;
+import org.aksw.dcat.ap.domain.api.DcatApDistribution;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 
@@ -15,8 +15,8 @@ public class MainDcatApDemo {
 	public static void main(String[] args) {
 		CkanDataset ckanDataset = new CkanDataset();
 
-		Implementation<CkanDataset, DcatApDatasetCore> impl = CkanPersonalities.datasetPersonalities.getImplementation(DcatApDatasetCore.class);
-		DcatApDatasetCore dcatDataset = impl.wrap(ckanDataset);
+		Implementation<CkanDataset, DcatApDataset> impl = CkanPersonalities.datasetPersonalities.getImplementation(DcatApDataset.class);
+		DcatApDataset dcatDataset = impl.wrap(ckanDataset);
 		
 		dcatDataset.setTitle("LinkedGeoData");
 		dcatDataset.setLandingPage("http://linkedgeodata.org");

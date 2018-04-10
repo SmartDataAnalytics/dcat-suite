@@ -3,8 +3,8 @@ package org.aksw.dcat.ap.playground.main;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.aksw.dcat.ap.jena.domain.api.DcatApAgent;
-import org.aksw.dcat.ap.jena.domain.impl.DcatApAgentAsResource;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
+import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
 import org.apache.commons.collections4.Trie;
 import org.apache.jena.enhanced.BuiltinPersonalities;
@@ -140,11 +140,11 @@ public class MainUniformApi {
 	
 	public static void main(String [] args) {
 		JenaSystem.init();
-		BuiltinPersonalities.model.add(DcatApAgentAsResource.class, new SimpleImplementation(DcatApAgentAsResource::new));
+		BuiltinPersonalities.model.add(RdfDcatApAgentImpl.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
 		
 		Model model = ModelFactory.createDefaultModel();
 		
-		DcatApAgent rdfPublisher = model.createResource().as(DcatApAgentAsResource.class);
+		DcatApAgent rdfPublisher = model.createResource().as(RdfDcatApAgentImpl.class);
 		
 		rdfPublisher.setHomepage("http://infai.org");
 		rdfPublisher.setMbox("mailto:infai@dev.null");
