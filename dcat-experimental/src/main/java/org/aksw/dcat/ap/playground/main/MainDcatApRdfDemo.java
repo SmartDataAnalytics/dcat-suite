@@ -14,6 +14,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.system.JenaSystem;
+import org.apache.jena.vocabulary.DCTerms;
 
 public class MainDcatApRdfDemo {
 
@@ -25,15 +26,21 @@ public class MainDcatApRdfDemo {
 
 		
 		Model model = ModelFactory.createDefaultModel();
-		DcatApDataset plainDataset = model.createResource().as(RdfDcatApDataset.class);
+		RdfDcatApDataset rdfDataset = model.createResource().as(RdfDcatApDataset.class);
 		
-		plainDataset.setTitle("Wold Domination Plans");
-		plainDataset.setDescription("Top Secret");
-		plainDataset.setVersionInfo("0.3-SNAPSHOT");
-		plainDataset.setVersionNotes("Work in progress");
-		plainDataset.setAccuralPeriodicity("http://foo.bar/baz");
+		rdfDataset.setTitle("World Domination Plans");
+		//plainDataset.setDescription("Top Secret");
+		rdfDataset.setVersionInfo("0.3-SNAPSHOT");
+		rdfDataset.setVersionNotes("Work in progress");
+		rdfDataset.setAccuralPeriodicity("http://foo.bar/baz");
+		
+		
+		rdfDataset.addLiteral(DCTerms.description, "Top Secret");		
+		
+		System.out.println("Description: " + rdfDataset.getDescription());
 		
 		RDFDataMgr.write(System.out, model, RDFFormat.TURTLE);
+		
 		
 	}
 }
