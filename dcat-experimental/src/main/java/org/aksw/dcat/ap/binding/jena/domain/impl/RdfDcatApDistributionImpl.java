@@ -16,7 +16,7 @@ import org.apache.jena.vocabulary.DCTerms;
 
 public class RdfDcatApDistributionImpl
 	extends RdfDcatApResource
-	implements DcatApDistributionAccessor
+	implements RdfDcatApDistribution, DcatApDistributionAccessor
 {
 	public RdfDcatApDistributionImpl(Node node, EnhGraph graph) {
 		super(node, graph);
@@ -48,13 +48,12 @@ public class RdfDcatApDistributionImpl
 
 	@Override
 	public SingleValuedAccessor<String> title() {
-		// TODO Auto-generated method stub
-		return null;
+		return create(this, DCTerms.title, NodeMapperFactory.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> description() {
-		return create(this, DCTerms.title, NodeMapperFactory.string);
+		return create(this, DCTerms.description, NodeMapperFactory.string);
 	}
 
 	@Override
@@ -120,5 +119,5 @@ public class RdfDcatApDistributionImpl
 	@Override
 	public SingleValuedAccessor<Set<String>> languages() {
 		return createSet(this, DCTerms.language, NodeMapperFactory.uriString);
-	}
+	}	
 }

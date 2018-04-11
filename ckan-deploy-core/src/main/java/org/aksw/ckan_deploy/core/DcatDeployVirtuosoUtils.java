@@ -65,7 +65,7 @@ public class DcatDeployVirtuosoUtils {
 		
 	public static Optional<String> findUri(Resource r, Collection<Property> searchProperties) {
 				
-		Optional<String> result = searchProperties.stream().flatMap(p -> ResourceUtils.listPropertyValues(r, p))
+		Optional<String> result = searchProperties.stream().flatMap(p -> ResourceUtils.asStream(ResourceUtils.listPropertyValues(r, p)))
 			.filter(RDFNode::isURIResource)
 			.map(RDFNode::asResource)
 			.map(Resource::getURI)

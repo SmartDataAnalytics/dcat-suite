@@ -26,5 +26,11 @@ public class SingleValuedAccessorFromPropertyOps<T>
 	public void set(T value) {
 		propertyOps.setValue(obj, value);
 	}
+
+	@Override
+	public String toString() {
+		return "SingleValuedAccessorFromPropertyOps [" + propertyOps.getName() + "=" + get() + " from [" + obj + "]]";
+	}
+	
 	
 }

@@ -8,13 +8,13 @@ import org.aksw.commons.collections.SinglePrefetchIterator;
 
 import com.google.common.base.Converter;
 
-public class SetFromConversion<F, B>
+public class SetFromConverter<F, B>
 	extends AbstractSet<F>
 {
 	protected Collection<B> backend;
 	protected Converter<F, B> converter;
 	
-	public SetFromConversion(Collection<B> backend, Converter<F, B> converter) {
+	public SetFromConverter(Collection<B> backend, Converter<F, B> converter) {
 		this.backend = backend;
 		this.converter = converter;
 	}
@@ -55,7 +55,7 @@ public class SetFromConversion<F, B>
 				return finish();
 			}
 			@Override
-			public void remove() { baseIt.remove(); }
+			public void doRemove() { baseIt.remove(); }
 		};
 	}
 	

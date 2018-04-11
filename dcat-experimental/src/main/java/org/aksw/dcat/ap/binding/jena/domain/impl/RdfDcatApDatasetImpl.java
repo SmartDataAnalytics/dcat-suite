@@ -1,6 +1,7 @@
 package org.aksw.dcat.ap.binding.jena.domain.impl;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Set;
 
@@ -12,14 +13,21 @@ import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 import org.aksw.dcat.ap.domain.api.View;
 import org.aksw.dcat.jena.domain.api.Adms;
+import org.aksw.dcat.util.view.LazyCollection;
+import org.aksw.dcat.util.view.SetFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
+import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
+import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
+
+import com.google.common.base.Converter;
 
 public class RdfDcatApDatasetImpl
 	extends RdfDcatApResource 
@@ -202,8 +210,53 @@ public class RdfDcatApDatasetImpl
 
 	@Override
 	public SingleValuedAccessor<Set<DcatApDistribution>> distributions() {
-		//return createSet(this, Adms.sample, NodeMapperFactory.uriString);
-		return null;
+		Converter<DcatApDistribution, Resource> converter = new Converter<DcatApDistribution, Resource>() {
+			@Override
+			protected Resource doForward(DcatApDistribution a) {
+				return (Resource)a;
+			}
+
+			@Override
+			protected DcatApDistribution doBackward(Resource b) {
+				return b.as(RdfDcatApDistribution.class);
+				//return CkanPersonalities.resourcePersonalities.getImplementation(DcatApDistribution.class).wrap(b);
+			}
+		};
+	
+		Set<DcatApDistribution> result = new SetFromConverter<>(
+						new SetFromPropertyValues<>(this, DCAT.distribution, Resource.class),
+						converter);
+		
+		SingleValuedAccessor<Set<DcatApDistribution>> tmp = new SingleValuedAccessorDirect<>(result);
+		
+		
+		return tmp;
 	}
+//
+//	public <T extends DcatApDistribution> SingleValuedAccessor<Set<T>> distributions(Class<T> distributionType) {
+//		
+//		Converter<T, Resource> converter = new Converter<T, Resource>() {
+//			@Override
+//			protected Resource doForward(T a) {
+//				return (Resource)a;
+//			}
+//
+//			@Override
+//			protected DcatApDistribution doBackward(Resource b) {
+//				b.as(distributionType);
+//				//return CkanPersonalities.resourcePersonalities.getImplementation(DcatApDistribution.class).wrap(b);
+//			}
+//		};
+//		
+//		Set<DcatApDistribution> result = new SetFromConverter<>(
+//				new LazyCollection<>(
+//						new SingleValuedAccessorImpl<>(ckanDataset::getResources, ckanDataset::setResources),
+//						ArrayList::new, true),
+//				converter);
+//				
+//		return result;
+//		//return createSet(this, DCAT.distribution, NodeMapperFactory.uriString);
+//		return null;
+//	}
 
 }

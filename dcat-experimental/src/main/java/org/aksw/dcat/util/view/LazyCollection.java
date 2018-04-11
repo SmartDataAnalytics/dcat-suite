@@ -90,7 +90,7 @@ public class LazyCollection<T, C extends Collection<T>>
 				return finish();
 			}
 			@Override
-			public void remove() {
+			public void doRemove() {
 				baseIt.remove();
 
 				checkUnset(backend);

@@ -1,7 +1,6 @@
 package org.aksw.dcat.ap.binding.ckan.domain.impl;
 
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
-import org.aksw.dcat.ap.domain.accessors.DcatApAgentAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.util.view.SetFromCkanExtras;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
@@ -15,13 +14,12 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.system.JenaSystem;
-import org.apache.jena.vocabulary.RDF;
 import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.core.convert.ConversionService;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
+import eu.trentorise.opendata.jackan.model.CkanResource;
 
 public class CkanUtils {
 	public static void main(String[] args) {
@@ -112,26 +110,44 @@ public class CkanUtils {
 		}
 
 	}
+
+	/**
+	 * Reflection based
+	 * 
+	 * @param obj
+	 * @param localName
+	 * @param clazz
+	 * @return
+	 */
+	public static <T> SingleValuedAccessor<T> getSingleValuedAccessorViaReflection(Object obj, String localName, Class<?> clazz) {
+		SingleValuedAccessor<T> result;
+
+		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
+        bean.afterPropertiesSet();
+
+        ConversionService conversionService = bean.getObject();
+		EntityOps eops = EntityModel.createDefaultModel(CkanDataset.class, conversionService);
+
+		PropertyOps pops = eops.getProperty(localName);
+		if(pops != null && pops.acceptsType(clazz)) {
+			result = new SingleValuedAccessorFromPropertyOps<T>(pops, obj);
+		} else {
+			result = null;
+		}
+
+		return result;
+	}
+
 	
-	public static <T> SingleValuedAccessor<T> getSingleValuedAccessor(CkanDataset ckanDataset, String namespace, String localName, Class<?> clazz) {
+	
+
+	public static <T> SingleValuedAccessor<T> getSingleValuedAccessor(CkanDataset ckanDataset, String namespace, String localName, Class<T> clazz) {
 		SingleValuedAccessor<T> result;
 		if(namespace.equals("extra")) {
 			// FIXME hack ... need a converter in general
 			result = (SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanDataset, localName));
 		} else {
-
-	        ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
-	        bean.afterPropertiesSet();
-
-	        ConversionService conversionService = bean.getObject();
-			EntityOps eops = EntityModel.createDefaultModel(CkanDataset.class, conversionService);
-
-			PropertyOps pops = eops.getProperty(localName);
-			if(pops != null && pops.acceptsType(clazz)) {
-				result = new SingleValuedAccessorFromPropertyOps<T>(pops, ckanDataset);
-			} else {
-				result = null;
-			}
+			return getSingleValuedAccessorViaReflection(ckanDataset,localName, clazz);
 		}
 		
 		return result;
@@ -148,4 +164,30 @@ public class CkanUtils {
 	
 		return result;
 	}
+	
+	
+
+	public static <T> SingleValuedAccessor<T> getSingleValuedAccessor(CkanResource ckanResource, String namespace, String localName, Class<T> clazz) {
+		SingleValuedAccessor<T> result;
+		if(namespace.equals("extra")) {
+			// FIXME hack ... need a converter in general
+			result = null; //(SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanResource, localName));
+		} else {
+			return getSingleValuedAccessorViaReflection(ckanResource, localName, clazz);
+		}
+		
+		return result;
+	}
+
+	public static <T> SingleValuedAccessor<T> getSingleValuedAccessor(CkanResource ckanResource, String property, Class<T> clazz) {
+		String[] parts = property.split("\\:", 2);
+
+		String namespace = parts.length == 2 ? parts[0] : "";
+		String localName = parts.length == 2 ? parts[1] : parts[0];
+
+		SingleValuedAccessor<T> result = getSingleValuedAccessor(ckanResource, namespace, localName, clazz);
+	
+		return result;
+	}
+
 }

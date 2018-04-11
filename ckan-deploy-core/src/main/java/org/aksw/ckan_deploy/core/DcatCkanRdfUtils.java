@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
@@ -41,7 +40,7 @@ public class DcatCkanRdfUtils {
 //			.listPropertyValues(r, source)
 //			.forEach(v -> r.addProperty(target, v));		
 		List<RDFNode> values = org.aksw.jena_sparql_api.utils.model.ResourceUtils
-			.listPropertyValues(r, source).collect(Collectors.toList());
+			.listPropertyValues(r, source).toList();
 		
 		values.forEach(v -> r.addProperty(target, v));		
 	}

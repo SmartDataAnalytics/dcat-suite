@@ -251,7 +251,7 @@ public class DcatRepositoryDefault
 			Files.createDirectories(dataFolder);
 			
 			// TODO Use view method once its available
-			Collection<String> downloadUrls = ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
+			Collection<String> downloadUrls = ResourceUtils.asStream(ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL))
 					.filter(RDFNode::isURIResource)
 					.map(RDFNode::asResource)
 					.map(Resource::getURI)

@@ -15,7 +15,7 @@ import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 import org.aksw.dcat.ap.domain.api.View;
 import org.aksw.dcat.util.view.LazyCollection;
-import org.aksw.dcat.util.view.SetFromConversion;
+import org.aksw.dcat.util.view.SetFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessorImpl;
 
 import com.google.common.base.Converter;
@@ -330,7 +330,7 @@ public class DcatApCkanDatsetViewImpl
 			}
 		};
 		
-		Set<DcatApDistribution> result = new SetFromConversion<>(
+		Set<DcatApDistribution> result = new SetFromConverter<>(
 				new LazyCollection<>(
 						new SingleValuedAccessorImpl<>(ckanDataset::getResources, ckanDataset::setResources),
 						ArrayList::new, true),
