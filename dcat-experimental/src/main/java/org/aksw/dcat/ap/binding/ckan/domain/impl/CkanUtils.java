@@ -126,7 +126,7 @@ public class CkanUtils {
         bean.afterPropertiesSet();
 
         ConversionService conversionService = bean.getObject();
-		EntityOps eops = EntityModel.createDefaultModel(CkanDataset.class, conversionService);
+		EntityOps eops = EntityModel.createDefaultModel(obj.getClass(), conversionService);
 
 		PropertyOps pops = eops.getProperty(localName);
 		if(pops != null && pops.acceptsType(clazz)) {

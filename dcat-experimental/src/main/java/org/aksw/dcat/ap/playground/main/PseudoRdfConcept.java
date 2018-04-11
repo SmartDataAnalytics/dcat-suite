@@ -4,6 +4,7 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -401,11 +402,6 @@ abstract class PseudoRdfResourceBase
 		return null;
 	}
 
-	@Override
-	public Statement getProperty(Property p) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public Statement getProperty(Property p, String lang) {
@@ -650,10 +646,23 @@ class PseudoRdfResourceImpl
 	}
 
 	@Override
+	public StmtIterator listProperties(Property p) {
+		Set<String> pc = Collections.singleton(p.getURI());
+		StmtIterator result = listProperties(pc);
+		return result;
+	}
+	
+	@Override
 	public StmtIterator listProperties() {
-		
+		Set<String> allKnownProperties = propertyToAccessor.keySet();
+		return listProperties(allKnownProperties);
+	}
+	
+
+	public StmtIterator listProperties(Set<String> names) {
+
 		ExtendedIterator<Statement> result = new NullIterator<>();
-		for(String str : propertyToAccessor.keySet()) {
+		for(String str : names) {
 			Collection<? extends PseudoRdfNode> values = getPropertyValues(str);
 			if(values != null) {
 				Iterator<? extends PseudoRdfNode> tmp = values.iterator();
@@ -671,6 +680,29 @@ class PseudoRdfResourceImpl
 		StmtIterator r = new StmtIteratorImpl(result);
 		return r;
 	}
+	
+	@Override
+	public boolean isResoure() {
+		return true;
+	}
+	
+	@Override
+	public PseudoRdfResource asResource() {
+		return this;
+	}
+	
+	@Override
+	public boolean isAnon() {
+		return true;
+	}
+
+	@Override
+	public Statement getProperty(Property p) {
+		StmtIterator tmp = listProperties(p);
+		Statement result = tmp.nextOptional().orElse(null);
+		return result;
+	}
+
 }
 
 
@@ -689,11 +721,6 @@ class PseudoRdfNodeImpl
 	public PseudoRdfNodeImpl(SingleValuedAccessor<?> accessor) {
 		super();
 		this.accessor = accessor;
-	}
-
-	@Override
-	public boolean isResoure() {
-		return false;
 	}
 
 	@Override
@@ -795,7 +822,7 @@ public class PseudoRdfConcept {
 		 * distribution mappings 
 		 */
 		
-		ckanDatasetAccessors.put(DCTerms.description.getURI(),
+		ckanResourceAccessors.put(DCTerms.description.getURI(),
 				s -> Optional.ofNullable(s.getProperty("description", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
 
 
@@ -805,6 +832,7 @@ public class PseudoRdfConcept {
 
 		CkanDataset ckanDataset = new CkanDataset();
 		CkanResource ckanResource = new CkanResource();
+		ckanResource.setDescription("test description");
 		
 		ckanDataset.setResources(new ArrayList<>(Arrays.asList(ckanResource)));
 		
@@ -825,8 +853,13 @@ public class PseudoRdfConcept {
 		System.out.println("Distributions: " + distributions);
 		
 		
-		dataset.listProperties().forEachRemaining(stmt -> {
-			System.out.println("Statement: " + stmt);
+		dataset.listProperties(DCAT.distribution).forEachRemaining(stmt -> {
+			System.out.println("Distribution: " + stmt);
+			
+			Resource dist = stmt.getObject().asResource();
+			
+			Statement distDescription = dist.getProperty(DCTerms.description);
+			System.out.println("  Description: " + distDescription);
 		});
 		
 //		dataset.getProperty(DCA)
