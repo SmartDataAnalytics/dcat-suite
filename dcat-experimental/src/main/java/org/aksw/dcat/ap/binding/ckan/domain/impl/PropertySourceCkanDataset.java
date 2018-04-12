@@ -19,4 +19,9 @@ public class PropertySourceCkanDataset
 		SingleValuedAccessor<T> result = CkanUtils.getSingleValuedAccessor(ckanDataset, name, valueType);
 		return result;
 	}
+
+	@Override
+	public Object getSource() {
+		return ckanDataset;
+	}
 }

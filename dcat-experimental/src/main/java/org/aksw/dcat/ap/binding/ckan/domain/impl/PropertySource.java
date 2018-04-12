@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 /**
+ * This class is similar to the spring PropertySource - except that it allows setting properties as well.
  * A simple interface to resolve properties by name, value type and value multiplicity (single or multi).
  * 
  * 
@@ -12,8 +13,9 @@ import org.aksw.dcat.util.view.SingleValuedAccessor;
  * @author raven Apr 10, 2018
  *
  */
-@FunctionalInterface
 public interface PropertySource {
+	Object getSource();
+	
 	<T> SingleValuedAccessor<T> getProperty(String name, Class<T> valueType);
 	
 	

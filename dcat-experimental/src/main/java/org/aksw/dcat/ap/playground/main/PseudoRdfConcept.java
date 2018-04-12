@@ -1,6 +1,6 @@
 package org.aksw.dcat.ap.playground.main;
 
-import java.util.AbstractSet;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,8 +18,10 @@ import org.aksw.commons.collections.SinglePrefetchIterator;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanResource;
+import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourcePrefix;
 import org.aksw.dcat.util.view.SetFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
+import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
@@ -36,6 +38,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.rdf.model.impl.StatementImpl;
 import org.apache.jena.rdf.model.impl.StmtIteratorImpl;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.NullIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -62,7 +65,7 @@ interface PseudoRdfProperty {
 	 * 
 	 * @return
 	 */
-	Collection<? extends PseudoRdfNode> getValues();
+	Collection<PseudoRdfNode> getValues();
 }
 
 
@@ -86,12 +89,12 @@ interface PseudoRdfSetObjectProperty {
 	PseudoRdfResource createNew();
 }
 
-class SetFromSingleValuedAccessor<T>
-	extends AbstractSet<T>
+class CollectionFromSingleValuedAccessor<T>
+	extends AbstractCollection<T>
 {
 	protected SingleValuedAccessor<T> accessor;
 
-	public SetFromSingleValuedAccessor(SingleValuedAccessor<T> accessor) {
+	public CollectionFromSingleValuedAccessor(SingleValuedAccessor<T> accessor) {
 		super();
 		this.accessor = accessor;
 	}
@@ -157,14 +160,15 @@ class PseudoRdfObjectPropertyImpl<T>
 	}
 	
 	@Override
-	public Collection<PseudoRdfResource> getValues() {
+	public Collection<PseudoRdfNode> getValues() {
 		//SetFromSingleValuedAccessor<T> backend = new SetFromSingleValuedAccessor<>(accessor);
 		
-		Converter<PseudoRdfResource, T> converter = new Converter<PseudoRdfResource, T>() {
+		Converter<PseudoRdfNode, T> converter = new Converter<PseudoRdfNode, T>() {
 			@Override
-			protected T doForward(PseudoRdfResource a) {
+			protected T doForward(PseudoRdfNode a) {
+				PseudoRdfResource aa = a.asResource();
 				//return (T)a.getLiteralValue();
-				return (T)a.getBackingEntity();
+				return (T)aa.getBackingEntity();
 			}
 
 			@Override
@@ -178,7 +182,7 @@ class PseudoRdfObjectPropertyImpl<T>
 		
 		Collection<T> backend = accessor.get();
 		
-		Collection<PseudoRdfResource> result = new SetFromConverter<>(backend, converter);
+		Collection<PseudoRdfNode> result = new SetFromConverter<>(backend, converter);
 		return result;
 	}
 }
@@ -197,8 +201,8 @@ class PseudoRdfLiteralPropertyImpl<T>
 	}
 
 	@Override
-	public Collection<? extends PseudoRdfNode> getValues() {
-		SetFromSingleValuedAccessor<T> backend = new SetFromSingleValuedAccessor<>(accessor);
+	public Collection<PseudoRdfNode> getValues() {
+		CollectionFromSingleValuedAccessor<T> backend = new CollectionFromSingleValuedAccessor<>(accessor);
 		
 		Converter<PseudoRdfNode, T> converter = new Converter<PseudoRdfNode, T>() {
 			@Override
@@ -354,6 +358,9 @@ abstract class PseudoRdfResourceBase
 	extends PseudoRdfNodeBase
 	implements PseudoRdfResource
 {
+	
+	public abstract PseudoRdfProperty getProperty(String property);
+
 
 	@Override
 	public AnonId getId() {
@@ -459,8 +466,13 @@ abstract class PseudoRdfResourceBase
 
 	@Override
 	public Resource addLiteral(Property p, Object o) {
-		// TODO Auto-generated method stub
-		return null;
+		PseudoRdfProperty pp = getProperty(p.getURI());
+		//PseudoRdfLiteralProperty x = (PseudoRdfLiteralProperty)pp;
+		
+		PseudoRdfNode node = new PseudoRdfNodeImpl(new SingleValuedAccessorDirect<>(o));
+		Collection<PseudoRdfNode> values = pp.getValues();
+		values.add(node);
+		return this;
 	}
 
 	@Override
@@ -585,8 +597,10 @@ abstract class PseudoRdfResourceBase
 
 	@Override
 	public Resource getPropertyResourceValue(Property p) {
-		// TODO Auto-generated method stub
-		return null;
+		Statement stmt = getProperty(p);
+		RDFNode o = stmt.getObject();
+		Resource result = o.asResource();
+		return result;
 	}
 
 	@Override
@@ -623,7 +637,7 @@ class PseudoRdfResourceImpl
 	public PseudoRdfProperty getProperty(String property) {
 		Function<PropertySource, PseudoRdfProperty> schemaProperty = propertyToAccessor.get(property);
 		if(schemaProperty == null) {
-			throw new RuntimeException("Property " + property + " not found on " + propertySource);
+			throw new RuntimeException("Property " + property + " not mapped for access over " + propertySource);
 		}
 		
 		PseudoRdfProperty result = schemaProperty.apply(propertySource);
@@ -798,6 +812,8 @@ public class PseudoRdfConcept {
 		Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
 		Map<String, Function<PropertySource, PseudoRdfProperty>> ckanResourceAccessors = new HashMap<>();
 
+		Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetPublisherAccessors = new HashMap<>();
+
 		/*
 		 * datasaset mappings
 		 */
@@ -817,6 +833,83 @@ public class PseudoRdfConcept {
 								new PropertySourceCkanResource(ckanResource), ckanResourceAccessors)
 						));
 
+		/*
+		 * dataset -> publisher
+		 */
+
+//		PropertySource x;
+//		new SingleValuedAccessorFromSet<>(new SetFromSingleValuedAccessor<>(x.getProperty("publisher", CkanDataset.class)));
+
+		
+		// TODO Finish
+		
+		// the publisher property is *not* based on any value
+		// possible ways to deal with insertion of that property
+		// (a) - the first addition of x publisher y marks y an alias for the publisher value
+		//     -the next addition will raise an exception because the publisher already exists
+		// (b) - these kind of properties can neither be 'added' nor 'set', but only 'get'
+		//       - its like a singleton instance; one can not change or set its reference
+		//         - a .isSingleton() method on the property could indicate this.
+		//
+		// Actually, the whole addition model works differently for pseudo object properties:
+		// - if we wanted to add a statement to a an object property, there are these possibilities:
+		//   - the property is a singleton, then we have to 'get' the node referenced by the property
+		//   - the property is collection based, then we get the collection, and allocate new records via the 'newItem' method
+        //     - There are two types of object properties:
+		//       - One where creating a new item already makes it part of the collection
+		//         - similar to appending an item to an array of structs
+		//       - These where the created item has yet to be placed into the collection
+		//   - adding a value to a property that can only hold a single value is equivalent to
+		//     adding an item to a set with max cardinality 1
+		//
+		// Collection of collections
+		// - The RDF model itself does not not directly have a notion a collections -
+		// there are only triples; in our case, (subject predicate collection-of-objects)
+		// - RDF specifies how to model collections/containers
+		// - The jena abstraction can be used to access properly modeled resources as e.g. RDFList
+		// - The items of a collection are nodes; and may represent nested collections and may
+		// thus be be viewed as such.
+		//
+		// Ordering
+
+		//PropertySource x;
+		//Function<PropertySource, ? extends SingleValuedAccessor<Collection<PropertySource>>> getSelf = 
+				//SingleValuedAccessor<? extends Collection<PropertySource>> foo =
+		
+		// SingleValuedAccessor<Collection<PropertySource>>
+		//SingleValuedAccessor<Collection<PropertySource>> foo = new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>(x)));
+
+//		Function<? super PropertySource, ? extends PseudoRdfSetObjectProperty> itemToProperty = new PseudoRdfResourceImpl(
+//				new PropertySourcePrefix("publisher_", ckanDataset, ckanDatasetPublisherAccessors));
+		
+		
+		
+		// Given the property source s, return an accessor to itself
+		// For each source s (itself), wrap it as a new PseudoRdfResource
+		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
+				s -> new PseudoRdfObjectPropertyImpl<>(
+						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>(s))),
+						ss -> new PseudoRdfResourceImpl(
+								new PropertySourcePrefix("extra:publisher_", ss), ckanDatasetPublisherAccessors)
+						));
+		
+//		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
+//				s -> new PseudoRdfObjectPropertyImpl<>(
+//						// TODO simplify this: get the "publisher" field, treat it as a set, and wrap it as an accessor
+//						new SingleValuedAccessorFromSet<>(new SetFromSingleValuedAccessor<>(s.getProperty("publisher", String.class))),
+//						// Map the backing ckanResource to a resource view
+//						ckanDataset -> new PseudoRdfResourceImpl(
+//								new PropertySourcePrefix("publisher_", new PropertySourceCkanDataset(ckanDataset)), ckanDatasetPublisherAccessors)
+//						));
+
+		
+		/*
+		 * Publisher
+		 * 
+		 */
+		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
+				s -> Optional.ofNullable(s.getProperty("name", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
+	
 		
 		/*
 		 * distribution mappings 
@@ -847,6 +940,19 @@ public class PseudoRdfConcept {
 		PseudoRdfResourceImpl dataset = new PseudoRdfResourceImpl(
 				new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
 
+		
+		dataset.getPropertyResourceValue(DCTerms.publisher)
+			.addLiteral(FOAF.name, "Test");
+		
+		
+		dataset.listProperties(DCTerms.publisher).forEachRemaining(stmt -> {
+			System.out.println("Publisher: " + stmt);
+			
+
+			stmt.getObject().asResource().listProperties().forEachRemaining(stmt2 -> {
+				System.out.println("  Attr: " + stmt2);
+			});
+		});
 		
 		Collection<? extends PseudoRdfNode> distributions = dataset.getPropertyValues(DCAT.distribution.getURI());
 		

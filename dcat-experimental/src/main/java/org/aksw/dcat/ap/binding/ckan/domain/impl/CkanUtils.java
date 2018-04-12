@@ -4,7 +4,7 @@ import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.util.view.SetFromCkanExtras;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromSet;
+import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
 import org.aksw.jena_sparql_api.beans.model.EntityModel;
 import org.aksw.jena_sparql_api.beans.model.EntityOps;
 import org.aksw.jena_sparql_api.beans.model.PropertyOps;
@@ -145,7 +145,7 @@ public class CkanUtils {
 		SingleValuedAccessor<T> result;
 		if(namespace.equals("extra")) {
 			// FIXME hack ... need a converter in general
-			result = (SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanDataset, localName));
+			result = (SingleValuedAccessor<T>)new SingleValuedAccessorFromCollection<>(new SetFromCkanExtras(ckanDataset, localName));
 		} else {
 			return getSingleValuedAccessorViaReflection(ckanDataset,localName, clazz);
 		}

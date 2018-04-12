@@ -3,7 +3,7 @@ package org.aksw.dcat.ap.binding.jena.domain.impl;
 import java.util.Set;
 
 import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromSet;
+import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
 import org.aksw.dcat.util.view.SingleValuedAccessorImpl;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.aksw.jena_sparql_api.utils.model.SetFromMappedPropertyValues;
@@ -22,7 +22,7 @@ public class RdfDcatApResource
 
 	
 	public static <T> SingleValuedAccessor<T> create(Resource s, Property p, NodeMapper<T> nodeMapper) {
-		return new SingleValuedAccessorFromSet<>(new SetFromMappedPropertyValues<>(s, p, nodeMapper));
+		return new SingleValuedAccessorFromCollection<>(new SetFromMappedPropertyValues<>(s, p, nodeMapper));
 	}
 
 	
