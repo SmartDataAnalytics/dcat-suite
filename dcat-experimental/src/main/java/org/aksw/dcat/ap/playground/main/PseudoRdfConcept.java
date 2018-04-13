@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -22,22 +21,28 @@ import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourcePrefix;
 import org.aksw.dcat.util.view.SetFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
 import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
+import org.aksw.jena_sparql_api.utils.model.NodeMapper;
+import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
+import org.apache.jena.graph.BlankNodeId;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.NodeVisitor;
+import org.apache.jena.graph.Node_Concrete;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.rdf.model.AnonId;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.RDFVisitor;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.rdf.model.impl.StatementImpl;
-import org.apache.jena.rdf.model.impl.StmtIteratorImpl;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.NullIterator;
@@ -65,12 +70,12 @@ interface PseudoRdfProperty {
 	 * 
 	 * @return
 	 */
-	Collection<PseudoRdfNode> getValues();
+	Collection<Node> getValues();
 }
 
 
 interface PseudoRdfSetObjectProperty {
-	Set<PseudoRdfResource> getValues();
+	Set<Node> getValues();
 
 	
 	// TODO Probably we need to add a class parameter to support polymorphic elements
@@ -146,83 +151,87 @@ class PseudoRdfObjectPropertyImpl<T>
 	//protected SingleValuedAccessor<T> accessor;
 	protected SingleValuedAccessor<Collection<T>> accessor;
 	
-	protected Function<T, PseudoRdfResource> backendToResource;
+	//protected Function<T, PseudoRdfResource> backendToResource;
+	protected NodeMapper<T> nodeMapper;
+	//protected Function<T, Node> backendToNode;
+	
+	
 	// The available schematic properties 
 	//protected Map<String, Function<T, PseudoRdfProperty>> propertyToAccessor;
 	
 	
 	public PseudoRdfObjectPropertyImpl(
 			SingleValuedAccessor<Collection<T>> accessor,
-			Function<T, PseudoRdfResource> backendToResource) {
+			NodeMapper<T> nodeMapper) {
+			//Function<T, Node> backendToNode) {
 		super();
 		this.accessor = accessor;
-		this.backendToResource = backendToResource;
+		//this.backendToNode = backendToNode;
+		this.nodeMapper = nodeMapper;
 	}
 	
 	@Override
-	public Collection<PseudoRdfNode> getValues() {
+	public Collection<Node> getValues() {
 		//SetFromSingleValuedAccessor<T> backend = new SetFromSingleValuedAccessor<>(accessor);
 		
-		Converter<PseudoRdfNode, T> converter = new Converter<PseudoRdfNode, T>() {
+		Converter<Node, T> converter = new Converter<Node, T>() {
 			@Override
-			protected T doForward(PseudoRdfNode a) {
-				PseudoRdfResource aa = a.asResource();
-				//return (T)a.getLiteralValue();
-				return (T)aa.getBackingEntity();
+			protected T doForward(Node a) {
+				T result = nodeMapper.toJava(a);
+				return result;
 			}
 
 			@Override
-			protected PseudoRdfResource doBackward(T b) {
-				//return new PseudoRdfResourceImpl(accessor, propertyToAccessor);
-				return backendToResource.apply(b);
-//				return null;
+			protected Node doBackward(T b) {
+				Node result = nodeMapper.toNode(b);
+				return result;
 			}
 		};
 		
 		
 		Collection<T> backend = accessor.get();
 		
-		Collection<PseudoRdfNode> result = new SetFromConverter<>(backend, converter);
+		Collection<Node> result = new SetFromConverter<>(backend, converter);
 		return result;
 	}
 }
 
 
 
-class PseudoRdfLiteralPropertyImpl<T>
-	implements PseudoRdfProperty
-{
-	protected SingleValuedAccessor<T> accessor;
-
-	public PseudoRdfLiteralPropertyImpl(SingleValuedAccessor<T> accessor) {
-		super();
-		Objects.requireNonNull(accessor);
-		this.accessor = accessor;
-	}
-
-	@Override
-	public Collection<PseudoRdfNode> getValues() {
-		CollectionFromSingleValuedAccessor<T> backend = new CollectionFromSingleValuedAccessor<>(accessor);
-		
-		Converter<PseudoRdfNode, T> converter = new Converter<PseudoRdfNode, T>() {
-			@Override
-			protected T doForward(PseudoRdfNode a) {
-				return (T)a.getLiteralValue();
-			}
-
-			@Override
-			protected PseudoRdfNode doBackward(T b) {
-				return new PseudoRdfNodeImpl(accessor);
-			}
-		};
-		
-		
-		Collection<PseudoRdfNode> result = new SetFromConverter<>(backend, converter);
-		return result;
-	}
-	
-	
-}
+//class PseudoRdfLiteralPropertyImpl<T>
+//	implements PseudoRdfProperty
+//{
+//	protected SingleValuedAccessor<T> accessor;
+//
+//	public PseudoRdfLiteralPropertyImpl(SingleValuedAccessor<T> accessor) {
+//		super();
+//		Objects.requireNonNull(accessor);
+//		this.accessor = accessor;
+//	}
+//
+//	@Override
+//	public Collection<Node> getValues() {
+//		CollectionFromSingleValuedAccessor<T> backend = new CollectionFromSingleValuedAccessor<>(accessor);
+//		
+//		Converter<PseudoRdfNode, T> converter = new Converter<PseudoRdfNode, T>() {
+//			@Override
+//			protected T doForward(PseudoRdfNode a) {
+//				return (T)a.getLiteralValue();
+//			}
+//
+//			@Override
+//			protected PseudoRdfNode doBackward(T b) {
+//				return new PseudoRdfNodeImpl(accessor);
+//			}
+//		};
+//		
+//		
+//		Collection<PseudoRdfNode> result = new SetFromConverter<>(backend, converter);
+//		return result;
+//	}
+//	
+//	
+//}
 
 
 
@@ -469,8 +478,8 @@ abstract class PseudoRdfResourceBase
 		PseudoRdfProperty pp = getProperty(p.getURI());
 		//PseudoRdfLiteralProperty x = (PseudoRdfLiteralProperty)pp;
 		
-		PseudoRdfNode node = new PseudoRdfNodeImpl(new SingleValuedAccessorDirect<>(o));
-		Collection<PseudoRdfNode> values = pp.getValues();
+		Node node = null; //new PseudoRdfNodeImpl(new SingleValuedAccessorDirect<>(o));
+		Collection<Node> values = pp.getValues();
 		values.add(node);
 		return this;
 	}
@@ -612,112 +621,112 @@ abstract class PseudoRdfResourceBase
 }
 
 
-class PseudoRdfResourceImpl
-	extends PseudoRdfResourceBase
-{
-	
-	
-	//protected SingleValuedAccessor<T> accessor;
-	protected PropertySource propertySource;
-	
-	// The available schematic properties 
-	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
-	
-	public PseudoRdfResourceImpl(PropertySource propertySource,
-			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
-		super();
-		this.propertySource = propertySource;
-		this.propertyToAccessor = propertyToAccessor;
-	}
-
-	public Object getBackingEntity() {
-		return propertySource;
-	}
-	
-	public PseudoRdfProperty getProperty(String property) {
-		Function<PropertySource, PseudoRdfProperty> schemaProperty = propertyToAccessor.get(property);
-		if(schemaProperty == null) {
-			throw new RuntimeException("Property " + property + " not mapped for access over " + propertySource);
-		}
-		
-		PseudoRdfProperty result = schemaProperty.apply(propertySource);
-		return result;
-	}
-	
-	
-	
-	/**
-	 * 
-	 * @param property
-	 * @return The set of values of the requested property. Null if the property does not exist in the schema.
-	 */
-	public Collection<? extends PseudoRdfNode> getPropertyValues(String property) {
-		PseudoRdfProperty p = getProperty(property);
-	
-		Collection<? extends PseudoRdfNode> result = p == null ? null : p.getValues();
-		
-		return result;
-	}
-
-	@Override
-	public StmtIterator listProperties(Property p) {
-		Set<String> pc = Collections.singleton(p.getURI());
-		StmtIterator result = listProperties(pc);
-		return result;
-	}
-	
-	@Override
-	public StmtIterator listProperties() {
-		Set<String> allKnownProperties = propertyToAccessor.keySet();
-		return listProperties(allKnownProperties);
-	}
-	
-
-	public StmtIterator listProperties(Set<String> names) {
-
-		ExtendedIterator<Statement> result = new NullIterator<>();
-		for(String str : names) {
-			Collection<? extends PseudoRdfNode> values = getPropertyValues(str);
-			if(values != null) {
-				Iterator<? extends PseudoRdfNode> tmp = values.iterator();
-				ExtendedIterator<? extends PseudoRdfNode> it = WrappedIterator.create(tmp);
-				
-				//ExtendedIterator<? extends PseudoRdfNode> it = (ExtendedIterator<? extends PseudoRdfNode>)tmp;
-	
-				Property p = ResourceFactory.createProperty(str);
-	
-				result = result.andThen(it.mapWith(o -> new StatementImpl(this, p, o)));
-			}			
-			//((ExtendedIterator<PseudoRdfNode>>)getPropertyValues(str).iterator())
-		}
-		
-		StmtIterator r = new StmtIteratorImpl(result);
-		return r;
-	}
-	
-	@Override
-	public boolean isResoure() {
-		return true;
-	}
-	
-	@Override
-	public PseudoRdfResource asResource() {
-		return this;
-	}
-	
-	@Override
-	public boolean isAnon() {
-		return true;
-	}
-
-	@Override
-	public Statement getProperty(Property p) {
-		StmtIterator tmp = listProperties(p);
-		Statement result = tmp.nextOptional().orElse(null);
-		return result;
-	}
-
-}
+//class PseudoRdfResourceImpl
+//	extends PseudoRdfResourceBase
+//{
+//	
+//	
+//	//protected SingleValuedAccessor<T> accessor;
+//	protected PropertySource propertySource;
+//	
+//	// The available schematic properties 
+//	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
+//	
+//	public PseudoRdfResourceImpl(PropertySource propertySource,
+//			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
+//		super();
+//		this.propertySource = propertySource;
+//		this.propertyToAccessor = propertyToAccessor;
+//	}
+//
+//	public Object getBackingEntity() {
+//		return propertySource;
+//	}
+//	
+//	public PseudoRdfProperty getProperty(String property) {
+//		Function<PropertySource, PseudoRdfProperty> schemaProperty = propertyToAccessor.get(property);
+//		if(schemaProperty == null) {
+//			throw new RuntimeException("Property " + property + " not mapped for access over " + propertySource);
+//		}
+//		
+//		PseudoRdfProperty result = schemaProperty.apply(propertySource);
+//		return result;
+//	}
+//	
+//	
+//	
+//	/**
+//	 * 
+//	 * @param property
+//	 * @return The set of values of the requested property. Null if the property does not exist in the schema.
+//	 */
+//	public Collection<Node> getPropertyValues(String property) {
+//		PseudoRdfProperty p = getProperty(property);
+//	
+//		Collection<Node> result = p == null ? null : p.getValues();
+//		
+//		return result;
+//	}
+//
+//	@Override
+//	public StmtIterator listProperties(Property p) {
+//		Set<String> pc = Collections.singleton(p.getURI());
+//		StmtIterator result = listProperties(pc);
+//		return result;
+//	}
+//	
+//	@Override
+//	public StmtIterator listProperties() {
+//		Set<String> allKnownProperties = propertyToAccessor.keySet();
+//		return listProperties(allKnownProperties);
+//	}
+//	
+//
+//	public StmtIterator listProperties(Set<String> names) {
+//
+//		ExtendedIterator<Statement> result = new NullIterator<>();
+//		for(String str : names) {
+//			Collection<? extend> values = getPropertyValues(str);
+//			if(values != null) {
+//				Iterator<? extends PseudoRdfNode> tmp = values.iterator();
+//				ExtendedIterator<? extends PseudoRdfNode> it = WrappedIterator.create(tmp);
+//				
+//				//ExtendedIterator<? extends PseudoRdfNode> it = (ExtendedIterator<? extends PseudoRdfNode>)tmp;
+//	
+//				Property p = ResourceFactory.createProperty(str);
+//	
+//				result = result.andThen(it.mapWith(o -> new StatementImpl(this, p, o)));
+//			}			
+//			//((ExtendedIterator<PseudoRdfNode>>)getPropertyValues(str).iterator())
+//		}
+//		
+//		StmtIterator r = new StmtIteratorImpl(result);
+//		return r;
+//	}
+//	
+//	@Override
+//	public boolean isResoure() {
+//		return true;
+//	}
+//	
+//	@Override
+//	public PseudoRdfResource asResource() {
+//		return this;
+//	}
+//	
+//	@Override
+//	public boolean isAnon() {
+//		return true;
+//	}
+//
+//	@Override
+//	public Statement getProperty(Property p) {
+//		StmtIterator tmp = listProperties(p);
+//		Statement result = tmp.nextOptional().orElse(null);
+//		return result;
+//	}
+//
+//}
 
 
 interface PseudoRdfResource
@@ -806,6 +815,234 @@ class DistributionAccessor {
 	
 }
 
+/**
+ * Would it make sense to wrap objects as Node - rather than RDFNode?
+ * A node can participate in a model after all.
+ * And we can have a Resource view over it, from which we could view it as a PseudoRdfResource
+ * 
+ * But this has very confusing behavior:
+ * - Resource r = Model.createResource(wrappenNode(entity));
+ * 
+ * r.listStatements() -> returns all statements in the model
+ * r.as(PseudoRdfResource.class).listStatements() -> returns all statements derived from the entity
+ * 
+ * 
+ * 
+ * @author raven Apr 13, 2018
+ *
+ */
+interface PseudoNodeFactory {
+	Node createResource(Object entity, Map<String, Function<Object, PseudoRdfProperty>> entityToTriple);
+}
+
+class CkanPseudoNodeFactory {
+	
+	Node createDataset() {
+		return null;
+	}
+	
+	Node createDistribution() {
+		return null;
+	}
+}
+
+class PseudoNode
+	extends Node_Concrete
+{
+	//protected PropertySource entity;
+	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
+
+	protected PropertySource source;
+	
+	// The property source acts as the label
+	public PseudoNode(PropertySource source, Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
+		super(source);
+		this.source = source;
+		this.propertyToAccessor = propertyToAccessor;
+	}
+	
+    public Map<String, Function<PropertySource, PseudoRdfProperty>> getPropertyToAccessor() {
+		return propertyToAccessor;
+	}
+
+	public PropertySource getSource() {
+		return source;
+	}
+
+
+
+
+	@Override
+    public boolean isBlank() { return true; }
+
+    @Override
+    public BlankNodeId getBlankNodeId()  { return (BlankNodeId) label; }
+    
+    @Override
+    public Object visitWith(NodeVisitor v) {
+    	throw new RuntimeException("Visiting not supported");
+    }
+    
+    @Override
+    public boolean equals( Object other )
+    {
+    	return false;
+    }
+    
+    
+    
+	public PseudoRdfProperty getProperty(String property) {
+		Function<PropertySource, PseudoRdfProperty> schemaProperty = propertyToAccessor.get(property);
+		if(schemaProperty == null) {
+			throw new RuntimeException("Property " + property + " not mapped for access over " + source);
+		}
+		
+		PseudoRdfProperty result = schemaProperty.apply(source);
+		return result;
+	}
+
+	public ExtendedIterator<Triple> listProperties(String p) {
+		Set<String> pc = Collections.singleton(p);
+		ExtendedIterator<Triple> result = listProperties(pc);
+		return result;
+	}
+	
+	public Collection<Node> getPropertyValues(String property) {
+		PseudoRdfProperty p = getProperty(property);
+	
+		Collection<Node> result = p == null ? null : p.getValues();
+		
+		return result;
+	}
+
+	
+	public ExtendedIterator<Triple> listProperties() {
+		Set<String> allKnownProperties = propertyToAccessor.keySet();
+		return listProperties(allKnownProperties);
+	}
+    
+	public ExtendedIterator<Triple> listProperties(Set<String> names) {
+
+		ExtendedIterator<Triple> result = new NullIterator<>();
+		for(String str : names) {
+			Collection<Node> values = getPropertyValues(str);
+			if(values != null) {
+				Iterator<Node> tmp = values.iterator();
+				ExtendedIterator<Node> it = WrappedIterator.create(tmp);
+				
+				//ExtendedIterator<? extends PseudoRdfNode> it = (ExtendedIterator<? extends PseudoRdfNode>)tmp;
+	
+				//Property p = ResourceFactory.createProperty(str);
+				Node p = NodeFactory.createURI(str);
+	
+				result = result.andThen(it.mapWith(o -> new Triple(this, p, o)));//new StatementImpl(this, p, o)));
+			}			
+			//((ExtendedIterator<PseudoRdfNode>>)getPropertyValues(str).iterator())
+		}
+		
+		return result;
+	}
+
+    
+//        if ( this == other ) return true ;
+//        return other instanceof Node_Blank && label.equals( ((Node_Blank) other).label ); }
+}
+	
+
+class PseudoGraph
+	extends GraphBase
+{
+
+	public PseudoNode getSubjectAsNode(Triple tp) {
+		Node node = tp.getSubject();
+		
+		if(!(node instanceof PseudoNode)) {
+			throw new RuntimeException("Only nodes of type " + PseudoNode.class.getName() + " supported, got: " + node);
+		}
+		
+		PseudoNode s = (PseudoNode)node;
+
+		return s;
+	}
+
+	@Override
+	public void performAdd(Triple t) {
+		PseudoNode s = getSubjectAsNode(t);
+		
+		Collection<Node> values = s.getPropertyValues(t.getPredicate().getURI());
+		values.add(t.getObject());
+	}
+	
+	@Override
+	public void performDelete(Triple t) {
+		PseudoNode s = getSubjectAsNode(t);
+		
+		Collection<Node> values = s.getPropertyValues(t.getPredicate().getURI());
+		values.remove(t.getObject());
+	}
+
+	@Override
+	protected ExtendedIterator<Triple> graphBaseFind(Triple tp) {
+		PseudoNode s = getSubjectAsNode(tp);
+
+		Node p = tp.getMatchPredicate();
+		
+		ExtendedIterator<Triple> result = p == null
+				? s.listProperties()
+				: s.listProperties(p.getURI());
+		
+		// TODO filter by object
+				
+		return result;
+	}
+
+	
+}
+
+class PseudoNodeMapper<T>
+	implements NodeMapper<T>
+{
+	protected Class<T> clazz;
+	protected Function<T, PropertySource> wrapper;
+	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
+
+	
+
+	public PseudoNodeMapper(Class<T> clazz, Function<T, PropertySource> wrapper,
+			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
+		super();
+		this.clazz = clazz;
+		this.wrapper = wrapper;
+		this.propertyToAccessor = propertyToAccessor;
+	}
+
+	@Override
+	public Class<?> getJavaClass() {
+		return clazz;
+	}
+
+	@Override
+	public boolean canMap(Node node) {
+		boolean result = node instanceof PseudoNode; // and the wrapped entity must be an instance of clazz && ((PseudoNode)node);
+		return result;
+	}
+
+	@Override
+	public Node toNode(T obj) {
+		PropertySource ps = wrapper.apply(obj);
+		Node result = new PseudoNode(ps, propertyToAccessor);
+		return result;
+	}
+
+	@Override
+	public T toJava(Node node) {
+		PseudoNode pseudoNode = (PseudoNode)node;
+		T result = (T)pseudoNode.getSource().getSource();
+		return result;
+	}
+	
+}
+
 public class PseudoRdfConcept {
 	public static void main(String[] args) {
 
@@ -819,7 +1056,11 @@ public class PseudoRdfConcept {
 		 */
 		
 		ckanDatasetAccessors.put(DCTerms.title.getURI(),
-				s -> new PseudoRdfLiteralPropertyImpl(s.getProperty("title", String.class)));
+				s -> new PseudoRdfObjectPropertyImpl<>(
+							new SingleValuedAccessorDirect<>(
+									new CollectionFromSingleValuedAccessor<>(
+											s.getProperty("title", String.class))),
+							NodeMapperFactory.string));
 		
 		/**
 		 * requesting properties by the value 
@@ -828,11 +1069,9 @@ public class PseudoRdfConcept {
 		ckanDatasetAccessors.put(DCAT.distribution.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
 						s.getCollectionProperty("resources", CkanResource.class),
-						// Map the backing ckanResource to a resource view
-						ckanResource -> new PseudoRdfResourceImpl(
-								new PropertySourceCkanResource(ckanResource), ckanResourceAccessors)
-						));
-
+						new PseudoNodeMapper<CkanResource>(CkanResource.class,
+								ckanResource ->  new PropertySourceCkanResource(ckanResource),
+								ckanResourceAccessors)));
 		/*
 		 * dataset -> publisher
 		 */
@@ -883,15 +1122,24 @@ public class PseudoRdfConcept {
 //				new PropertySourcePrefix("publisher_", ckanDataset, ckanDatasetPublisherAccessors));
 		
 		
+		NodeMapper<CkanDataset> nm;
 		
 		// Given the property source s, return an accessor to itself
 		// For each source s (itself), wrap it as a new PseudoRdfResource
 		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
-						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>(s))),
-						ss -> new PseudoRdfResourceImpl(
-								new PropertySourcePrefix("extra:publisher_", ss), ckanDatasetPublisherAccessors)
-						));
+						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>((CkanDataset)s.getSource()))),
+						new PseudoNodeMapper<>(CkanDataset.class,
+								ckanDataset ->  new PropertySourcePrefix("extra:publisher_", new PropertySourceCkanDataset(ckanDataset)),
+								ckanDatasetPublisherAccessors)));
+
+		
+//		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
+//				s -> new PseudoRdfObjectPropertyImpl<>(
+//						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>(s))),
+//						ss -> new PseudoNode(
+//								new PropertySourcePrefix("extra:publisher_", ss), ckanDatasetPublisherAccessors)
+//						));
 		
 //		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
 //				s -> new PseudoRdfObjectPropertyImpl<>(
@@ -907,21 +1155,41 @@ public class PseudoRdfConcept {
 		 * Publisher
 		 * 
 		 */
+		//schema.registerLiteral(FOAF.name, String.class)
+		
+//		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
+//				s -> Optional.ofNullable(s.getProperty("name", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
+		
 		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
-				s -> Optional.ofNullable(s.getProperty("name", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
+				s -> new PseudoRdfObjectPropertyImpl<>(
+							new SingleValuedAccessorDirect<>(
+									new CollectionFromSingleValuedAccessor<>(
+											s.getProperty("name", String.class))),
+							NodeMapperFactory.string));
 	
 		
 		/*
 		 * distribution mappings 
 		 */
 		
+//		ckanResourceAccessors.put(DCTerms.description.getURI(),
+//				s -> Optional.ofNullable(s.getProperty("description", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
 		ckanResourceAccessors.put(DCTerms.description.getURI(),
-				s -> Optional.ofNullable(s.getProperty("description", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
+				s -> new PseudoRdfObjectPropertyImpl<>(
+							new SingleValuedAccessorDirect<>(
+									new CollectionFromSingleValuedAccessor<>(
+											s.getProperty("description", String.class))),
+							NodeMapperFactory.string));
 
 
 		/*
 		 * playground
 		 */
+		
+		Graph g = new PseudoGraph();
+		Model m = ModelFactory.createModelForGraph(g);
+		
+		
 
 		CkanDataset ckanDataset = new CkanDataset();
 		CkanResource ckanResource = new CkanResource();
@@ -936,14 +1204,21 @@ public class PseudoRdfConcept {
 		//PropertySource s = new PropertySourceCkanDataset(ckanDataset);
 
 		
+		RDFNode tmpDataset = m.asRDFNode(new PseudoNode(new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors));
+		Resource dataset = tmpDataset.asResource();
 		
-		PseudoRdfResourceImpl dataset = new PseudoRdfResourceImpl(
-				new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
+//		PseudoRdfResourceImpl dataset = new PseudoRdfResourceImpl(
+//				new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
 
 		
-		dataset.getPropertyResourceValue(DCTerms.publisher)
-			.addLiteral(FOAF.name, "Test");
-		
+		Resource publisher = dataset.getProperty(DCTerms.publisher)
+			.getObject().asResource();//.changeObject("Test");
+
+		publisher.addProperty(FOAF.name, "Test");
+//		dataset.getProperty(DCTerms.publisher)
+//			.changlit
+		//.addLiteral(FOAF.name, "Test");
+
 		
 		dataset.listProperties(DCTerms.publisher).forEachRemaining(stmt -> {
 			System.out.println("Publisher: " + stmt);
@@ -954,10 +1229,15 @@ public class PseudoRdfConcept {
 			});
 		});
 		
-		Collection<? extends PseudoRdfNode> distributions = dataset.getPropertyValues(DCAT.distribution.getURI());
+//		Collection<? extends PseudoRdfNode> distributions = dataset.getPropertyValues(DCAT.distribution.getURI());
+//		
+//		System.out.println("Distributions: " + distributions);
 		
-		System.out.println("Distributions: " + distributions);
 		
+//		RdfNode newDist = new PseudoRdfResourceImpl(
+//				new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
+//		
+//		dataset.addProperty(DCAT.distribution, newDist);
 		
 		dataset.listProperties(DCAT.distribution).forEachRemaining(stmt -> {
 			System.out.println("Distribution: " + stmt);
@@ -967,6 +1247,8 @@ public class PseudoRdfConcept {
 			Statement distDescription = dist.getProperty(DCTerms.description);
 			System.out.println("  Description: " + distDescription);
 		});
+		
+		
 		
 //		dataset.getProperty(DCA)
 		
