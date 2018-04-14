@@ -3,6 +3,7 @@ package org.aksw.dcat.util.view;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 
 import org.aksw.commons.collections.SinglePrefetchIterator;
 
@@ -15,6 +16,9 @@ public class SetFromConverter<F, B>
 	protected Converter<F, B> converter;
 	
 	public SetFromConverter(Collection<B> backend, Converter<F, B> converter) {
+//		Objects.requireNonNull(backend);
+//		Objects.requireNonNull(converter);
+		
 		this.backend = backend;
 		this.converter = converter;
 	}
