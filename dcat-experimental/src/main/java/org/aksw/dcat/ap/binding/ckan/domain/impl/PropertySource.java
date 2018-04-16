@@ -46,7 +46,7 @@ public interface PropertySource {
 		SingleValuedAccessor<Collection<T>> result =
 				new SingleValuedAccessorDirect<>(
 						new CollectionFromSingleValuedAccessor<>(
-								getProperty("name", itemType)));
+								getProperty(name, itemType)));
 		return result;
 	}
 }

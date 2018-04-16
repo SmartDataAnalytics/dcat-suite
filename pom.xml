@@ -76,6 +76,12 @@
 	<dependencyManagement>
 		<dependencies>
 
+
+<dependency>
+  <groupId>org.topbraid</groupId>
+  <artifactId>shacl</artifactId>
+  <version>1.0.1</version>
+</dependency>
 			<!-- Conflict resolutions: Use Jackson version of jena ; conflict with 
 				jackan -->
 			<dependency>

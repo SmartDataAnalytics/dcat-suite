@@ -1,6 +1,6 @@
 package org.aksw.dcat.ap.playground.main;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.aksw.dcat.ap.binding.ckan.domain.impl.CkanPersonalities;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.Implementation;
@@ -32,7 +32,7 @@ public class MainDcatApDemo {
 		System.out.println("Extras: " + ckanDataset.getExtrasAsHashMap());
 		
 		
-		Set<DcatApDistribution> distributions = dcatDataset.getDistributions();
+		Collection<DcatApDistribution> distributions = dcatDataset.getDistributions();
 
 		DcatApDistribution dist = dcatDataset.createDistribution();
 		

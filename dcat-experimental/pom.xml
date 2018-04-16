@@ -15,6 +15,10 @@
 
 
 	<dependencies>
+<dependency>
+  <groupId>org.topbraid</groupId>
+  <artifactId>shacl</artifactId>
+</dependency>
 
 		<dependency>
 			<groupId>org.hobbit</groupId>

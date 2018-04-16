@@ -1,8 +1,8 @@
 package org.aksw.dcat.ap.binding.jena.domain.impl;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Set;
 
 import org.aksw.dcat.ap.domain.accessors.DcatApDatasetAccessor;
@@ -13,10 +13,11 @@ import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 import org.aksw.dcat.ap.domain.api.View;
 import org.aksw.dcat.jena.domain.api.Adms;
-import org.aksw.dcat.util.view.LazyCollection;
-import org.aksw.dcat.util.view.SetFromConverter;
+import org.aksw.dcat.util.view.CastConverter;
+import org.aksw.dcat.util.view.CollectionFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
 import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
+import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
@@ -198,8 +199,15 @@ public class RdfDcatApDatasetImpl
 
 	@Override
 	public SingleValuedAccessor<DcatApAgent> publisher() {
-		// TODO Auto-generated method stub
-		return null;
+		return new SingleValuedAccessorFromCollection<>(
+				new CollectionFromConverter<DcatApAgent, RdfDcatApAgent>(
+						(Collection<RdfDcatApAgent>)new SetFromPropertyValues<RdfDcatApAgent>(this, DCTerms.publisher, RdfDcatApAgent.class),
+						new CastConverter<DcatApAgent, RdfDcatApAgent>()));
+						
+		
+		///return createSet(this, DCTerms.publisher, NodeMapperFactory.PASSTHROUGH);
+		//ResourceUtils.setProperty(this, DCTerms.pu, o)
+		//return create(this, DCTerms.publisher, NodeMapperFactory.);
 	}
 
 	@Override
@@ -209,7 +217,7 @@ public class RdfDcatApDatasetImpl
 	}
 
 	@Override
-	public SingleValuedAccessor<Set<DcatApDistribution>> distributions() {
+	public SingleValuedAccessor<Collection<DcatApDistribution>> distributions() {
 		Converter<DcatApDistribution, Resource> converter = new Converter<DcatApDistribution, Resource>() {
 			@Override
 			protected Resource doForward(DcatApDistribution a) {
@@ -223,11 +231,11 @@ public class RdfDcatApDatasetImpl
 			}
 		};
 	
-		Set<DcatApDistribution> result = new SetFromConverter<>(
+		Collection<DcatApDistribution> result = new CollectionFromConverter<>(
 						new SetFromPropertyValues<>(this, DCAT.distribution, Resource.class),
 						converter);
 		
-		SingleValuedAccessor<Set<DcatApDistribution>> tmp = new SingleValuedAccessorDirect<>(result);
+		SingleValuedAccessor<Collection<DcatApDistribution>> tmp = new SingleValuedAccessorDirect<>(result);
 		
 		
 		return tmp;

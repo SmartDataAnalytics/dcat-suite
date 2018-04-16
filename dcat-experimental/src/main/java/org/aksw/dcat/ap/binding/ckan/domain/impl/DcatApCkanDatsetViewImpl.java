@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -14,8 +15,8 @@ import org.aksw.dcat.ap.domain.api.DcatApDistribution;
 import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 import org.aksw.dcat.ap.domain.api.View;
+import org.aksw.dcat.util.view.CollectionFromConverter;
 import org.aksw.dcat.util.view.LazyCollection;
-import org.aksw.dcat.util.view.SetFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessorImpl;
 
 import com.google.common.base.Converter;
@@ -317,7 +318,7 @@ public class DcatApCkanDatsetViewImpl
 //	}
 
 	@Override
-	public Set<DcatApDistribution> getDistributions() {
+	public Collection<DcatApDistribution> getDistributions() {
 		Converter<DcatApDistribution, CkanResource> converter = new Converter<DcatApDistribution, CkanResource>() {
 			@Override
 			protected CkanResource doForward(DcatApDistribution a) {
@@ -330,7 +331,7 @@ public class DcatApCkanDatsetViewImpl
 			}
 		};
 		
-		Set<DcatApDistribution> result = new SetFromConverter<>(
+		Collection<DcatApDistribution> result = new CollectionFromConverter<>(
 				new LazyCollection<>(
 						new SingleValuedAccessorImpl<>(ckanDataset::getResources, ckanDataset::setResources),
 						ArrayList::new, true),
@@ -340,7 +341,7 @@ public class DcatApCkanDatsetViewImpl
 	}
 
 	@Override
-	public void setDistributions(Set<DcatApDistribution> distributions) {
+	public void setDistributions(Collection<DcatApDistribution> distributions) {
 
 		
 		//ckanDataset.di

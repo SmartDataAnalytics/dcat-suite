@@ -15,9 +15,11 @@ import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanResource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourcePrefix;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
+import org.aksw.dcat.util.view.CollectionFromConverter;
 import org.aksw.dcat.util.view.LazyCollection;
-import org.aksw.dcat.util.view.SetFromConverter;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
 import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
@@ -52,6 +54,7 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 
 import com.google.common.base.Converter;
+import com.google.common.collect.Range;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
@@ -146,7 +149,7 @@ class PseudoRdfObjectPropertyImpl<T>
 			throw new RuntimeException("Got null value for " + accessor);
 		}
 		
-		Collection<Node> result = new SetFromConverter<>(backend, converter);
+		Collection<Node> result = new CollectionFromConverter<>(backend, converter);
 		return result;
 	}
 }
@@ -790,6 +793,63 @@ interface PseudoNodeFactory {
 	Node createResource(Object entity, Map<String, Function<Object, PseudoRdfProperty>> entityToTriple);
 }
 
+class NodeSchemaBuilder {
+	String buildProperty(String uri) {
+		return null;
+	}
+}
+
+
+class PropertySchemaBuilder {
+	Integer minCardinality;
+	Integer maxCardinality;
+	
+//	setMinCardinality()
+//	setMaxCardinality()
+}
+
+
+enum PropertyType {
+	DEFAULT(Range.closed(0l, 1l)),
+	
+	/**
+	 * Characteristic of properties that 'simply exists' 
+	 * Such properties cannot be added nor removed - only retrieved.
+	 */
+	SINGLETON(Range.closed(1l, 1l)),
+	
+	/**
+	 * Characteristic of properties with multiple values.
+	 * They can be added and removed and retrieved without constraints
+	 * 
+	 */
+	COLLECTION(Range.atLeast(0l));
+	
+	/**
+	 * 
+	 */
+
+	protected Range<Long> range;
+
+	PropertyType(Range<Long> range) {
+		this.range = range;
+	}
+	
+	
+}
+
+
+
+class ResourceCopy {
+	public void copy(Resource src, Resource target) {
+		StmtIterator it = src.listProperties();
+		while(it.hasNext()) {
+			Statement stmt = it.next();
+			System.out.println("Copy: " + stmt);
+		}
+	}
+}
+
 class CkanPseudoNodeFactory {
 
 	protected Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
@@ -811,6 +871,8 @@ class CkanPseudoNodeFactory {
 		initDefaults();
 	}
 	
+
+	
 	public void initDefaults() {
 
 		/*
@@ -819,11 +881,14 @@ class CkanPseudoNodeFactory {
 		
 		ckanDatasetAccessors.put(DCTerms.title.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
-							new SingleValuedAccessorDirect<>(
-									new CollectionFromSingleValuedAccessor<>(
-											s.getProperty("title", String.class))),
+							s.getPropertyAsSet("title", String.class),
 							NodeMapperFactory.string));
+
 		
+		ckanDatasetAccessors.put(DCTerms.description.getURI(),
+				s -> new PseudoRdfObjectPropertyImpl<>(
+							s.getPropertyAsSet("notes", String.class),
+							NodeMapperFactory.string));
 		
 
 
@@ -846,48 +911,6 @@ class CkanPseudoNodeFactory {
 //		PropertySource x;
 //		new SingleValuedAccessorFromSet<>(new SetFromSingleValuedAccessor<>(x.getProperty("publisher", CkanDataset.class)));
 
-		
-		// TODO Finish
-		
-		// the publisher property is *not* based on any value
-		// possible ways to deal with insertion of that property
-		// (a) - the first addition of x publisher y marks y an alias for the publisher value
-		//     -the next addition will raise an exception because the publisher already exists
-		// (b) - these kind of properties can neither be 'added' nor 'set', but only 'get'
-		//       - its like a singleton instance; one can not change or set its reference
-		//         - a .isSingleton() method on the property could indicate this.
-		//
-		// Actually, the whole addition model works differently for pseudo object properties:
-		// - if we wanted to add a statement to a an object property, there are these possibilities:
-		//   - the property is a singleton, then we have to 'get' the node referenced by the property
-		//   - the property is collection based, then we get the collection, and allocate new records via the 'newItem' method
-        //     - There are two types of object properties:
-		//       - One where creating a new item already makes it part of the collection
-		//         - similar to appending an item to an array of structs
-		//       - These where the created item has yet to be placed into the collection
-		//   - adding a value to a property that can only hold a single value is equivalent to
-		//     adding an item to a set with max cardinality 1
-		//
-		// Collection of collections
-		// - The RDF model itself does not not directly have a notion a collections -
-		// there are only triples; in our case, (subject predicate collection-of-objects)
-		// - RDF specifies how to model collections/containers
-		// - The jena abstraction can be used to access properly modeled resources as e.g. RDFList
-		// - The items of a collection are nodes; and may represent nested collections and may
-		// thus be be viewed as such.
-		//
-		// Ordering
-
-		//PropertySource x;
-		//Function<PropertySource, ? extends SingleValuedAccessor<Collection<PropertySource>>> getSelf = 
-				//SingleValuedAccessor<? extends Collection<PropertySource>> foo =
-		
-		// SingleValuedAccessor<Collection<PropertySource>>
-		//SingleValuedAccessor<Collection<PropertySource>> foo = new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>(x)));
-
-//		Function<? super PropertySource, ? extends PseudoRdfSetObjectProperty> itemToProperty = new PseudoRdfResourceImpl(
-//				new PropertySourcePrefix("publisher_", ckanDataset, ckanDatasetPublisherAccessors));
-		
 		
 		NodeMapper<CkanDataset> nm;
 		
@@ -929,9 +952,7 @@ class CkanPseudoNodeFactory {
 		
 		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
-							new SingleValuedAccessorDirect<>(
-									new CollectionFromSingleValuedAccessor<>(
-											s.getProperty("name", String.class))),
+							s.getPropertyAsSet("name", String.class),
 							NodeMapperFactory.string));
 	
 		
@@ -941,21 +962,25 @@ class CkanPseudoNodeFactory {
 		
 //		ckanResourceAccessors.put(DCTerms.description.getURI(),
 //				s -> Optional.ofNullable(s.getProperty("description", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
+//		ckanResourceAccessors.put(DCTerms.description.getURI(),
+//				s -> new PseudoRdfObjectPropertyImpl<>(
+//							new SingleValuedAccessorDirect<>(
+//									new CollectionFromSingleValuedAccessor<>(
+//											s.getProperty("description", String.class))),
+//							NodeMapperFactory.string));
 		ckanResourceAccessors.put(DCTerms.description.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
-							new SingleValuedAccessorDirect<>(
-									new CollectionFromSingleValuedAccessor<>(
-											s.getProperty("description", String.class))),
+							s.getPropertyAsSet("description", String.class),
 							NodeMapperFactory.string));
 	}
 	
-	Node createDataset() {
+	public Node createDataset() {
 		CkanDataset ckanDataset = new CkanDataset();
 		PseudoNode result = new PseudoNode(new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
 		return result;
 	}
 	
-	Node createDistribution() {
+	public Node createDistribution() {
 		CkanResource ckanResource = new CkanResource();
 		PseudoNode result = new PseudoNode(new PropertySourceCkanResource(ckanResource), ckanResourceAccessors);
 		return result;
@@ -969,9 +994,14 @@ class PseudoNode
 	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
 
 	protected PropertySource source;
+	protected Function<? super PropertySource, ? extends Object> getIdentifier;
+	
 	
 	// The property source acts as the label
-	public PseudoNode(PropertySource source, Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
+	public PseudoNode(
+			PropertySource source,
+			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
+			//Function<? super PropertySource, ? extends Object> getIdentifier) {
 		super(source);
 		this.source = source;
 		this.propertyToAccessor = propertyToAccessor;
@@ -985,6 +1015,10 @@ class PseudoNode
 		return source;
 	}
 
+//	public Object getIdentifier() {
+//		Object result = getIdentifier.apply(source);
+//		return result;
+//	}
 
 
 
@@ -1184,14 +1218,37 @@ public class PseudoRdfConcept {
 		ckanDataset.setResources(new ArrayList<>(Arrays.asList(ckanResource)));
 		
 		ckanDataset.setTitle("test");
-				
 		
+		
+		
+		Model rdfModel = ModelFactory.createDefaultModel();
+		RdfDcatApDataset rdfDataset = rdfModel.createResource("http://my.data/set").as(RdfDcatApDataset.class);
+		RdfDcatApDistribution rdfDistribution = rdfModel.createResource("http://my.dist/ribution").as(RdfDcatApDistribution.class);
+		RdfDcatApAgent rdfPublisher = rdfModel.createResource("http://my.agent").as(RdfDcatApAgent.class);
+		
+		rdfDataset.setTitle("My dataset");
+		rdfDataset.setDescription("The master plan");
+
+		rdfDataset.getDistributions().add(rdfDistribution);
+		rdfDataset.setPublisher(rdfPublisher);
+
+		rdfPublisher.setName("Some Publisher");
+		rdfDistribution.setTitle("Some Distribtion");
+		
+		rdfDataset.getPublisher().setMbox("mailto:foo@bar.baz");
 		// Abstract the bean as something that has properties - so it could also be plain json
 		//PropertySource s = new PropertySourceCkanDataset(ckanDataset);
 
 		
-		Resource dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).asResource();
+		RdfDcatApDataset dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(RdfDcatApDataset.class);
+		System.out.println("TITLE: " + dataset.getTitle());
+		dataset.setDescription("Tunnelsystem");
+		System.out.println("TITLE: " + dataset.getTitle());
+
+		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getTitle());
+		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getNotes());
 		
+		//RDFDataMgr.write(System.out, dataset, lang);
 		
 		Resource distribution = m.asRDFNode(CkanPseudoNodeFactory.get().createDistribution()).asResource();
 		
@@ -1199,7 +1256,7 @@ public class PseudoRdfConcept {
 		//distribution.addProperty(DCTerms.description, "Test distri");
 		
 		RdfDcatApDistribution view = distribution.as(RdfDcatApDistribution.class);
-		view.setDescription("Yay");
+		view.setDescription("Download of the master plan");
 		
 		
 //		PseudoRdfResourceImpl dataset = new PseudoRdfResourceImpl(
@@ -1214,6 +1271,10 @@ public class PseudoRdfConcept {
 //			.changlit
 		//.addLiteral(FOAF.name, "Test");
 
+		dataset.listProperties().forEachRemaining(stmt -> {
+			System.out.println("Dataset property: " + stmt);
+			
+		});
 		
 		dataset.listProperties(DCTerms.publisher).forEachRemaining(stmt -> {
 			System.out.println("Publisher: " + stmt);
@@ -1223,6 +1284,8 @@ public class PseudoRdfConcept {
 				System.out.println("  Attr: " + stmt2);
 			});
 		});
+		
+		
 		
 //		Collection<? extends PseudoRdfNode> distributions = dataset.getPropertyValues(DCAT.distribution.getURI());
 //		

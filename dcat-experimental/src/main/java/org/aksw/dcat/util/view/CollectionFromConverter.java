@@ -1,21 +1,20 @@
 package org.aksw.dcat.util.view;
 
-import java.util.AbstractSet;
+import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Objects;
 
 import org.aksw.commons.collections.SinglePrefetchIterator;
 
 import com.google.common.base.Converter;
 
-public class SetFromConverter<F, B>
-	extends AbstractSet<F>
+public class CollectionFromConverter<F, B>
+	extends AbstractCollection<F>
 {
 	protected Collection<B> backend;
 	protected Converter<F, B> converter;
 	
-	public SetFromConverter(Collection<B> backend, Converter<F, B> converter) {
+	public CollectionFromConverter(Collection<B> backend, Converter<F, B> converter) {
 //		Objects.requireNonNull(backend);
 //		Objects.requireNonNull(converter);
 		

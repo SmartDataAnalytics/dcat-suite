@@ -147,7 +147,7 @@ public class CkanUtils {
 			// FIXME hack ... need a converter in general
 			result = (SingleValuedAccessor<T>)new SingleValuedAccessorFromCollection<>(new SetFromCkanExtras(ckanDataset, localName));
 		} else {
-			return getSingleValuedAccessorViaReflection(ckanDataset,localName, clazz);
+			return getSingleValuedAccessorViaReflection(ckanDataset, localName, clazz);
 		}
 		
 		return result;

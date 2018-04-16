@@ -1,6 +1,7 @@
 package org.aksw.dcat.ap.domain.api;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Set;
 
 public interface DcatApDataset
@@ -100,6 +101,6 @@ public interface DcatApDataset
 //	Set<? extends DcatApDistribution<M>> getDistributions();
 //	void setDistributions(Set<? extends DcatApDistribution<M>> distributions);
 
-	Set<DcatApDistribution> getDistributions();
-	void setDistributions(Set<DcatApDistribution> distributions);
+	Collection<DcatApDistribution> getDistributions();
+	void setDistributions(Collection<DcatApDistribution> distributions);
 }
