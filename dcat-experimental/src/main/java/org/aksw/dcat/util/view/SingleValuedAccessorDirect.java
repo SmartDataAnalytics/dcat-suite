@@ -25,4 +25,5 @@ public class SingleValuedAccessorDirect<T>
 		this.value = value;
 	}
 
+
 }

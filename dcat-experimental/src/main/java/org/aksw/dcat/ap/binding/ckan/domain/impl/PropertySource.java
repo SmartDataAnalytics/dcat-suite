@@ -2,9 +2,9 @@ package org.aksw.dcat.ap.binding.ckan.domain.impl;
 
 import java.util.Collection;
 
-import org.aksw.dcat.ap.playground.main.CollectionFromSingleValuedAccessor;
+import org.aksw.dcat.util.view.CollectionAccessor;
+import org.aksw.dcat.util.view.CollectionAccessorFromSingleValuedAccessor;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
 
 /**
  * This class is similar to the spring PropertySource - except that it allows setting properties as well.
@@ -42,11 +42,17 @@ public interface PropertySource {
 	 * @param itemType
 	 * @return
 	 */
-	default <T> SingleValuedAccessor<Collection<T>> getPropertyAsSet(String name, Class<T> itemType) {
-		SingleValuedAccessor<Collection<T>> result =
-				new SingleValuedAccessorDirect<>(
-						new CollectionFromSingleValuedAccessor<>(
-								getProperty(name, itemType)));
+//	default <T> SingleValuedAccessor<Collection<T>> getPropertyAsSet(String name, Class<T> itemType) {
+//		SingleValuedAccessor<Collection<T>> result =
+//				new SingleValuedAccessorDirect<>(
+//						new CollectionFromSingleValuedAccessor<>(
+//								getProperty(name, itemType)));
+//		return result;
+//	}
+	default <T> CollectionAccessor<T> getPropertyAsSet(String name, Class<T> itemType) {
+		CollectionAccessor<T> result =
+						new CollectionAccessorFromSingleValuedAccessor<>(getProperty(name, itemType));
 		return result;
 	}
+
 }

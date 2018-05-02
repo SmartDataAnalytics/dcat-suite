@@ -1,0 +1,187 @@
+package org.aksw.jena_sparql_api.pseudo_rdf;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
+import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
+import org.apache.jena.enhanced.BuiltinPersonalities;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.system.JenaSystem;
+import org.apache.jena.vocabulary.DCAT;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
+
+import eu.trentorise.opendata.jackan.model.CkanDataset;
+import eu.trentorise.opendata.jackan.model.CkanResource;
+
+
+
+public class PseudoRdfConcept {
+	public static void main(String[] args) {
+
+		JenaSystem.init();
+		RdfDcatApPersonalities.init(BuiltinPersonalities.model);
+		/*
+		 * playground
+		 */
+		
+		Graph g = new PseudoGraph();
+		Model m = ModelFactory.createModelForGraph(g);
+		
+		
+
+		CkanDataset ckanDataset = new CkanDataset();
+		CkanResource ckanResource = new CkanResource();
+		ckanResource.setDescription("test description");
+		
+		ckanDataset.setResources(new ArrayList<>(Arrays.asList(ckanResource)));
+		
+		ckanDataset.setTitle("test");
+		
+		
+		
+		Model rdfModel = ModelFactory.createDefaultModel();
+		RdfDcatApDataset rdfDataset = rdfModel.createResource("http://my.data/set").as(RdfDcatApDataset.class);
+		RdfDcatApDistribution rdfDistribution = rdfModel.createResource("http://my.dist/ribution").as(RdfDcatApDistribution.class);
+		RdfDcatApAgent rdfPublisher = rdfModel.createResource("http://my.agent").as(RdfDcatApAgent.class);
+		
+		rdfDataset.setTitle("My dataset");
+		rdfDataset.setDescription("The master plan");
+
+		rdfDataset.getDistributions().add(rdfDistribution);
+		rdfDataset.setPublisher(rdfPublisher);
+
+		rdfPublisher.setName("Some Publisher");
+		rdfDistribution.setTitle("Some Distribtion");
+		
+		rdfDataset.getPublisher().setMbox("mailto:foo@bar.baz");
+		// Abstract the bean as something that has properties - so it could also be plain json
+		//PropertySource s = new PropertySourceCkanDataset(ckanDataset);
+
+		
+		RdfDcatApDataset dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(RdfDcatApDataset.class);
+		System.out.println("TITLE: " + dataset.getTitle());
+		dataset.setDescription("Tunnelsystem");
+		System.out.println("TITLE: " + dataset.getTitle());
+
+		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getTitle());
+		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getNotes());
+		
+		//RDFDataMgr.write(System.out, dataset, lang);
+		
+		Resource distribution = m.asRDFNode(CkanPseudoNodeFactory.get().createDistribution()).asResource();
+		
+		dataset.addProperty(DCAT.distribution, distribution);
+		//distribution.addProperty(DCTerms.description, "Test distri");
+		
+		RdfDcatApDistribution view = distribution.as(RdfDcatApDistribution.class);
+		view.setDescription("Download of the master plan");
+		
+		
+//		PseudoRdfResourceImpl dataset = new PseudoRdfResourceImpl(
+//				new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
+
+		
+		Resource publisher = dataset.getProperty(DCTerms.publisher)
+			.getObject().asResource();//.changeObject("Test");
+
+		publisher.addProperty(FOAF.name, "Test");
+//		dataset.getProperty(DCTerms.publisher)
+//			.changlit
+		//.addLiteral(FOAF.name, "Test");
+
+		dataset.getThemes().add("http://foo.bar/theme/baz");
+		dataset.getThemes().add("http://moo.boo/coo");
+		
+		System.out.println("Themes: " + dataset.getThemes());
+		dataset.getThemes().remove("http://foo.bar/theme/baz");
+		System.out.println("Themes: " + dataset.getThemes());
+		
+		dataset.listProperties().forEachRemaining(stmt -> {
+			System.out.println("Dataset property: " + stmt);
+			
+		});
+		
+		dataset.listProperties(DCTerms.publisher).forEachRemaining(stmt -> {
+			System.out.println("Publisher: " + stmt);
+			
+
+			stmt.getObject().asResource().listProperties().forEachRemaining(stmt2 -> {
+				System.out.println("  Attr: " + stmt2);
+			});
+		});
+		
+		
+		
+//		Collection<? extends PseudoRdfNode> distributions = dataset.getPropertyValues(DCAT.distribution.getURI());
+//		
+//		System.out.println("Distributions: " + distributions);
+		
+		
+//		RdfNode newDist = new PseudoRdfResourceImpl(
+//				new PropertySourceCkanDataset(ckanDataset), ckanDatasetAccessors);
+//		
+//		dataset.addProperty(DCAT.distribution, newDist);
+		
+		dataset.listProperties(DCAT.distribution).forEachRemaining(stmt -> {
+			System.out.println("Distribution: " + stmt);
+			
+			Resource dist = stmt.getObject().asResource();
+			
+			Statement distDescription = dist.getProperty(DCTerms.description);
+			System.out.println("  Description: " + distDescription);
+		});
+		
+		
+		// The idea of the mapping model is, that given a complete dcat graph,
+		// attempt to instantiate the dcat model backed by the ckan model
+		// Note, that in general *all* information must be available, as rdfTypes
+		// may take properties of nodes as ctor arguments
+		
+		Model inputModel = RDFDataMgr.loadModel("dcat-ap-test01.ttl");
+		Resource rootA = inputModel.listSubjectsWithProperty(RDF.type, DCAT.Dataset).next();
+		PseudoNode rootB = CkanPseudoNodeFactory.get().createDataset();
+
+		GraphCopy.copy(rootA, rootB);
+		
+//		Node rootA = NodeFactory.createBlankNode();
+//		Graph mappingGraph = new MappingGraph(new PseudoGraph(), rootA, rootB);
+//		
+//		Model mm = ModelFactory.createModelForGraph(mappingGraph);
+//		
+//		Model inputModel = RDFDataMgr.loadModel("dcat-ap-test01.ttl");
+//		Resource r = inputModel.listSubjectsWithProperty(RDF.type, DCAT.Dataset).next();
+//		
+//		Resource s = mm.asRDFNode(rootA).asResource();
+		
+		
+//		dataset.getProperty(DCA)
+		
+		/*
+		SingleValuedAccessor<Collection<CkanResource>> test = s.getCollectionProperty("resources", CkanResource.class);
+		test.get().iterator().next().setDescription("Test description");
+		
+		
+		System.out.println("Collection test: " + test.get());
+		
+		PseudoRdfProperty node = datasetAccessor.get(DCTerms.title.getURI()).apply(s);
+		
+		System.out.println(node.getValues());
+		
+		node.getValues().clear();
+		System.out.println(node.getValues());
+		
+		System.out.println("title: " + ckanDataset.getTitle());
+		*/
+	}
+
+}
