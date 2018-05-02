@@ -28,6 +28,8 @@ public class GraphCopy {
 
 	public static void copy(Resource src, PseudoNode tgt) {
 
+		System.out.println("Copying " + src + " to " + tgt);
+		
 		// Iterate all supported properties
 		for(String pStr : tgt.getPropertyToAccessor().keySet()) {
 			Property p = src.getModel().createProperty(pStr);

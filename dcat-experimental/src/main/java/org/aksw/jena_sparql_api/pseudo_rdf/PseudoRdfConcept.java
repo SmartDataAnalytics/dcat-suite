@@ -20,6 +20,9 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 
@@ -155,7 +158,10 @@ public class PseudoRdfConcept {
 		
 		
 		CkanDataset xxx = (CkanDataset)rootB.getSource().getSource();
-		System.out.println(xxx);
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String json = gson.toJson(xxx);
+		
+		System.out.println(json);
 //		Node rootA = NodeFactory.createBlankNode();
 //		Graph mappingGraph = new MappingGraph(new PseudoGraph(), rootA, rootB);
 //		

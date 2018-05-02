@@ -1,4 +1,4 @@
-@prefix eg: <http://example.org> .
+@prefix eg: <http://example.org/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
@@ -6,9 +6,16 @@
 eg:myDataset01
   a dcat:Dataset ;
   dct:title "My Dataset 01" ;
+  dct:description "Desc of Dataset" ;
   dct:publisher [
     foaf:name "Publisher" ;
     foaf:homepage eg:publisher-homepage ;
   ] ;
   dcat:distribution eg:myDataset01_Distribution01 ;
+  .
+  
+
+eg:myDataset01_Distribution01
+  a dcat:Resource ;
+  dct:description "Some Distribution" ;
   .
