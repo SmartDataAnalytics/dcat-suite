@@ -1,6 +1,5 @@
 package org.aksw.jena_sparql_api.pseudo_rdf;
 
-import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.RDFNode;
 
 /**
@@ -15,7 +14,7 @@ import org.apache.jena.rdf.model.RDFNode;
  * @author raven Apr 16, 2018
  *
  */
-public interface RdfType {
+public interface RdfType<T> {
 	boolean canNewInstance(RDFNode args);
-	Node newInstance(RDFNode args);
+	T newInstance(RDFNode args);
 }

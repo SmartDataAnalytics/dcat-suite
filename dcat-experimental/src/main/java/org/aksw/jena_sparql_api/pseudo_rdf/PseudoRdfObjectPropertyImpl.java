@@ -20,6 +20,8 @@ class PseudoRdfObjectPropertyImpl<T>
 	/** The mapper which converts between the underlying entity and nodes */
 	protected NodeMapper<T> nodeMapper;
 
+	protected RdfType<T> rdfType;
+
 	/** The supplier of new entities */ 
 	//protected RdfType rdfType;
 	
@@ -30,11 +32,13 @@ class PseudoRdfObjectPropertyImpl<T>
 	public PseudoRdfObjectPropertyImpl(
 			//SingleValuedAccessor<Collection<T>> accessor,
 			CollectionAccessor<T> accessor,
+			RdfType<T> rdfType,
 			NodeMapper<T> nodeMapper) {
 			//Function<T, Node> backendToNode) {
 		super();
 		this.accessor = accessor;
 		//this.backendToNode = backendToNode;
+		this.rdfType = rdfType;
 		this.nodeMapper = nodeMapper;
 	}
 	
@@ -72,4 +76,15 @@ class PseudoRdfObjectPropertyImpl<T>
 		Range<Long> result = accessor.getMultiplicity();
 		return result;
 	}
+	
+	@Override
+	public NodeMapper<T> getNodeMapper() {
+		return nodeMapper;
+	}
+	
+	@Override
+	public RdfType<T> getType() {
+		return rdfType;
+	}
 }
+

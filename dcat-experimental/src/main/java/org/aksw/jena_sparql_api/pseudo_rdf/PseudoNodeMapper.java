@@ -7,14 +7,21 @@ import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.apache.jena.graph.Node;
 
-class PseudoNodeMapper<T>
+
+/**
+ * Mapper used to wrap Java objects (of type T) as (PseudoRdf)Nodes.
+ * 
+ * @author raven May 2, 2018
+ *
+ * @param <T>
+ */
+public class PseudoNodeMapper<T>
 	implements NodeMapper<T>
 {
 	protected Class<T> clazz;
 	protected Function<T, PropertySource> wrapper;
-	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
+	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;	
 
-	
 
 	public PseudoNodeMapper(Class<T> clazz, Function<T, PropertySource> wrapper,
 			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
@@ -47,6 +54,6 @@ class PseudoNodeMapper<T>
 		PseudoNode pseudoNode = (PseudoNode)node;
 		T result = (T)pseudoNode.getSource().getSource();
 		return result;
-	}
-	
+	}	
 }
+

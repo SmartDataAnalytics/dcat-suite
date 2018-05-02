@@ -2,14 +2,33 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 
 import java.util.function.Supplier;
 
-import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.RDFNode;
 
-public class RdfTypeSimple
-	implements RdfType
+public class RdfTypeSimple<T>
+	implements RdfType<T>
 {
-//	protected Supplier<T> newJa
-	protected Supplier<Node> nodeFactory;
+	protected Supplier<T> instanceSupplier;
+
+	public RdfTypeSimple(Class<T> clazz) {
+		this(() -> newInstance(clazz));
+	}
+	
+	public static <T> T newInstance(Class<T> clazz) {
+		T result;
+		try {
+			result = clazz.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+		return result;
+	}
+
+	
+	public RdfTypeSimple(Supplier<T> instanceSupplier) {
+		super();
+		this.instanceSupplier = instanceSupplier;
+	}
+
 
 	/**
 	 * A type might not be instantiable at all
@@ -29,8 +48,8 @@ public class RdfTypeSimple
 	}
 
 	@Override
-	public Node newInstance(RDFNode args) {
-		Node result = nodeFactory.get();
+	public T newInstance(RDFNode args) {
+		T result = instanceSupplier.get();
 		return result;
 	}
 

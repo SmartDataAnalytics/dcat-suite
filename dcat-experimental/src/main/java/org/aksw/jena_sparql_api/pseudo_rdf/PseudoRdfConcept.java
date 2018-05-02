@@ -153,6 +153,9 @@ public class PseudoRdfConcept {
 
 		GraphCopy.copy(rootA, rootB);
 		
+		
+		CkanDataset xxx = (CkanDataset)rootB.getSource().getSource();
+		System.out.println(xxx);
 //		Node rootA = NodeFactory.createBlankNode();
 //		Graph mappingGraph = new MappingGraph(new PseudoGraph(), rootA, rootB);
 //		

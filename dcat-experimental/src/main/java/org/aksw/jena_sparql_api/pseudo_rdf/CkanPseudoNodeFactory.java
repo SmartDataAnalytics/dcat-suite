@@ -85,6 +85,7 @@ public class CkanPseudoNodeFactory {
 		registry.put(p.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
 							s.getPropertyAsSet(attr, attrClass),
+							new RdfTypeRDFDatatype<>(attrClass),
 							nodeMapper));	
 	}
 
@@ -111,6 +112,7 @@ public class CkanPseudoNodeFactory {
 		registry.put(p.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
 							new CollectionAccessorFromCollectionValue<>(s.getCollectionProperty(attr, attrClass)),
+							new RdfTypeRDFDatatype<>(attrClass),
 							nodeMapper));	
 	}
 
@@ -121,6 +123,7 @@ public class CkanPseudoNodeFactory {
 								new CollectionFromConverter<>(
 										new SetFromJsonListString(s.getProperty(attr, String.class), true),
 										new CastConverter<>())),
+							new RdfTypeRDFDatatype<>(String.class),
 							nodeMapper));	
 	}
 
@@ -139,11 +142,22 @@ public class CkanPseudoNodeFactory {
 								new LazyCollection<>(
 								s.getCollectionProperty(attr, attrClass),
 								ArrayList::new, true)),
+						new RdfTypeSimple<>(attrClass),
 						new PseudoNodeMapper<>(attrClass,
 								ckanResource ->  objToPropertySource.apply(ckanResource),
 								targetRegistry)));		
 	}
 	
+	
+	public static <T> Function<PropertySource, PseudoRdfProperty> createLiteralAccessor(String attrName, Class<T> clazz) {
+		Function<PropertySource, PseudoRdfProperty> result = 
+			s -> new PseudoRdfObjectPropertyImpl<>(
+					s.getPropertyAsSet(attrName, clazz),
+					new RdfTypeRDFDatatype<>(clazz),
+					NodeMapperFactory.from(clazz));
+
+			return result;
+	}
 	
 	public void initDefaults() {
 
@@ -169,6 +183,7 @@ public class CkanPseudoNodeFactory {
 				s -> new PseudoRdfObjectPropertyImpl<>(
 						new CollectionAccessorSingleton<>((CkanDataset)s.getSource()),
 //						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>()),
+						new RdfTypeSimple<>(CkanDataset::new),
 						new PseudoNodeMapper<>(CkanDataset.class,
 								ckanDataset ->  new PropertySourcePrefix("extra:publisher_", new PropertySourceCkanDataset(ckanDataset)),
 								ckanDatasetPublisherAccessors)));
@@ -199,11 +214,14 @@ public class CkanPseudoNodeFactory {
 		
 //		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
 //				s -> Optional.ofNullable(s.getProperty("name", String.class)).map(PseudoRdfLiteralPropertyImpl::new).orElse(null));
-		
-		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
-							s.getPropertyAsSet("name", String.class),
-							NodeMapperFactory.string));
+
+		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(), createLiteralAccessor("name", String.class));
+
+//		ckanDatasetPublisherAccessors.put(FOAF.name.getURI(),
+//				s -> new PseudoRdfObjectPropertyImpl<>(
+//							s.getPropertyAsSet("name", String.class),
+//							new RdfTypeRDFDatatype<>(String.class),
+//							NodeMapperFactory.string));
 	
 		
 		/*
@@ -218,10 +236,12 @@ public class CkanPseudoNodeFactory {
 //									new CollectionFromSingleValuedAccessor<>(
 //											s.getProperty("description", String.class))),
 //							NodeMapperFactory.string));
-		ckanResourceAccessors.put(DCTerms.description.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
-							s.getPropertyAsSet("description", String.class),
-							NodeMapperFactory.string));
+		ckanResourceAccessors.put(DCTerms.description.getURI(), createLiteralAccessor("description", String.class));
+
+//		ckanResourceAccessors.put(DCTerms.description.getURI(),
+//				s -> new PseudoRdfObjectPropertyImpl<>(
+//							s.getPropertyAsSet("description", String.class),
+//							NodeMapperFactory.string));
 	}
 	
 	public PseudoNode createDataset() {
