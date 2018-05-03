@@ -149,6 +149,10 @@ public class PseudoRdfConcept {
 		// attempt to instantiate the dcat model backed by the ckan model
 		// Note, that in general *all* information must be available, as rdfTypes
 		// may take properties of nodes as ctor arguments
+
+		Model mappingModel = RDFDataMgr.loadModel("dcat-ap-ckan-mapping.ttl");
+		
+		
 		
 		Model inputModel = RDFDataMgr.loadModel("dcat-ap-test01.ttl");
 		Resource rootA = inputModel.listSubjectsWithProperty(RDF.type, DCAT.Dataset).next();

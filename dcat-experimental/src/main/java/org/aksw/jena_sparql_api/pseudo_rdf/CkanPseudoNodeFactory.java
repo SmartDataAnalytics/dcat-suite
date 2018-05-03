@@ -182,6 +182,7 @@ public class CkanPseudoNodeFactory {
 		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme, "extra:theme", NodeMapperFactory.uriString);
 		addStringMapping(ckanDatasetAccessors, DCTerms.identifier, "extra:identifier");
 		addStringMapping(ckanDatasetAccessors, Adms.identifier, "extra:alternate_identifier");
+		addStringMapping(ckanDatasetAccessors, Adms.identifier, "extra:alternate_identifier");
 		
 //		DcatDataset x;
 //		x.keyw
