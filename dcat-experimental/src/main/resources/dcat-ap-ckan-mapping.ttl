@@ -19,7 +19,7 @@ eg:default
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:description        ; m:key "notes" ] ; 
   m:mapping [ a m:CollectionMapping ; 
               m:target dcat:Dataset      ; m:predicate dcat:keyword           ; m:key "tags" ] ; 
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dcat:theme             ; m:key "extra:theme" ] ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:identifier         ; m:key "extra:identifier" ] ; 
   m:mapping [ m:target dcat:Dataset      ; m:predicate adms:identifier        ; m:key "extra:alternate_identifier" ] ; 
@@ -29,30 +29,30 @@ eg:default
               m:target dcat:Dataset      ; m:predicate dct:modified           ; m:key "metadata_modified" ] ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate owl:versionInfo        ; m:key "version" ] ; 
   m:mapping [ m:target dcat:Dataset      ; m:predicate adms:vesionNotes       ; m:key "extra:version_notes" ] ; 
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:language           ; m:key "extra:language" ] ;
   m:mapping [ m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dcat:landingPage       ; m:key "url" ] ;
   m:mapping [ m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:accrualPeriodicity ; m:key "extra:frequency" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:conformsTo         ; m:key "extra:contformsTo" ] ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:accessRights       ; m:key "extra:access_rights" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate foaf:page              ; m:key "extra:documentation" ] ;
   m:mapping [ m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:provenance         ; m:key "extra:provenance" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:type               ; m:key "extra:dcat_type" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:hasVersion         ; m:key "extra:has_version" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:isVersionOf        ; m:key "extra:is_version_of" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:source             ; m:key "extra:source" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate adms:sample            ; m:key "extra:sample" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:spatial            ; m:key "extra:spatial_uri" ] ;
   m:mapping [ a m:TemporalMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:temporal           ; m:keys ("extra:temporal_start" "extra:temporal_end") ] ;
@@ -89,12 +89,12 @@ eg:default
               m:target dcat:Distribution ; m:predicate dct:modified           ; m:key "modified" ] ;
   m:mapping [ m:type r2rml:IRI ;
               m:target dcat:Distribution ; m:predicate dct:rights             ; m:key "rights" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Distribution ; m:predicate foaf:page              ; m:key "documentation" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Distribution ; m:predicate dct:conformsTo         ; m:key "contformsTo" ] ;
   m:mapping [ m:target spdx:Checksum     ; m:predicate spdx:checksumValue     ; m:key "hash" ] ;
-  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target spdx:Checksum     ; m:predicate spdx:algorithm         ; m:key "hash_algorithm" ]
   .
 

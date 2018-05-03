@@ -12,6 +12,7 @@ import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.rdf.model.Model;
@@ -29,6 +30,8 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.XSD;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,13 +40,18 @@ import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 
 class MappingVocab {
+	public static final Property r2rmlIRI = ResourceFactory.createProperty("http://www.w3.org/ns/r2rml#IRI");
+	
 	public static final String NS = "http://example.org/";
 		
 	public static final Property mapping = ResourceFactory.createProperty("http://example.org/mapping");	
 	public static final Property type = ResourceFactory.createProperty(NS + "type");
 
 	public static final Property LiteralMapping = ResourceFactory.createProperty(NS + "LiteralMapping");
-	
+	public static final Property CollectionMapping = ResourceFactory.createProperty(NS + "CollectionMapping");
+	public static final Property JsonArrayMapping = ResourceFactory.createProperty(NS + "JsonArrayMapping");
+	public static final Property TemporalMapping = ResourceFactory.createProperty(NS + "TemporalMapping");
+
 	public static final Property target = ResourceFactory.createProperty(NS + "target");
 	public static final Property predicate = ResourceFactory.createProperty(NS + "predicate");
 	public static final Property key = ResourceFactory.createProperty(NS + "key");
@@ -63,19 +71,20 @@ class MappingUtils {
 		}
 		
 		// If the literal mapping is without type, apply xsd:string
-		if(r.hasProperty(RDF.type, MappingVocab.LiteralMapping)) {
+		if(r.hasProperty(RDF.type, MappingVocab.LiteralMapping) || r.hasProperty(RDF.type, MappingVocab.CollectionMapping)) {
 			if(!r.hasProperty(MappingVocab.type)) {
 				r.addProperty(MappingVocab.type, XSD.xstring);
 			}
-		}
-		
-		// If the resource is a literal mapping, 
+		}		
 	}
 }
 
 
 
 public class PseudoRdfConcept {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PseudoRdfConcept.class);
+
 	
 	public static void main(String[] args) {
 
@@ -207,15 +216,15 @@ public class PseudoRdfConcept {
 		//Map<String, MappingProcessor> mappingProcessorRegistry = new HashMap<>();
 		
 		Map<RDFNode, Map<String, Function<PropertySource, PseudoRdfProperty>>> targetToAccessors = new HashMap<>();
-		targetToAccessors.put(DCAT.Dataset, new HashMap<>());
-		targetToAccessors.put(DCAT.Distribution, new HashMap<>());
-		targetToAccessors.put(FOAF.Agent, new HashMap<>());
+//		targetToAccessors.put(DCAT.Dataset, new HashMap<>());
+//		targetToAccessors.put(DCAT.Distribution, new HashMap<>());
+//		targetToAccessors.put(FOAF.Agent, new HashMap<>());
 		
 		
 		for(Resource mapping : mappings) {
 			MappingUtils.applyMappingDefaults(mapping);
 			
-			RDFDataMgr.write(System.out, mapping.getModel(), RDFFormat.TURTLE_PRETTY);
+			//RDFDataMgr.write(System.out, mapping.getModel(), RDFFormat.TURTLE_PRETTY);
 		
 			String mappingType = mapping.getPropertyResourceValue(RDF.type).getURI();
 			//type.getURI();
@@ -225,22 +234,37 @@ public class PseudoRdfConcept {
 
 			RDFNode target = mapping.getProperty(MappingVocab.target).getObject();
 			// Resolve the target to the mapping registry
-			Map<String, Function<PropertySource, PseudoRdfProperty>> mappingRegistry = targetToAccessors.get(target);
+			Map<String, Function<PropertySource, PseudoRdfProperty>> mappingRegistry = targetToAccessors.computeIfAbsent(target, (k) -> new HashMap<>());
 			
-			if(mappingType.equals(MappingVocab.LiteralMapping)) {
-				RDFNode dtype = mapping.getProperty(MappingVocab.type).getObject();
+			
+			TypeMapper typeMapper = TypeMapper.getInstance();
+			if(mappingType.equals(MappingVocab.LiteralMapping.getURI())) {
+
+				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
+				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+				String key = mapping.getProperty(MappingVocab.key).getString();
 				
+				//typeMapper.getTypeByName(dtype.getURI());
 				
-				
-				if(dtype.equals(XSD.xstring)) {
-					String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
-					String key = mapping.getProperty(MappingVocab.key).getString();
-					
-					System.out.println("Adding " + predicate + " -> " + key);
-					CkanPseudoNodeFactory.addStringMapping(mappingRegistry, predicate, key);
-				}
+				System.out.println("Adding " + predicate + " -> " + key);
+				CkanPseudoNodeFactory.addLiteralMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
 				//if(type.get)
 				
+			} else if(mappingType.equals(MappingVocab.CollectionMapping.getURI())) {
+				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
+				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+				String key = mapping.getProperty(MappingVocab.key).getString();
+
+				CkanPseudoNodeFactory.addCollectionMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+				
+			} else if(mappingType.equals(MappingVocab.JsonArrayMapping.getURI())) {
+				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
+				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+				String key = mapping.getProperty(MappingVocab.key).getString();
+				
+				CkanPseudoNodeFactory.addExtraJsonArrayMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+			} else {
+				logger.warn("Unknown mapping type: " + mappingType);
 			}
 			
 			//mappingProcessor.apply(mapping, mappingRegistry);
