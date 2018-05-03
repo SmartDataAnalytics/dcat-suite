@@ -11,6 +11,7 @@ import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanResource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourcePrefix;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
+import org.aksw.dcat.jena.domain.api.Adms;
 import org.aksw.dcat.util.view.CastConverter;
 import org.aksw.dcat.util.view.CollectionAccessorFromCollection;
 import org.aksw.dcat.util.view.CollectionAccessorFromCollectionValue;
@@ -108,13 +109,25 @@ public class CkanPseudoNodeFactory {
 	 * @param attrClass
 	 * @param nodeMapper
 	 */
-	public static <T> void addCollectionMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, Class<T> attrClass, NodeMapper<T> nodeMapper) {
+	public static <T> void addCollectionMappingDirect(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, Class<T> attrClass) {
 		registry.put(p.getURI(),
 				s -> new PseudoRdfObjectPropertyImpl<>(
 							new CollectionAccessorFromCollectionValue<>(s.getCollectionProperty(attr, attrClass)),
 							new RdfTypeRDFDatatype<>(attrClass),
-							nodeMapper));	
+							NodeMapperFactory.from(attrClass)));	
 	}
+
+	public static <T> void addCollectionMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, Class<T> attrClass) {
+		registry.put(p.getURI(),
+				s -> new PseudoRdfObjectPropertyImpl<>(
+						new CollectionAccessorFromCollection<>(
+								new LazyCollection<>(
+								s.getCollectionProperty(attr, attrClass),
+								ArrayList::new, true)),
+							new RdfTypeRDFDatatype<>(attrClass),
+							NodeMapperFactory.from(attrClass)));	
+	}
+
 
 	public static void addExtraJsonArrayMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, NodeMapper<String> nodeMapper) {
 		registry.put(p.getURI(),
@@ -123,7 +136,8 @@ public class CkanPseudoNodeFactory {
 								new CollectionFromConverter<>(
 										new SetFromJsonListString(s.getProperty(attr, String.class), true),
 										new CastConverter<>())),
-							new RdfTypeRDFDatatype<>(String.class),
+							new RdfTypeUri(),
+							//new RdfTypeRDFDatatype<>(String.class),
 							nodeMapper));	
 	}
 
@@ -164,8 +178,10 @@ public class CkanPseudoNodeFactory {
 		/* datasaset mappings */
 		addStringMapping(ckanDatasetAccessors, DCTerms.title, "title");
 		addStringMapping(ckanDatasetAccessors, DCTerms.description, "notes");
-		//addCollectionMapping(ckanDatasetAccessors, DCAT.keyword, "tags", String.class, NodeMapperFactory.string);		
+		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword, "tags", String.class);//, NodeMapperFactory.string);		
 		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme, "extra:theme", NodeMapperFactory.uriString);
+		addStringMapping(ckanDatasetAccessors, DCTerms.identifier, "extra:identifier");
+		addStringMapping(ckanDatasetAccessors, Adms.identifier, "extra:alternate_identifier");
 		
 //		DcatDataset x;
 //		x.keyw

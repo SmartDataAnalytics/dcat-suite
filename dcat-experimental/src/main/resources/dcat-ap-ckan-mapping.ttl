@@ -1,0 +1,97 @@
+@prefix eg: <http://example.org/> .
+
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix spdx: <http://spdx.org/rdf/terms#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+
+@prefix r2rml: <http://www.w3.org/ns/r2rml#>
+
+eg:default
+  a m:MappingCollection ;
+  m:mapping [ m:target o:CkanDataset     ; m:predicate dct:title              ; m:key "title" ] ;
+  m:mapping [ m:target o:CkanDataset     ; m:predicate dct:description        ; m:key "notes" ] ; 
+  m:mapping [ a m:CollectionMapping ; 
+              m:target o:CkanDataset     ; m:predicate dcat:keyword           ; m:key "tags" ] ; 
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dcat:theme             ; m:key "extra:theme" ] ;
+  m:mapping [ m:target o:CkanDataset     ; m:predicate dct:identifier         ; m:key "extra:identifier" ] ; 
+  m:mapping [ m:target o:CkanDataset     ; m:predicate adms:identifier        ; m:key "extra:alternate_identifier" ] ; 
+  m:mapping [ m:type xsd:dateTime ;
+              m:target o:CkanDataset     ; m:predicate dct:issued             ; m:key "metadata_created" ] ;
+  m:mapping [ m:type xsd:dateTime ;
+              m:target o:CkanDataset     ; m:predicate dct:modified           ; m:key "metadata_modified" ] ;
+  m:mapping [ m:target o:CkanDataset     ; m:predicate owl:versionInfo        ; m:key "version" ] ; 
+  m:mapping [ m:target o:CkanDataset     ; m:predicate adms:vesionNotes       ; m:key "extra:version_notes" ] ; 
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:language           ; m:key "extra:language" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dcat:landingPage       ; m:key "url" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:accrualPeriodicity ; m:key "extra:frequency" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:conformsTo         ; m:key "extra:contformsTo" ] ;
+  m:mapping [ m:target o:CkanDataset     ; m:predicate dct:accessRights       ; m:key "extra:access_rights" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate foaf:page              ; m:key "extra:documentation" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:provenance         ; m:key "extra:provenance" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:type               ; m:key "extra:dcat_type" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:hasVersion         ; m:key "extra:has_version" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:isVersionOf        ; m:key "extra:is_version_of" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:source             ; m:key "extra:source" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate adms:sample            ; m:key "extra:sample" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:spatial            ; m:key "extra:spatial_uri" ] ;
+  m:mapping [ a m:TemporalMapping ; m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:temporal           ; m:keys ("extra:temporal_start", "extra:temporal_end") ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dct:publisher          ; m:key "extra:publisher_uri" ] ;
+  m:mapping [ m:target foaf:Agent        ; m:predicate foaf:name              ; m:key "extra:publisher_name" ] ;
+  m:mapping [ m:target foaf:Agent        ; m:predicate foaf:mbox              ; m:key "extra:publisher_email" ] ;
+  m:mapping [ m:target foaf:Agent        ; m:predicate foaf:homepage          ; m:key "extra:publisher_url" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target foaf:Agent        ; m:predicate dct:type               ; m:key "extra:publisher_type" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target o:CkanDataset     ; m:predicate dcat:contactPoint      ; m:key "extra:contact_uri" ] ;
+  m:mapping [ m:target vcard:Kind ; m:predicate vcard:fn                      ; m:key "extra:contact_name" ] ;
+  m:mapping [ m:target vcard:Kind        ; m:predicate vcard:hasEmail         ; m:key "extra:contact_email" ] ;
+  m:mapping [ a m:RelationMapping ; 
+              m:target o:CkanDataset     ; m:predicate dcat:destribution      ; m:key "resources" ] ;
+  m:mapping [ m:target dcat:Distribution ; m:predicate dct:title              ; m:key "name" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dcat:accessURL         ; m:key "url" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dcat:downloadURL       ; m:key "download_url" ] ;
+  m:mapping [ m:target dcat:Distribution ; m:predicate dct:description        ; m:key "description" ] ;
+  m:mapping [ m:target dcat:Distribution ; m:predicate dcat:mediaType         ; m:key "mimetype" ] ;
+  m:mapping [ m:target dcat:Distribution ; m:predicate dct:format             ; m:key "format" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dct:license            ; m:key "license" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate adms:status            ; m:key "status" ] ;
+  m:mapping [ m:type xsd:decimal ;
+              m:target dcat:Distribution ; m:predicate bcat:byteSize          ; m:key "size" ] ;
+  m:mapping [ m:type xsd:dateTime ;
+              m:target dcat:Distribution ; m:predicate dct:issued             ; m:key "issued" ] ;
+  m:mapping [ m:type xsd:dateTime ;
+              m:target dcat:Distribution ; m:predicate dct:modified           ; m:key "modified" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dct:rights             ; m:key "rights" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate foaf:page              ; m:key "documentation" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dct:conformsTo         ; m:key "contformsTo" ] ;
+  m:mapping [ m:target spdx:Checksum     ; m:predicate spdx:checksumValue     ; m:key "hash" ] ;
+  m:mapping [ a m:JsonArrayOfStringsMapping ; m:type r2rml:IRI ;
+              m:target spdx:Checksum     ; m:predicate spdx:algorithm         ; m:key "hash_algorithm" ]
+  .
+
