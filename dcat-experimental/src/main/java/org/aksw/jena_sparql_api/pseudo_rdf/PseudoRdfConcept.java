@@ -2,7 +2,12 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
+import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
@@ -11,14 +16,19 @@ import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.system.JenaSystem;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.XSD;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -26,9 +36,47 @@ import com.google.gson.GsonBuilder;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 
+class MappingVocab {
+	public static final String NS = "http://example.org/";
+		
+	public static final Property mapping = ResourceFactory.createProperty("http://example.org/mapping");	
+	public static final Property type = ResourceFactory.createProperty(NS + "type");
+
+	public static final Property LiteralMapping = ResourceFactory.createProperty(NS + "LiteralMapping");
+	
+	public static final Property target = ResourceFactory.createProperty(NS + "target");
+	public static final Property predicate = ResourceFactory.createProperty(NS + "predicate");
+	public static final Property key = ResourceFactory.createProperty(NS + "key");
+
+}
+
+class MappingUtils {
+	public static Map<String, Object> getMappingRegistry() {
+		Map<String, Object> result = null;
+		return result;
+	}
+	
+	public static void applyMappingDefaults(Resource r) {
+		// If the resource does not have a concrete mapping type, add String
+		if(!r.hasProperty(RDF.type)) {
+			r.addProperty(RDF.type, MappingVocab.LiteralMapping);
+		}
+		
+		// If the literal mapping is without type, apply xsd:string
+		if(r.hasProperty(RDF.type, MappingVocab.LiteralMapping)) {
+			if(!r.hasProperty(MappingVocab.type)) {
+				r.addProperty(MappingVocab.type, XSD.xstring);
+			}
+		}
+		
+		// If the resource is a literal mapping, 
+	}
+}
+
 
 
 public class PseudoRdfConcept {
+	
 	public static void main(String[] args) {
 
 		JenaSystem.init();
@@ -151,6 +199,55 @@ public class PseudoRdfConcept {
 		// may take properties of nodes as ctor arguments
 
 		Model mappingModel = RDFDataMgr.loadModel("dcat-ap-ckan-mapping.ttl");
+		
+		
+		List<Resource> mappings = mappingModel.listObjectsOfProperty(MappingVocab.mapping)
+				.filterKeep(RDFNode::isResource).mapWith(RDFNode::asResource).toList();
+
+		//Map<String, MappingProcessor> mappingProcessorRegistry = new HashMap<>();
+		
+		Map<RDFNode, Map<String, Function<PropertySource, PseudoRdfProperty>>> targetToAccessors = new HashMap<>();
+		targetToAccessors.put(DCAT.Dataset, new HashMap<>());
+		targetToAccessors.put(DCAT.Distribution, new HashMap<>());
+		targetToAccessors.put(FOAF.Agent, new HashMap<>());
+		
+		
+		for(Resource mapping : mappings) {
+			MappingUtils.applyMappingDefaults(mapping);
+			
+			RDFDataMgr.write(System.out, mapping.getModel(), RDFFormat.TURTLE_PRETTY);
+		
+			String mappingType = mapping.getPropertyResourceValue(RDF.type).getURI();
+			//type.getURI();
+			
+			// Get the mapping processor for the type
+			//MappingProcessor mappingProcessor = mappingProcessorRegistry.get(type);
+
+			RDFNode target = mapping.getProperty(MappingVocab.target).getObject();
+			// Resolve the target to the mapping registry
+			Map<String, Function<PropertySource, PseudoRdfProperty>> mappingRegistry = targetToAccessors.get(target);
+			
+			if(mappingType.equals(MappingVocab.LiteralMapping)) {
+				RDFNode dtype = mapping.getProperty(MappingVocab.type).getObject();
+				
+				
+				
+				if(dtype.equals(XSD.xstring)) {
+					String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+					String key = mapping.getProperty(MappingVocab.key).getString();
+					
+					System.out.println("Adding " + predicate + " -> " + key);
+					CkanPseudoNodeFactory.addStringMapping(mappingRegistry, predicate, key);
+				}
+				//if(type.get)
+				
+			}
+			
+			//mappingProcessor.apply(mapping, mappingRegistry);
+			
+			
+		}
+		
 		
 		
 		

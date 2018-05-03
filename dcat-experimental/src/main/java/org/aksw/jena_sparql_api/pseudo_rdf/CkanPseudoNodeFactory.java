@@ -82,8 +82,8 @@ public class CkanPseudoNodeFactory {
 	 * @param attrClass
 	 * @param nodeMapper
 	 */
-	public static <T> void addSimpleMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, Class<T> attrClass, NodeMapper<T> nodeMapper) {
-		registry.put(p.getURI(),
+	public static <T> void addSimpleMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<T> attrClass, NodeMapper<T> nodeMapper) {
+		registry.put(p,
 				s -> new PseudoRdfObjectPropertyImpl<>(
 							s.getPropertyAsSet(attr, attrClass),
 							new RdfTypeRDFDatatype<>(attrClass),
@@ -91,11 +91,11 @@ public class CkanPseudoNodeFactory {
 	}
 
 
-	public static void addStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr) {
+	public static void addStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr) {
 		addSimpleMapping(registry, p, attr, String.class, NodeMapperFactory.string);
 	}
 
-	public static void addUriStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr) {
+	public static void addUriStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr) {
 		addSimpleMapping(registry, p, attr, String.class, NodeMapperFactory.uriString);
 	}
 
@@ -117,8 +117,8 @@ public class CkanPseudoNodeFactory {
 							NodeMapperFactory.from(attrClass)));	
 	}
 
-	public static <T> void addCollectionMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, Class<T> attrClass) {
-		registry.put(p.getURI(),
+	public static <T> void addCollectionMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<T> attrClass) {
+		registry.put(p,
 				s -> new PseudoRdfObjectPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
 								new LazyCollection<>(
@@ -129,8 +129,8 @@ public class CkanPseudoNodeFactory {
 	}
 
 
-	public static void addExtraJsonArrayMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, NodeMapper<String> nodeMapper) {
-		registry.put(p.getURI(),
+	public static void addExtraJsonArrayMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, NodeMapper<String> nodeMapper) {
+		registry.put(p,
 				s -> new PseudoRdfObjectPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
 								new CollectionFromConverter<>(
@@ -176,13 +176,11 @@ public class CkanPseudoNodeFactory {
 	public void initDefaults() {
 
 		/* datasaset mappings */
-		addStringMapping(ckanDatasetAccessors, DCTerms.title, "title");
-		addStringMapping(ckanDatasetAccessors, DCTerms.description, "notes");
-		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword, "tags", String.class);//, NodeMapperFactory.string);		
-		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme, "extra:theme", NodeMapperFactory.uriString);
-		addStringMapping(ckanDatasetAccessors, DCTerms.identifier, "extra:identifier");
-		addStringMapping(ckanDatasetAccessors, Adms.identifier, "extra:alternate_identifier");
-		addStringMapping(ckanDatasetAccessors, Adms.identifier, "extra:alternate_identifier");
+		addStringMapping(ckanDatasetAccessors, DCTerms.title.getURI(), "title");
+		addStringMapping(ckanDatasetAccessors, DCTerms.description.getURI(), "notes");
+		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword.getURI(), "tags", String.class);//, NodeMapperFactory.string);		
+		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme.getURI(), "extra:theme", NodeMapperFactory.uriString);
+		addStringMapping(ckanDatasetAccessors, DCTerms.identifier.getURI(), "extra:identifier");
 		
 //		DcatDataset x;
 //		x.keyw
