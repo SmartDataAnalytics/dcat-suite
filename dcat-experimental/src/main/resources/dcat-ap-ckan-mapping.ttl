@@ -13,7 +13,19 @@
 
 @prefix m: <http://example.org/>
 
-eg:default
+#eg:defaultJavaBindings
+#  m:binding [
+#  	m:target dcat:Dataset ;
+#  	m:javaClass "eu.trentorise.opendata.jackan.model.CkanDataset"
+#  ] ;
+#  m:binding [
+#  	m:target dcat:Distribution ;
+#  	m:javaClass "eu.trentorise.opendata.jackan.model.CkanResource"
+#  ] ;
+#  .
+
+
+eg:dcatApMappingCollection
   a m:MappingCollection ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:title              ; m:key "title" ] ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:description        ; m:key "notes" ] ; 

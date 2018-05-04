@@ -14,6 +14,7 @@ public class CollectionFromSingleValuedAccessor<T>
 
 	public CollectionFromSingleValuedAccessor(SingleValuedAccessor<T> accessor) {
 		super();
+		Objects.requireNonNull(accessor);
 		this.accessor = accessor;
 	}
 

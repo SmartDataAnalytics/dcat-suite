@@ -50,8 +50,12 @@ public interface PropertySource {
 //		return result;
 //	}
 	default <T> CollectionAccessor<T> getPropertyAsSet(String name, Class<T> itemType) {
+		SingleValuedAccessor<T> accessor = getProperty(name, itemType);
+		if(accessor == null) {
+			throw new RuntimeException("No accessor for " + name + " on " + this);
+		}
 		CollectionAccessor<T> result =
-						new CollectionAccessorFromSingleValuedAccessor<>(getProperty(name, itemType));
+						new CollectionAccessorFromSingleValuedAccessor<>(accessor);
 		return result;
 	}
 

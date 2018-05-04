@@ -1,5 +1,7 @@
 package org.aksw.dcat.ap.binding.ckan.domain.impl;
 
+import java.util.function.Function;
+
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.util.view.SetFromCkanExtras;
@@ -119,22 +121,10 @@ public class CkanUtils {
 	 * @param clazz
 	 * @return
 	 */
-	public static <T> SingleValuedAccessor<T> getSingleValuedAccessorViaReflection(Object obj, String localName, Class<?> clazz) {
-		SingleValuedAccessor<T> result;
-
-		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
-        bean.afterPropertiesSet();
-
-        ConversionService conversionService = bean.getObject();
-		EntityOps eops = EntityModel.createDefaultModel(obj.getClass(), conversionService);
-
-		PropertyOps pops = eops.getProperty(localName);
-		if(pops != null && pops.acceptsType(clazz)) {
-			result = new SingleValuedAccessorFromPropertyOps<T>(pops, obj);
-		} else {
-			result = null;
-		}
-
+	public static <S, T> SingleValuedAccessor<T> getSingleValuedAccessorViaReflection(S obj, String localName, Class<T> clazz) {
+		Class<? extends S> entityClass = (Class<? extends S>)obj.getClass();
+		Function<S, SingleValuedAccessor<T>> accessorSupplier = getSingleValuedAccessorSupplierViaReflection(entityClass, localName, clazz);
+		SingleValuedAccessor<T> result = accessorSupplier.apply(obj);
 		return result;
 	}
 
@@ -189,5 +179,64 @@ public class CkanUtils {
 	
 		return result;
 	}
+	
+	
+	public static <T> Function<CkanResource, SingleValuedAccessor<T>> getSingleValuedAccessorSupplierResource(String property, Class<T> clazz) {
+		Function<CkanResource, SingleValuedAccessor<T>> result;
+
+		String[] parts = property.split("\\:", 2);
+
+		String namespace = parts.length == 2 ? parts[0] : "";
+		String localName = parts.length == 2 ? parts[1] : parts[0];
+
+		if(namespace.equals("extra")) {
+			// FIXME hack ... need a converter in general
+			result = null; //(SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanResource, localName));
+		} else {
+			result = getSingleValuedAccessorSupplierViaReflection(CkanResource.class, localName, clazz);
+		}
+		
+		return result;
+	}
+
+	public static <T> Function<CkanDataset, SingleValuedAccessor<T>> getSingleValuedAccessorSupplierDataset(String property, Class<T> clazz) {
+		Function<CkanDataset, SingleValuedAccessor<T>> result;
+
+		String[] parts = property.split("\\:", 2);
+
+		String namespace = parts.length == 2 ? parts[0] : "";
+		String localName = parts.length == 2 ? parts[1] : parts[0];
+
+		if(namespace.equals("extra")) {
+			// FIXME hack ... need a converter in general
+			result = ckanDataset -> (SingleValuedAccessor<T>)new SingleValuedAccessorFromCollection<>(new SetFromCkanExtras(ckanDataset, localName));
+		} else {
+			result = getSingleValuedAccessorSupplierViaReflection(CkanDataset.class, localName, clazz);
+		}
+		
+		
+		return result;
+	}
+
+	
+	public static <S, T> Function<S, SingleValuedAccessor<T>> getSingleValuedAccessorSupplierViaReflection(Class<? extends S> entityClazz, String localName, Class<T> clazz) {
+		Function<S, SingleValuedAccessor<T>> result;
+
+		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
+        bean.afterPropertiesSet();
+
+        ConversionService conversionService = bean.getObject();
+		EntityOps eops = EntityModel.createDefaultModel(entityClazz, conversionService);
+
+		PropertyOps pops = eops.getProperty(localName);
+		if(pops != null && pops.acceptsType(clazz)) {
+			result = obj -> new SingleValuedAccessorFromPropertyOps<T>(pops, obj);
+		} else {
+			result = null;
+		}
+
+		return result;
+	}
+
 
 }

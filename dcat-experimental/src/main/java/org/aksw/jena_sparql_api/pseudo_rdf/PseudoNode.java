@@ -22,10 +22,13 @@ class PseudoNode
 	extends Node_Concrete
 {
 	//protected PropertySource entity;
-	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
+	//protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
 
+	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
 	protected PropertySource source;
-	protected Function<? super PropertySource, ? extends Object> getIdentifier;
+	
+	//protected PropertySource source;
+	//protected Function<? super PropertySource, ? extends Object> getIdentifier;
 	
 	
 	// The property source acts as the label

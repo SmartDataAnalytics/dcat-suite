@@ -206,73 +206,73 @@ public class PseudoRdfConcept {
 		// attempt to instantiate the dcat model backed by the ckan model
 		// Note, that in general *all* information must be available, as rdfTypes
 		// may take properties of nodes as ctor arguments
-
-		Model mappingModel = RDFDataMgr.loadModel("dcat-ap-ckan-mapping.ttl");
-		
-		
-		List<Resource> mappings = mappingModel.listObjectsOfProperty(MappingVocab.mapping)
-				.filterKeep(RDFNode::isResource).mapWith(RDFNode::asResource).toList();
-
-		//Map<String, MappingProcessor> mappingProcessorRegistry = new HashMap<>();
-		
-		Map<RDFNode, Map<String, Function<PropertySource, PseudoRdfProperty>>> targetToAccessors = new HashMap<>();
-//		targetToAccessors.put(DCAT.Dataset, new HashMap<>());
-//		targetToAccessors.put(DCAT.Distribution, new HashMap<>());
-//		targetToAccessors.put(FOAF.Agent, new HashMap<>());
-		
-		
-		for(Resource mapping : mappings) {
-			MappingUtils.applyMappingDefaults(mapping);
-			
-			//RDFDataMgr.write(System.out, mapping.getModel(), RDFFormat.TURTLE_PRETTY);
-		
-			String mappingType = mapping.getPropertyResourceValue(RDF.type).getURI();
-			//type.getURI();
-			
-			// Get the mapping processor for the type
-			//MappingProcessor mappingProcessor = mappingProcessorRegistry.get(type);
-
-			RDFNode target = mapping.getProperty(MappingVocab.target).getObject();
-			// Resolve the target to the mapping registry
-			Map<String, Function<PropertySource, PseudoRdfProperty>> mappingRegistry = targetToAccessors.computeIfAbsent(target, (k) -> new HashMap<>());
-			
-			
-			TypeMapper typeMapper = TypeMapper.getInstance();
-			if(mappingType.equals(MappingVocab.LiteralMapping.getURI())) {
-
-				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
-				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
-				String key = mapping.getProperty(MappingVocab.key).getString();
-				
-				//typeMapper.getTypeByName(dtype.getURI());
-				
-				System.out.println("Adding " + predicate + " -> " + key);
-				CkanPseudoNodeFactory.addLiteralMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
-				//if(type.get)
-				
-			} else if(mappingType.equals(MappingVocab.CollectionMapping.getURI())) {
-				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
-				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
-				String key = mapping.getProperty(MappingVocab.key).getString();
-
-				CkanPseudoNodeFactory.addCollectionMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
-				
-			} else if(mappingType.equals(MappingVocab.JsonArrayMapping.getURI())) {
-				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
-				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
-				String key = mapping.getProperty(MappingVocab.key).getString();
-				
-				CkanPseudoNodeFactory.addExtraJsonArrayMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
-			} else {
-				logger.warn("Unknown mapping type: " + mappingType);
-			}
-			
-			//mappingProcessor.apply(mapping, mappingRegistry);
-			
-			
-		}
-		
-		
+//
+//		Model mappingModel = RDFDataMgr.loadModel("dcat-ap-ckan-mapping.ttl");
+//		
+//		
+//		List<Resource> mappings = mappingModel.listObjectsOfProperty(MappingVocab.mapping)
+//				.filterKeep(RDFNode::isResource).mapWith(RDFNode::asResource).toList();
+//
+//		//Map<String, MappingProcessor> mappingProcessorRegistry = new HashMap<>();
+//		
+//		Map<RDFNode, Map<String, Function<PropertySource, PseudoRdfProperty>>> targetToAccessors = new HashMap<>();
+//		targetToAccessors.put(DCAT.Dataset, CkanPseudoNodeFactory.get().ckanDatasetAccessors);
+//		targetToAccessors.put(DCAT.Distribution, CkanPseudoNodeFactory.get().ckanResourceAccessors);
+//		targetToAccessors.put(FOAF.Agent, CkanPseudoNodeFactory.get().ckanDatasetPublisherAccessors);
+//		
+//		
+//		for(Resource mapping : mappings) {
+//			MappingUtils.applyMappingDefaults(mapping);
+//			
+//			//RDFDataMgr.write(System.out, mapping.getModel(), RDFFormat.TURTLE_PRETTY);
+//		
+//			String mappingType = mapping.getPropertyResourceValue(RDF.type).getURI();
+//			//type.getURI();
+//			
+//			// Get the mapping processor for the type
+//			//MappingProcessor mappingProcessor = mappingProcessorRegistry.get(type);
+//
+//			RDFNode target = mapping.getProperty(MappingVocab.target).getObject();
+//			// Resolve the target to the mapping registry
+//			Map<String, Function<PropertySource, PseudoRdfProperty>> mappingRegistry = targetToAccessors.computeIfAbsent(target, (k) -> new HashMap<>());
+//			
+//			
+//			TypeMapper typeMapper = TypeMapper.getInstance();
+//			if(mappingType.equals(MappingVocab.LiteralMapping.getURI())) {
+//
+//				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
+//				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+//				String key = mapping.getProperty(MappingVocab.key).getString();
+//				
+//				//typeMapper.getTypeByName(dtype.getURI());
+//				
+//				System.out.println("Adding " + predicate + " -> " + key);
+//				CkanPseudoNodeFactory.addLiteralMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+//				//if(type.get)
+//				
+//			} else if(mappingType.equals(MappingVocab.CollectionMapping.getURI())) {
+//				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
+//				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+//				String key = mapping.getProperty(MappingVocab.key).getString();
+//
+//				CkanPseudoNodeFactory.addCollectionMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+//				
+//			} else if(mappingType.equals(MappingVocab.JsonArrayMapping.getURI())) {
+//				Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
+//				String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
+//				String key = mapping.getProperty(MappingVocab.key).getString();
+//				
+//				CkanPseudoNodeFactory.addExtraJsonArrayMapping(mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+//			} else {
+//				logger.warn("Unknown mapping type: " + mappingType);
+//			}
+//			
+//			//mappingProcessor.apply(mapping, mappingRegistry);
+//			
+//			
+//		}
+//		
+//		
 		
 		
 		Model inputModel = RDFDataMgr.loadModel("dcat-ap-test01.ttl");

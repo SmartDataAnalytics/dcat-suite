@@ -54,7 +54,7 @@ eg:myDataset01_Distribution01
   dcat:downloadURL <http://downloads.linkedgeodata.org/foo> ;
   dct:description "Some Distribution" ;
   dcat:mediaType "application/n-triples" ;
-  dct:format eg:format ;  
+  dct:format "format" ;  
   dct:licence eg:odbl ;
   adms:status eg:status ;
   dcat:byteSize 1000000 ;
