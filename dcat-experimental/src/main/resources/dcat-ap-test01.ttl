@@ -41,7 +41,7 @@ eg:LinkedGeoData
   ] ;
   dcat:contactPoint [
     vcard:fn "Claus" ;
-    vcard:hasEmail <mailto:cs@uni-leipzig.de> 
+    vcard:hasEmail <mailto:cs@uni-leipzig.de2> 
   ] ;
   dcat:distribution eg:myDataset01_Distribution01 ;
   .
@@ -51,7 +51,7 @@ eg:myDataset01_Distribution01
   a dcat:Distribution ;
   dct:title "Distribution" ;
   dcat:accessURL <http://downloads.linkedgeodata.org/foo> ;
-  dcat:downloadURL <http://downloads.linkedgeodata.org/foo> ;
+  dcat:downloadURL <http://downloads.linkedgeodata.org/foobar> ;
   dct:description "Some Distribution" ;
   dcat:mediaType "application/n-triples" ;
   dct:format "format" ;  
@@ -64,7 +64,7 @@ eg:myDataset01_Distribution01
   foaf:page <http://foo.bar> ;
   dct:language eg:en ;
   dct:conformsTo eg:conformsTo ;
-  spdx:checksumValue [
+  spdx:checksum [
     spdx:checksumValue "abcde" ;
     spdx:algorithm eg:sha1
   ]

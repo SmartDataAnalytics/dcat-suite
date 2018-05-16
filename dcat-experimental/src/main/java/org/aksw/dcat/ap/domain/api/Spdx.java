@@ -7,19 +7,16 @@ import org.apache.jena.rdf.model.ResourceFactory;
 public class Spdx {
 	public static final String NS = "http://spdx.org/rdf/terms#";
 	
-	public static final String _Checksum = NS + "checksum";
+	public static final String _Checksum = NS + "Checksum";
+
+	public static final String _checksum = NS + "checksum";
 	public static final String _checksumValue = NS + "checksumValue";
 	public static final String _algorithm = NS + "algorithm";
 	
-	public static Resource resource(String uri) {
-		return ResourceFactory.createProperty(uri);
-	}
-
-	public static Property property(String uri) {
-		return ResourceFactory.createProperty(uri);
-	}
 	
-	public static Resource Checksum = resource(_Checksum);
-	public static Property checksumValue = property(_checksumValue);
-	public static Property algorithm = property(_algorithm);
+	public static Resource Checksum = ResourceFactory.createResource(_Checksum);
+
+	public static Property checksum = ResourceFactory.createProperty(_checksum);
+	public static Property checksumValue = ResourceFactory.createProperty(_checksumValue);
+	public static Property algorithm = ResourceFactory.createProperty(_algorithm);
 }

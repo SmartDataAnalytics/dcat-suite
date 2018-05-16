@@ -18,13 +18,26 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.NullIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 
-class PseudoNode
+/**
+ * A node implementation which conceptually allows enumerating a collection of
+ * triples where this node acts as a subject.
+ * 
+ * This enumeration is based on a map whose keys correspond to predicates,
+ * and the values to functions that, for a given {@link PropertySource}, yield a
+ * {@link PseudoRdfProperty}. The latter combines obtaining a reference to
+ * (a collection of) property values from the PropertySource with exposing it as a collection of
+ * {@link Node} instances.
+ * 
+ * @author Claus Stadler, May 16, 2018
+ *
+ */
+public class PseudoNode
 	extends Node_Concrete
 {
 	//protected PropertySource entity;
 	//protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
 
-	protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
+	protected Map<String, Function<PropertySource, PseudoRdfProperty>> predicateToAccessor;
 	protected PropertySource source;
 	
 	//protected PropertySource source;
@@ -38,11 +51,11 @@ class PseudoNode
 			//Function<? super PropertySource, ? extends Object> getIdentifier) {
 		super(source);
 		this.source = source;
-		this.propertyToAccessor = propertyToAccessor;
+		this.predicateToAccessor = propertyToAccessor;
 	}
 	
     public Map<String, Function<PropertySource, PseudoRdfProperty>> getPropertyToAccessor() {
-		return propertyToAccessor;
+		return predicateToAccessor;
 	}
 
 	public PropertySource getSource() {
@@ -76,7 +89,7 @@ class PseudoNode
     
     
 	public PseudoRdfProperty getProperty(String property) {
-		Function<PropertySource, PseudoRdfProperty> schemaProperty = propertyToAccessor.get(property);
+		Function<PropertySource, PseudoRdfProperty> schemaProperty = predicateToAccessor.get(property);
 		if(schemaProperty == null) {
 			throw new RuntimeException("Property " + property + " not mapped for access over " + source);
 		}
@@ -105,7 +118,7 @@ class PseudoNode
 
 	
 	public ExtendedIterator<Triple> listProperties() {
-		Set<String> allKnownProperties = propertyToAccessor.keySet();
+		Set<String> allKnownProperties = predicateToAccessor.keySet();
 		return listProperties(allKnownProperties);
 	}
     

@@ -68,45 +68,50 @@ eg:dcatApMappingCollection
               m:target dcat:Dataset      ; m:predicate dct:spatial            ; m:key "extra:spatial_uri" ] ;
   m:mapping [ a m:TemporalMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:temporal           ; m:keys ("extra:temporal_start" "extra:temporal_end") ] ;
-  m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Dataset      ; m:predicate dct:publisher          ; m:key "extra:publisher_uri" ] ;
+# Mapping for dct:publisher is currently hard coded
+#  m:mapping [ m:type r2rml:IRI ;
+#              m:target dcat:Dataset      ; m:predicate dct:publisher          ; m:key "extra:publisher_uri" ] ;
   m:mapping [ m:target foaf:Agent        ; m:predicate foaf:name              ; m:key "extra:publisher_name" ] ;
-  m:mapping [ m:target foaf:Agent        ; m:predicate foaf:mbox              ; m:key "extra:publisher_email" ] ;
-  m:mapping [ m:target foaf:Agent        ; m:predicate foaf:homepage          ; m:key "extra:publisher_url" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target foaf:Agent        ; m:predicate foaf:mbox              ; m:key "extra:publisher_email" ] ;
+  m:mapping [ m:type r2rml:IRI ;
+              m:target foaf:Agent        ; m:predicate foaf:homepage          ; m:key "extra:publisher_url" ] ;
   m:mapping [ m:type r2rml:IRI ;
               m:target foaf:Agent        ; m:predicate dct:type               ; m:key "extra:publisher_type" ] ;
+#  m:mapping [ m:type r2rml:IRI ;
+#              m:target dcat:Dataset      ; m:predicate dcat:contactPoint      ; m:key "extra:contact_uri" ] ;
+  m:mapping [ m:target vcard:Kind        ; m:predicate vcard:fn               ; m:key "extra:contact_name" ] ;
   m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Dataset      ; m:predicate dcat:contactPoint      ; m:key "extra:contact_uri" ] ;
-  m:mapping [ m:target vcard:Kind        ; m:predicate vcard:fn                      ; m:key "extra:contact_name" ] ;
-  m:mapping [ m:target vcard:Kind        ; m:predicate vcard:hasEmail         ; m:key "extra:contact_email" ] ;
-  m:mapping [ a m:RelationMapping ; 
-              m:target dcat:Dataset      ; m:predicate dcat:destribution      ; m:key "resources" ] ;
+              m:target vcard:Kind        ; m:predicate vcard:hasEmail         ; m:key "extra:contact_email" ] ;
+# Mapping for dcat:distribution is currently hard coded
+#  m:mapping [ a m:RelationMapping ; 
+#              m:target dcat:Dataset      ; m:predicate dcat:destribution      ; m:key "resources" ] ;
   m:mapping [ m:target dcat:Distribution ; m:predicate dct:title              ; m:key "name" ] ;
   m:mapping [ m:type r2rml:IRI ;
               m:target dcat:Distribution ; m:predicate dcat:accessURL         ; m:key "url" ] ;
   m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Distribution ; m:predicate dcat:downloadURL       ; m:key "download_url" ] ;
+              m:target dcat:Distribution ; m:predicate dcat:downloadURL       ; m:key "others:download_url" ] ;
   m:mapping [ m:target dcat:Distribution ; m:predicate dct:description        ; m:key "description" ] ;
   m:mapping [ m:target dcat:Distribution ; m:predicate dcat:mediaType         ; m:key "mimetype" ] ;
   m:mapping [ m:target dcat:Distribution ; m:predicate dct:format             ; m:key "format" ] ;
   m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Distribution ; m:predicate dct:license            ; m:key "license" ] ;
+              m:target dcat:Distribution ; m:predicate dct:license            ; m:key "others:license" ] ;
   m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Distribution ; m:predicate adms:status            ; m:key "status" ] ;
+              m:target dcat:Distribution ; m:predicate adms:status            ; m:key "others:status" ] ;
   m:mapping [ m:type xsd:decimal ;
               m:target dcat:Distribution ; m:predicate dcat:byteSize          ; m:key "size" ] ;
   m:mapping [ m:type xsd:dateTime ;
               m:target dcat:Distribution ; m:predicate dct:issued             ; m:key "issued" ] ;
   m:mapping [ m:type xsd:dateTime ;
               m:target dcat:Distribution ; m:predicate dct:modified           ; m:key "modified" ] ;
+  m:mapping [ # m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dct:rights             ; m:key "others:rights" ] ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate foaf:page              ; m:key "others:documentation" ] ;
+  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
+              m:target dcat:Distribution ; m:predicate dct:conformsTo         ; m:key "others:conformsTo" ] ;
+  m:mapping [ m:target spdx:Checksum     ; m:predicate spdx:checksumValue     ; m:key "others:hash" ] ;
   m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Distribution ; m:predicate dct:rights             ; m:key "rights" ] ;
-  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
-              m:target dcat:Distribution ; m:predicate foaf:page              ; m:key "documentation" ] ;
-  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
-              m:target dcat:Distribution ; m:predicate dct:conformsTo         ; m:key "contformsTo" ] ;
-  m:mapping [ m:target spdx:Checksum     ; m:predicate spdx:checksumValue     ; m:key "hash" ] ;
-  m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
-              m:target spdx:Checksum     ; m:predicate spdx:algorithm         ; m:key "hash_algorithm" ]
+              m:target spdx:Checksum     ; m:predicate spdx:algorithm         ; m:key "others:hash_algorithm" ]
   .
 

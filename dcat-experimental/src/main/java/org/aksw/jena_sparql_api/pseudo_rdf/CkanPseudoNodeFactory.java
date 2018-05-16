@@ -14,6 +14,7 @@ import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanResource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourcePrefix;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.SingleValuedAccessorFromPropertyOps;
+import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.dcat.util.view.CastConverter;
 import org.aksw.dcat.util.view.CollectionAccessorFromCollection;
@@ -21,9 +22,12 @@ import org.aksw.dcat.util.view.CollectionAccessorFromCollectionValue;
 import org.aksw.dcat.util.view.CollectionAccessorSingleton;
 import org.aksw.dcat.util.view.CollectionFromConverter;
 import org.aksw.dcat.util.view.LazyCollection;
+import org.aksw.dcat.util.view.LazyMap;
 import org.aksw.dcat.util.view.SetFromCkanExtras;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
 import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
+import org.aksw.dcat.util.view.SingleValuedAccessorFromMap;
+import org.aksw.dcat.util.view.SingleValuedAccessorImpl;
 import org.aksw.jena_sparql_api.beans.model.EntityModel;
 import org.aksw.jena_sparql_api.beans.model.EntityOps;
 import org.aksw.jena_sparql_api.beans.model.PropertyOps;
@@ -41,6 +45,8 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD;
+import org.apache.jena.vocabulary.VCARD4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ConversionServiceFactoryBean;
@@ -172,6 +178,7 @@ class AccessorSupplierCkanResource
 		super(delegate);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Function<CkanResource, ? extends SingleValuedAccessor<T>> createAccessor(String name, Class<T> clazz) {
 		Function<CkanResource, ? extends SingleValuedAccessor<T>> result;
@@ -181,9 +188,19 @@ class AccessorSupplierCkanResource
 		String namespace = parts.length == 2 ? parts[0] : "";
 		String localName = parts.length == 2 ? parts[1] : parts[0];
 	
-		if(namespace.equals("extra")) {
+		if(namespace.equals("others")) {
 			// FIXME hack ... need a converter in general
-			result = null; //(SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanResource, localName));
+//			result = null; //(SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanResource, localName));
+			result = ckanResource -> (SingleValuedAccessor<T>)new SingleValuedAccessorFromMap<>(
+					new LazyMap<>(
+							new SingleValuedAccessorImpl<>(ckanResource::getOthers, ckanResource::setOthers), HashMap::new),
+							localName);
+
+//			CkanResource x = new CkanResource();
+//			result.apply(x).set((T)"http://foobar");
+//			System.out.println(x.getOthers());
+			
+			
 		} else {
 			result = delegate.createAccessor(localName, clazz);
 		}
@@ -240,6 +257,9 @@ class PropertySourceFromAccessorSupplier<S>
 	
 	public PropertySourceFromAccessorSupplier(S source, AccessorSupplierFactory<S> accessorSupplierFactory) {
 		super();
+		Objects.requireNonNull(source);
+		Objects.requireNonNull(accessorSupplierFactory);
+		
 		this.source = source;
 		this.accessorSupplierFactory = accessorSupplierFactory;
 	}
@@ -281,6 +301,9 @@ public class CkanPseudoNodeFactory {
 
 	public Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetPublisherAccessors = new HashMap<>();
 	
+	public Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetContactPointAccessors = new HashMap<>();
+	public Map<String, Function<PropertySource, PseudoRdfProperty>> ckanResourceHashAccessors = new HashMap<>();
+
 	// Function to obtain a key from datasets/distributions beyond their URIs; used to identify equivalences when updating resources
 	protected Function<RDFNode, Node> getDatasetKey = r -> !r.isResource() ? null : Optional.ofNullable(r.asResource().getProperty(DCTerms.title)).map(p -> p.getObject().asNode()).orElse(null);
 	protected Function<RDFNode, Node> getDistributionKey = r -> !r.isResource() ? null : Optional.ofNullable(r.asResource().getProperty(DCTerms.title)).map(p -> p.getObject().asNode()).orElse(null);
@@ -315,18 +338,18 @@ public class CkanPseudoNodeFactory {
 	 */
 	public static <T> void addSimpleMapping(
 			Map<String, Function<PropertySource, PseudoRdfProperty>> registry,
-			String p, String attr, Class<T> attrClass, NodeMapper<T> nodeMapper) {		
+			String p, String attr, Class<T> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper) {		
 
 		registry.put(p,
 				s -> new PseudoRdfObjectPropertyImpl<>(
 							s.getPropertyAsSet(attr, attrClass),
-							new RdfTypeRDFDatatype<>(attrClass),
+							rdfType,
 							nodeMapper));
 	}
 
 
 	public static void addStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr) {
-		addSimpleMapping(registry, p, attr, String.class, NodeMapperFactory.string);
+		addSimpleMapping(registry, p, attr, String.class, new RdfTypeRDFDatatype<>(String.class), NodeMapperFactory.string);
 	}
 	
 
@@ -430,7 +453,7 @@ public class CkanPseudoNodeFactory {
 		
 		if(dtypeUri.equals(MappingVocab.r2rmlIRI.getURI())) {
 			validateAccessor(accessorSupplierFactory, attr, String.class);			
-			addUriStringMapping(registry, dtypeUri, attr);
+			addUriStringMapping(registry, p, attr);
 		} else {
 			RDFDatatype rdfDatatype = typeMapper.getTypeByName(dtypeUri);
 			if(rdfDatatype == null) {
@@ -440,12 +463,12 @@ public class CkanPseudoNodeFactory {
 			NodeMapper<T> nodeMapper = NodeMapperFactory.from(clazz);
 			
 			validateAccessor(accessorSupplierFactory, attr, clazz);
-			addSimpleMapping(registry, p, attr, clazz, nodeMapper);
+			addSimpleMapping(registry, p, attr, clazz, new RdfTypeRDFDatatype<>(clazz), nodeMapper);
 		}
 	}
 
 	public static void addUriStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr) {
-		addSimpleMapping(registry, p, attr, String.class, NodeMapperFactory.uriString);
+		addSimpleMapping(registry, p, attr, String.class, new RdfTypeUri(), NodeMapperFactory.uriString);
 	}
 
 	
@@ -537,20 +560,22 @@ public class CkanPseudoNodeFactory {
 				.filterKeep(RDFNode::isResource).mapWith(RDFNode::asResource).toList();
 
 		//Map<String, MappingProcessor> mappingProcessorRegistry = new HashMap<>();
-		
-		targetToAccessorFactory.put(CkanDataset.class, new AccessorSupplierCkanDataset(AccessorSupplierFactoryClass.create(CkanDataset.class)));
-		targetToAccessorFactory.put(CkanResource.class, new AccessorSupplierCkanResource(AccessorSupplierFactoryClass.create(CkanResource.class)));
-		
+				
 		
 		Map<RDFNode, Map<String, Function<PropertySource, PseudoRdfProperty>>> targetToAccessors = new HashMap<>();
 		targetToAccessors.put(DCAT.Dataset, ckanDatasetAccessors);
 		targetToAccessors.put(DCAT.Distribution, ckanResourceAccessors);
 		targetToAccessors.put(FOAF.Agent, ckanDatasetPublisherAccessors);
-		
+		targetToAccessors.put(VCARD4.Kind, ckanDatasetContactPointAccessors);
+		targetToAccessors.put(Spdx.Checksum, ckanResourceHashAccessors);
+
 		
 		Map<RDFNode, Class<?>> targetToEntityClass = new HashMap<>();
 		targetToEntityClass.put(DCAT.Dataset, CkanDataset.class);
 		targetToEntityClass.put(DCAT.Distribution, CkanResource.class);
+		targetToEntityClass.put(FOAF.Agent, CkanDataset.class);
+		targetToEntityClass.put(VCARD4.Kind, CkanDataset.class);
+		targetToEntityClass.put(Spdx.Checksum, CkanResource.class);
 		
 		for(Resource mapping : mappings) {
 			MappingUtils.applyMappingDefaults(mapping);
@@ -578,7 +603,7 @@ public class CkanPseudoNodeFactory {
 		RDFNode target = mapping.getProperty(MappingVocab.target).getObject();
 		
 		Class<?> targetEntityClass = targetToEntityClass.get(target);
-		AccessorSupplierFactory<?> accessorFactory = targetToAccessorFactory.get(targetEntityClass);
+		AccessorSupplierFactory<?> accessorSupplierFactory = targetToAccessorFactory.get(targetEntityClass);
 		
 		
 		// Resolve the target to the mapping registry
@@ -596,7 +621,7 @@ public class CkanPseudoNodeFactory {
 			//typeMapper.getTypeByName(dtype.getURI());
 			
 			System.out.println("Adding " + predicate + " -> " + key);
-			CkanPseudoNodeFactory.addLiteralMapping(accessorFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+			CkanPseudoNodeFactory.addLiteralMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
 			//if(type.get)
 			
 		} else if(mappingType.equals(MappingVocab.CollectionMapping.getURI())) {
@@ -604,14 +629,14 @@ public class CkanPseudoNodeFactory {
 			String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
 			String key = mapping.getProperty(MappingVocab.key).getString();
 
-			CkanPseudoNodeFactory.addCollectionMapping(accessorFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+			CkanPseudoNodeFactory.addCollectionMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
 			
 		} else if(mappingType.equals(MappingVocab.JsonArrayMapping.getURI())) {
 			Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
 			String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
 			String key = mapping.getProperty(MappingVocab.key).getString();
 			
-			CkanPseudoNodeFactory.addExtraJsonArrayMapping(accessorFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+			CkanPseudoNodeFactory.addExtraJsonArrayMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
 		} else {
 			logger.warn("Unknown mapping type: " + mappingType);
 		}
@@ -620,6 +645,12 @@ public class CkanPseudoNodeFactory {
 	}
 	
 	public void initDefaults() {
+
+		AccessorSupplierCkanDataset ckanDatasetAccessor = new AccessorSupplierCkanDataset(AccessorSupplierFactoryClass.create(CkanDataset.class));
+		AccessorSupplierCkanResource ckanResourceAccessor = new AccessorSupplierCkanResource(AccessorSupplierFactoryClass.create(CkanResource.class));
+		
+		targetToAccessorFactory.put(CkanDataset.class, ckanDatasetAccessor);
+		targetToAccessorFactory.put(CkanResource.class, ckanResourceAccessor);
 
 		/* datasaset mappings */
 		addStringMapping(ckanDatasetAccessors, DCTerms.title.getURI(), "title");
@@ -635,7 +666,10 @@ public class CkanPseudoNodeFactory {
 		 * requesting properties by the value 
 		 * 
 		 */
-		addRelation(ckanDatasetAccessors, DCAT.distribution, "resources", CkanResource.class, PropertySourceCkanResource::new, ckanResourceAccessors);
+		AccessorSupplierFactory<CkanDataset> ckanDatasetAccessorFactory = getAccessorFactory(CkanDataset.class);
+		AccessorSupplierFactory<CkanResource> ckanResourceAccessorFactory = getAccessorFactory(CkanResource.class);
+
+		addRelation(ckanDatasetAccessors, DCAT.distribution, "resources", CkanResource.class, ckanResource -> new PropertySourceFromAccessorSupplier<>(ckanResource, ckanResourceAccessorFactory), ckanResourceAccessors);
 		
 		/* dataset -> publisher */
 		// Given the property source s, return an accessor to itself
@@ -646,10 +680,28 @@ public class CkanPseudoNodeFactory {
 //						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>()),
 						new RdfTypeSimple<>(CkanDataset::new),
 						new PseudoNodeMapper<>(CkanDataset.class,
-								ckanDataset ->  new PropertySourcePrefix("extra:publisher_", new PropertySourceCkanDataset(ckanDataset)),
+								ckanDataset ->  new PropertySourcePrefix("extra:publisher_",  new PropertySourceFromAccessorSupplier<>(ckanDataset, ckanDatasetAccessorFactory)),
 								ckanDatasetPublisherAccessors)));
 
+
+		ckanDatasetAccessors.put(DCAT.contactPoint.getURI(),
+				s -> new PseudoRdfObjectPropertyImpl<>(
+						new CollectionAccessorSingleton<>((CkanDataset)s.getSource()),
+						new RdfTypeSimple<>(CkanDataset::new),
+						new PseudoNodeMapper<>(CkanDataset.class,
+								ckanDataset -> new PropertySourceFromAccessorSupplier<>(ckanDataset, ckanDatasetAccessorFactory),
+								ckanDatasetContactPointAccessors)));
+
+		//new PropertySourcePrefix("extra:contact_",
 		
+		ckanResourceAccessors.put(Spdx.checksum.getURI(),
+				s -> new PseudoRdfObjectPropertyImpl<>(
+						new CollectionAccessorSingleton<>((CkanResource)s.getSource()),
+						new RdfTypeSimple<>(CkanResource::new),
+						new PseudoNodeMapper<>(CkanResource.class,
+								ckanResource -> new PropertySourceFromAccessorSupplier<>(ckanResource, ckanResourceAccessorFactory),
+								ckanResourceHashAccessors)));
+
 //		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
 //				s -> new PseudoRdfObjectPropertyImpl<>(
 //						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>(s))),
