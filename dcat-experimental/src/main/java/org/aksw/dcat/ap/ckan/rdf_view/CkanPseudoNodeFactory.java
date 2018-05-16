@@ -1,19 +1,15 @@
-package org.aksw.jena_sparql_api.pseudo_rdf;
+package org.aksw.dcat.ap.ckan.rdf_view;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanResource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourcePrefix;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.SingleValuedAccessorFromPropertyOps;
 import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.dcat.util.view.CastConverter;
@@ -22,15 +18,17 @@ import org.aksw.dcat.util.view.CollectionAccessorFromCollectionValue;
 import org.aksw.dcat.util.view.CollectionAccessorSingleton;
 import org.aksw.dcat.util.view.CollectionFromConverter;
 import org.aksw.dcat.util.view.LazyCollection;
-import org.aksw.dcat.util.view.LazyMap;
-import org.aksw.dcat.util.view.SetFromCkanExtras;
 import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromMap;
-import org.aksw.dcat.util.view.SingleValuedAccessorImpl;
-import org.aksw.jena_sparql_api.beans.model.EntityModel;
-import org.aksw.jena_sparql_api.beans.model.EntityOps;
-import org.aksw.jena_sparql_api.beans.model.PropertyOps;
+import org.aksw.jena_sparql_api.pseudo_rdf.MappingUtils;
+import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNodeMapper;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfObjectPropertyImpl;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfProperty;
+import org.aksw.jena_sparql_api.pseudo_rdf.RdfType;
+import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeRDFDatatype;
+import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeSimple;
+import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeUri;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.apache.jena.datatypes.RDFDatatype;
@@ -45,12 +43,9 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD;
 import org.apache.jena.vocabulary.VCARD4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.ConversionServiceFactoryBean;
-import org.springframework.core.convert.ConversionService;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
@@ -70,223 +65,13 @@ import eu.trentorise.opendata.jackan.model.CkanResource;
 //	
 //}
 
-//class PropertySourceFactory<T> {
-//	PropertySource wrap(T entity);
-//}
-class ModelMappingRegistry {
-	
-	public <S> PseudoNodeSchema<S> getPseudoNodeSchema(Class<S> clazz) {
-		return null;
-	}
-	
-	//protected Map<String, Class<?>> type;
-	protected Map<Class<?>, AccessorSupplierFactory<?>> javaClassToRegistry = new HashMap<>();
 
-	
-	protected Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
-
-	
-	public void put() {
-		
-	}
-	
-	public <S> AccessorSupplierFactory<S> getAccessorSupplierFactory(Class<S> clazz) {
-		AccessorSupplierFactory<S> result = (AccessorSupplierFactory<S>)javaClassToRegistry.get(clazz);
-		return result;
-	}
-	
-
-	public PredicateMappingRegistry getPredicateMappingRegistry(Object id) {
-		return null;
-	}
-	
-}
-
-class PredicateMappingRegistry {
-	protected Map<String, Function<PropertySource, PseudoRdfProperty>> predicateMappings;
-	
-	
-	void put(String predicate, Function<PropertySource, PseudoRdfProperty> fn) {
-		
-	}
-	
-	Function<PropertySource, PseudoRdfProperty> get(String predicate) {
-		return predicateMappings.get(predicate);
-	}
-}
 
 //class TypeMappingRegistry<S> {
 //	protected <T> BiFunction<String, Class<T>, Function<S, SingleValuedAccessor<T>>> accessorSupplierFactory;
 //
 //	//protected Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
 //}
-
-interface AccessorSupplierFactory<S> {
-	<T> Function<S, ? extends SingleValuedAccessor<T>> createAccessor(String name, Class<T> clazz);
-}
-
-
-class AccessorSupplierFactoryDelegate<S>
-	implements AccessorSupplierFactory<S>
-{
-	protected AccessorSupplierFactory<S> delegate;
-
-	public AccessorSupplierFactoryDelegate(AccessorSupplierFactory<S> delegate) {
-		super();
-		this.delegate = delegate;
-	}
-
-	@Override
-	public <T> Function<S, ? extends SingleValuedAccessor<T>> createAccessor(String name, Class<T> clazz) {
-		Function<S, ? extends SingleValuedAccessor<T>> result = delegate.createAccessor(name, clazz);
-		return result;
-	}
-}
-
-class AccessorSupplierCkanDataset
-	extends AccessorSupplierFactoryDelegate<CkanDataset>
-{
-	public AccessorSupplierCkanDataset(AccessorSupplierFactory<CkanDataset> delegate) {
-		super(delegate);
-	}
-
-	@Override
-	public <T> Function<CkanDataset, ? extends SingleValuedAccessor<T>> createAccessor(String name, Class<T> clazz) {
-		Function<CkanDataset, ? extends SingleValuedAccessor<T>> result;
-
-		String[] parts = name.split("\\:", 2);
-
-		String namespace = parts.length == 2 ? parts[0] : "";
-		String localName = parts.length == 2 ? parts[1] : parts[0];
-
-		if(namespace.equals("extra")) {
-			// FIXME hack ... need a converter in general
-			result = ckanDataset -> (SingleValuedAccessor<T>)new SingleValuedAccessorFromCollection<>(new SetFromCkanExtras(ckanDataset, localName));
-		} else {
-			result = delegate.createAccessor(localName, clazz);
-		}
-		
-		return result;
-	}
-}
-
-
-class AccessorSupplierCkanResource
-	extends AccessorSupplierFactoryDelegate<CkanResource>
-{
-	public AccessorSupplierCkanResource(AccessorSupplierFactory<CkanResource> delegate) {
-		super(delegate);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> Function<CkanResource, ? extends SingleValuedAccessor<T>> createAccessor(String name, Class<T> clazz) {
-		Function<CkanResource, ? extends SingleValuedAccessor<T>> result;
-	
-		String[] parts = name.split("\\:", 2);
-	
-		String namespace = parts.length == 2 ? parts[0] : "";
-		String localName = parts.length == 2 ? parts[1] : parts[0];
-	
-		if(namespace.equals("others")) {
-			// FIXME hack ... need a converter in general
-//			result = null; //(SingleValuedAccessor<T>)new SingleValuedAccessorFromSet<>(new SetFromCkanExtras(ckanResource, localName));
-			result = ckanResource -> (SingleValuedAccessor<T>)new SingleValuedAccessorFromMap<>(
-					new LazyMap<>(
-							new SingleValuedAccessorImpl<>(ckanResource::getOthers, ckanResource::setOthers), HashMap::new),
-							localName);
-
-//			CkanResource x = new CkanResource();
-//			result.apply(x).set((T)"http://foobar");
-//			System.out.println(x.getOthers());
-			
-			
-		} else {
-			result = delegate.createAccessor(localName, clazz);
-		}
-		
-		return result;
-	}
-}
-
-
-class AccessorSupplierFactoryClass<S>
-	implements AccessorSupplierFactory<S>
-{
-	protected EntityOps entityOps;
-	
-	public AccessorSupplierFactoryClass(EntityOps entityOps) {
-		super();
-		this.entityOps = entityOps;
-	}
-
-	@Override
-	public <T> Function<S, ? extends SingleValuedAccessor<T>> createAccessor(String name, Class<T> clazz) {
-		Function<S, ? extends SingleValuedAccessor<T>> result;
-
-		PropertyOps propertyOps = entityOps.getProperty(name);
-		if(propertyOps != null && propertyOps.acceptsType(clazz)) {
-			result = obj -> new SingleValuedAccessorFromPropertyOps<T>(propertyOps, obj);
-		} else {
-			result = null;
-		}
-		
-		return result;
-	}
-	
-	public static <S> AccessorSupplierFactoryClass<S> create(Class<S> entityClass) {
-
-		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
-        bean.afterPropertiesSet();
-
-        ConversionService conversionService = bean.getObject();
-		EntityOps entityOps = EntityModel.createDefaultModel(entityClass, conversionService);
-
-		AccessorSupplierFactoryClass<S> result = new AccessorSupplierFactoryClass<>(entityOps);
-
-		return result;
-	}
-}
-
-class PropertySourceFromAccessorSupplier<S>
-	implements PropertySource
-{
-	protected S source;
-	protected AccessorSupplierFactory<S> accessorSupplierFactory;
-	//protected Table<String, Class<?>, >
-	
-	public PropertySourceFromAccessorSupplier(S source, AccessorSupplierFactory<S> accessorSupplierFactory) {
-		super();
-		Objects.requireNonNull(source);
-		Objects.requireNonNull(accessorSupplierFactory);
-		
-		this.source = source;
-		this.accessorSupplierFactory = accessorSupplierFactory;
-	}
-
-	@Override
-	public S getSource() {
-		return source;
-	}
-
-	@Override
-	public <T> SingleValuedAccessor<T> getProperty(String name, Class<T> valueType) {
-		Function<S, ? extends SingleValuedAccessor<T>> accessorSupplier = accessorSupplierFactory.createAccessor(name, valueType);
-		Objects.requireNonNull(accessorSupplier, "Could not obtain an access supplier for attribute '" + name + "' of type " + valueType + " in " + accessorSupplierFactory);
-		SingleValuedAccessor<T> result = accessorSupplier.apply(source);
-
-		return result;
-	}
-	
-}
-
-interface PseudoNodeSchema<S> {
-	Class<S> getEntityClass();
-	AccessorSupplierFactory<S> getAccessorSupplierFactory(); 		
-	PredicateMappingRegistry getPredicateMappings();
-
-}
-
 
 public class CkanPseudoNodeFactory {	
 	private static final Logger logger = LoggerFactory.getLogger(CkanPseudoNodeFactory.class);

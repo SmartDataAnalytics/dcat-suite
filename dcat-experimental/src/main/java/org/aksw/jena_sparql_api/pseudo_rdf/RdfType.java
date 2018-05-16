@@ -7,8 +7,8 @@ import org.apache.jena.rdf.model.RDFNode;
  * Supports creation of new instances based on the arguments passed to the newInstance method.
  * 
  * 
+ * TODO Investigate potential consolidation with mapper's RdfType class ; it may turn out that the other type class should extend this one
  * TODO The type should expose the shape about which attributes it needs as input
- * TODO Investigate potential consolidation with mapper's RdfType class 
  * 
  * 
  * @author raven Apr 16, 2018

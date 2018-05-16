@@ -10,7 +10,7 @@ import org.apache.jena.graph.Node;
 import com.google.common.base.Converter;
 import com.google.common.collect.Range;
 
-class PseudoRdfObjectPropertyImpl<T>
+public class PseudoRdfObjectPropertyImpl<T>
 	implements PseudoRdfProperty
 {
 	/** The accessor to retrieve the enity */

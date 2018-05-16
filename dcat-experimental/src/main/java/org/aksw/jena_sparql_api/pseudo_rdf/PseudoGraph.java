@@ -7,7 +7,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.util.iterator.ExtendedIterator;
 
-class PseudoGraph
+public class PseudoGraph
 	extends GraphBase
 {
 

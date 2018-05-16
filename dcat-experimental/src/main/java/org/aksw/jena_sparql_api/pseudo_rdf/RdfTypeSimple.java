@@ -4,11 +4,25 @@ import java.util.function.Supplier;
 
 import org.apache.jena.rdf.model.RDFNode;
 
+/**
+ * RdfType implementation that delegates instance creation to a supplier that simply
+ * yields new objects.
+ * 
+ * 
+ * @author Claus Stadler, May 16, 2018
+ *
+ * @param <T>
+ */
 public class RdfTypeSimple<T>
 	implements RdfType<T>
 {
 	protected Supplier<T> instanceSupplier;
 
+	/**
+	 * Convenience constructor that takes the no-arg ctor of the provided class.
+	 * 
+	 * @param clazz
+	 */
 	public RdfTypeSimple(Class<T> clazz) {
 		this(() -> newInstance(clazz));
 	}

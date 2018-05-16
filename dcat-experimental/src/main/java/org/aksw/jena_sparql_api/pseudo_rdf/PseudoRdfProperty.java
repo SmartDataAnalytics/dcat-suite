@@ -7,7 +7,7 @@ import org.apache.jena.graph.Node;
 
 import com.google.common.collect.Range;
 
-interface PseudoRdfProperty {
+public interface PseudoRdfProperty {
 	/**
 	 * A collection view of the property values
 	 * Implementations should support removals

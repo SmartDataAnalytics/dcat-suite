@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
+import org.aksw.dcat.ap.ckan.rdf_view.CkanPseudoNodeFactory;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.enhanced.BuiltinPersonalities;
@@ -29,7 +29,6 @@ import org.apache.jena.system.JenaSystem;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.XSD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,46 +37,6 @@ import com.google.gson.GsonBuilder;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
-
-class MappingVocab {
-	public static final Property r2rmlIRI = ResourceFactory.createProperty("http://www.w3.org/ns/r2rml#IRI");
-	
-	public static final String NS = "http://example.org/";
-		
-	public static final Property mapping = ResourceFactory.createProperty("http://example.org/mapping");	
-	public static final Property type = ResourceFactory.createProperty(NS + "type");
-
-	public static final Property LiteralMapping = ResourceFactory.createProperty(NS + "LiteralMapping");
-	public static final Property CollectionMapping = ResourceFactory.createProperty(NS + "CollectionMapping");
-	public static final Property JsonArrayMapping = ResourceFactory.createProperty(NS + "JsonArrayMapping");
-	public static final Property TemporalMapping = ResourceFactory.createProperty(NS + "TemporalMapping");
-
-	public static final Property target = ResourceFactory.createProperty(NS + "target");
-	public static final Property predicate = ResourceFactory.createProperty(NS + "predicate");
-	public static final Property key = ResourceFactory.createProperty(NS + "key");
-
-}
-
-class MappingUtils {
-	public static Map<String, Object> getMappingRegistry() {
-		Map<String, Object> result = null;
-		return result;
-	}
-	
-	public static void applyMappingDefaults(Resource r) {
-		// If the resource does not have a concrete mapping type, add String
-		if(!r.hasProperty(RDF.type)) {
-			r.addProperty(RDF.type, MappingVocab.LiteralMapping);
-		}
-		
-		// If the literal mapping is without type, apply xsd:string
-		if(r.hasProperty(RDF.type, MappingVocab.LiteralMapping) || r.hasProperty(RDF.type, MappingVocab.CollectionMapping)) {
-			if(!r.hasProperty(MappingVocab.type)) {
-				r.addProperty(MappingVocab.type, XSD.xstring);
-			}
-		}		
-	}
-}
 
 
 

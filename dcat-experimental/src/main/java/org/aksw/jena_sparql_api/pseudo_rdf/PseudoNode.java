@@ -20,7 +20,7 @@ import org.apache.jena.util.iterator.WrappedIterator;
 
 /**
  * A node implementation which conceptually allows enumerating a collection of
- * triples where this node acts as a subject.
+ * triples of which this node acts as a subject.
  * 
  * This enumeration is based on a map whose keys correspond to predicates,
  * and the values to functions that, for a given {@link PropertySource}, yield a
