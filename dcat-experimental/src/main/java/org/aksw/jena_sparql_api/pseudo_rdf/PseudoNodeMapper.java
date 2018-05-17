@@ -3,7 +3,7 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
+import org.aksw.commons.accessors.PropertySource;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.apache.jena.graph.Node;
 

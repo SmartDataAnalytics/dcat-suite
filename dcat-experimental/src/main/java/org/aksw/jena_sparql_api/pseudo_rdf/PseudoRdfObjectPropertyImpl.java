@@ -2,8 +2,8 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 
 import java.util.Collection;
 
-import org.aksw.dcat.util.view.CollectionAccessor;
-import org.aksw.dcat.util.view.CollectionFromConverter;
+import org.aksw.commons.accessors.CollectionAccessor;
+import org.aksw.commons.accessors.CollectionFromConverter;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.apache.jena.graph.Node;
 

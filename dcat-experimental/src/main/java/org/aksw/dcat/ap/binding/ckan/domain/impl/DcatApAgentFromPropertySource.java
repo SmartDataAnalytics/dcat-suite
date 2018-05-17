@@ -1,7 +1,8 @@
 package org.aksw.dcat.ap.binding.ckan.domain.impl;
 
+import org.aksw.commons.accessors.PropertySource;
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.accessors.DcatApAgentAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 //interface AccessorFactory<C, P> {
 //	<T> SingleValuedAccessor<T> getProperty(C model, P property, Class<T> valueType);

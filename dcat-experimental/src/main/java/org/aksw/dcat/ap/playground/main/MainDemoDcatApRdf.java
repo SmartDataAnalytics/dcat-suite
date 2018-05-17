@@ -1,8 +1,7 @@
 package org.aksw.dcat.ap.playground.main;
 
+import org.aksw.commons.accessors.PropertySource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.DcatApAgentFromPropertySource;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.DcatApCkanAgentView;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
 import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
@@ -12,6 +11,7 @@ import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistributionImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.trash.DcatApCkanAgentView;
 import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.rdf.model.Model;

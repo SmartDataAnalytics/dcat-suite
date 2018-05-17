@@ -2,9 +2,9 @@ package org.aksw.dcat.ap.binding.jena.domain.impl;
 
 import java.util.Set;
 
-import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
-import org.aksw.dcat.util.view.SingleValuedAccessorImpl;
+import org.aksw.commons.accessors.SingleValuedAccessor;
+import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
+import org.aksw.commons.accessors.SingleValuedAccessorImpl;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.aksw.jena_sparql_api.utils.model.SetFromMappedPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;

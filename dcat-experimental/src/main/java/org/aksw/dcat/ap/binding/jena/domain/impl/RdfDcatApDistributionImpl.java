@@ -3,10 +3,10 @@ package org.aksw.dcat.ap.binding.jena.domain.impl;
 import java.time.Instant;
 import java.util.Set;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.accessors.DcatApDistributionAccessor;
 import org.aksw.dcat.ap.domain.api.View;
 import org.aksw.dcat.jena.domain.api.Adms;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;

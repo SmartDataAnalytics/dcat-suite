@@ -1,7 +1,7 @@
 package org.aksw.dcat.ap.domain.accessors;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.api.ResourceLike;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 interface ResourceLikeAccessor
 	extends ResourceLike

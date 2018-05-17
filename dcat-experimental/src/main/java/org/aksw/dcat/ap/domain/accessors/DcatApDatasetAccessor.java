@@ -4,13 +4,13 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Set;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApContactPoint;
 import org.aksw.dcat.ap.domain.api.DcatApDataset;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
 import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 public interface DcatApDatasetAccessor
 	extends DcatApDataset

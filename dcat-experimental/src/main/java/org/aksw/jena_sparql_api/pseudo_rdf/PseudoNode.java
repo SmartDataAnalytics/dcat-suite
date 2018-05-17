@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
+import org.aksw.commons.accessors.PropertySource;
 import org.apache.jena.graph.BlankNodeId;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;

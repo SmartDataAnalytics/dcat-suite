@@ -1,13 +1,13 @@
 package org.aksw.dcat.ap.binding.jena.domain.impl;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
+import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
 import org.aksw.dcat.ap.domain.accessors.DcatApAgentAccessor;
 import org.aksw.dcat.jena.domain.impl.DcatEntityImpl;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.aksw.jena_sparql_api.utils.model.SetFromMappedPropertyValues;
-import org.aksw.move_to_proper_place.TMP;
+import org.aksw.jena_sparql_api.vocab.TMP;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;

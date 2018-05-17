@@ -1,7 +1,7 @@
 package org.aksw.dcat.ap.domain.accessors;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 /**
  * Default implementations that delegate getters / setters to accessor-supplying methods 

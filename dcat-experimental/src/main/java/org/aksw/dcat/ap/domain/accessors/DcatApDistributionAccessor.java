@@ -3,8 +3,8 @@ package org.aksw.dcat.ap.domain.accessors;
 import java.time.Instant;
 import java.util.Set;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 public interface DcatApDistributionAccessor
 	extends DcatApDistribution

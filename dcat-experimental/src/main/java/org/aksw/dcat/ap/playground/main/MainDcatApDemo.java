@@ -2,11 +2,11 @@ package org.aksw.dcat.ap.playground.main;
 
 import java.util.Collection;
 
-import org.aksw.dcat.ap.binding.ckan.domain.impl.CkanPersonalities;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.Implementation;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApDataset;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.trash.CkanPersonalities;
+import org.aksw.dcat.ap.trash.Implementation;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 

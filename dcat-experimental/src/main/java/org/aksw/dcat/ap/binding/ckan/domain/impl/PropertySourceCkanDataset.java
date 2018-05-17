@@ -1,6 +1,7 @@
 package org.aksw.dcat.ap.binding.ckan.domain.impl;
 
-import org.aksw.dcat.util.view.SingleValuedAccessor;
+import org.aksw.commons.accessors.PropertySource;
+import org.aksw.commons.accessors.SingleValuedAccessor;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 

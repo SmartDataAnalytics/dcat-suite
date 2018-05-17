@@ -1,8 +1,8 @@
 package org.aksw.dcat.ap.domain.accessors;
 
-import org.aksw.dcat.ap.binding.ckan.domain.impl.Personality;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
+import org.aksw.commons.accessors.PropertySource;
 import org.aksw.dcat.ap.domain.api.View;
+import org.aksw.dcat.ap.trash.Personality;
 
 public class PropertyBasedView
 	implements View

@@ -2,11 +2,13 @@ package org.aksw.dcat.ap.binding.ckan.domain.impl;
 
 import java.util.function.Function;
 
+import org.aksw.commons.accessors.PropertySource;
+import org.aksw.commons.accessors.SingleValuedAccessor;
+import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
+import org.aksw.commons.accessors.SingleValuedAccessorFromPropertyOps;
+import org.aksw.dcat.ap.binding.ckan.rdf_view.SetFromCkanExtras;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
-import org.aksw.dcat.util.view.SetFromCkanExtras;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
-import org.aksw.dcat.util.view.SingleValuedAccessorFromCollection;
 import org.aksw.jena_sparql_api.beans.model.EntityModel;
 import org.aksw.jena_sparql_api.beans.model.EntityOps;
 import org.aksw.jena_sparql_api.beans.model.PropertyOps;

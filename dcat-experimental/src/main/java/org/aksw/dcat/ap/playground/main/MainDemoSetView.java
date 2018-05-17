@@ -3,7 +3,7 @@ package org.aksw.dcat.ap.playground.main;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.aksw.dcat.util.view.SingleValuedAccessorDirect;
+import org.aksw.commons.accessors.SingleValuedAccessorDirect;
 
 public class MainDemoSetView {
 	public static void main(String[] args) {

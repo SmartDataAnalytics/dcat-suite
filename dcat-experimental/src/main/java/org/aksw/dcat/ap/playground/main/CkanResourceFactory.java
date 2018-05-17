@@ -1,6 +1,6 @@
 package org.aksw.dcat.ap.playground.main;
 
-import org.aksw.dcat.ap.binding.ckan.domain.impl.DcatApCkanDatsetViewImpl;
+import org.aksw.dcat.ap.trash.DcatApCkanDatsetViewImpl;
 
 public class CkanResourceFactory {
 	DcatApCkanDatsetViewImpl createDataset() {

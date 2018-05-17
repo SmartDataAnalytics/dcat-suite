@@ -4,8 +4,8 @@ import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Objects;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.collections.SinglePrefetchIterator;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 public class CollectionFromSingleValuedAccessor<T>
 	extends AbstractCollection<T>

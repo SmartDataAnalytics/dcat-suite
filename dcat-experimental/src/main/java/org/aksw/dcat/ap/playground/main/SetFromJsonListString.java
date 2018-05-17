@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.collections.SinglePrefetchIterator;
-import org.aksw.dcat.util.view.SingleValuedAccessor;
 
 import com.google.common.collect.Iterators;
 import com.google.common.reflect.TypeToken;

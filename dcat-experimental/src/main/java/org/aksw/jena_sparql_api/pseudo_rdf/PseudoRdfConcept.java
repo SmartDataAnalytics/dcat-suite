@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySource;
+import org.aksw.commons.accessors.PropertySource;
+import org.aksw.dcat.ap.binding.ckan.rdf_view.CkanPseudoNodeFactory;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
-import org.aksw.dcat.ap.ckan.rdf_view.CkanPseudoNodeFactory;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.enhanced.BuiltinPersonalities;
