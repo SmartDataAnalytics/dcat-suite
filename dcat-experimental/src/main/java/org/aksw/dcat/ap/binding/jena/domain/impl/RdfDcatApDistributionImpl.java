@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.accessors.DcatApDistributionAccessor;
-import org.aksw.dcat.ap.domain.api.View;
 import org.aksw.dcat.jena.domain.api.Adms;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.apache.jena.enhanced.EnhGraph;
@@ -20,30 +19,6 @@ public class RdfDcatApDistributionImpl
 {
 	public RdfDcatApDistributionImpl(Node node, EnhGraph graph) {
 		super(node, graph);
-	}
-
-	@Override
-	public Object getEntity() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object getContext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <T extends View> boolean canRegardAs(Class<T> view) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public <T extends View> T regardAs(Class<T> view) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

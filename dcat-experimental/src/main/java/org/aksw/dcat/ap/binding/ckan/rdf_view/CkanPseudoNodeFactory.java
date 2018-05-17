@@ -19,13 +19,15 @@ import org.aksw.commons.accessors.PropertySource;
 import org.aksw.commons.accessors.PropertySourcePrefix;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.converters.CastConverter;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingUtils;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNodeMapper;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfObjectPropertyImpl;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfPropertyImpl;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfProperty;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfType;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeRDFDatatype;
@@ -37,6 +39,7 @@ import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -52,29 +55,21 @@ import org.slf4j.LoggerFactory;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 
-//class ResourceAttributeComparator
-//	implements Comparator<RDFNode>
-//{
-//	protected Property p;
-//
-//	@Override
-//	public int compare(RDFNode a, RDFNode b) {
-//		boolean result = a.isResource() && b.isResource();
-//		
-//		result = result && Objects.equals(a.asResource().getProperty(p), b.asResource().getProperty(p));
-//		return result;
-//	}
-//	
-//}
-
-
-
-//class TypeMappingRegistry<S> {
-//	protected <T> BiFunction<String, Class<T>, Function<S, SingleValuedAccessor<T>>> accessorSupplierFactory;
-//
-//	//protected Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
-//}
-
+/**
+ * Entry point for creating Jena {@link Node} views over CKAN domain objects.
+ * These Node objects can then be wrapped as {@link Resource}s using Jena's polymophism system:
+ * 
+ * Usage example:
+ * <code>
+ * Model model = ModelFactory.createModelForGraph(new PseudoGraph());
+ * RdfDcatApDataset dcatDataset = model.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(RdfDcatApDataset.class);
+ * // Note: RdfDcatApDataset implements Resource
+ * </code>
+ * 
+ * 
+ * @author Claus Stadler, May 17, 2018
+ *
+ */
 public class CkanPseudoNodeFactory {	
 	private static final Logger logger = LoggerFactory.getLogger(CkanPseudoNodeFactory.class);
 	
@@ -108,11 +103,14 @@ public class CkanPseudoNodeFactory {
 	}
 	
 	public CkanPseudoNodeFactory() {
-		initDefaults();
-		Model mappingModel = RDFDataMgr.loadModel("dcat-ap-ckan-mapping.ttl");
-		loadMappings(mappingModel);
+		this(RDFDataMgr.loadModel("dcat-ap-ckan-mapping.ttl"));
 	}
-	
+
+    public CkanPseudoNodeFactory(Model mappingModel) {
+        initDefaults();
+        loadMappings(mappingModel);
+    }
+
 
 	/**
 	 * Mapping for single valued properties
@@ -128,7 +126,7 @@ public class CkanPseudoNodeFactory {
 			String p, String attr, Class<T> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper) {		
 
 		registry.put(p,
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 							s.getPropertyAsSet(attr, attrClass),
 							rdfType,
 							nodeMapper));
@@ -270,7 +268,7 @@ public class CkanPseudoNodeFactory {
 	 */
 	public static <T> void addCollectionMappingDirect(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, Property p, String attr, Class<T> attrClass) {
 		registry.put(p.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 							new CollectionAccessorFromCollectionValue<>(s.getCollectionProperty(attr, attrClass)),
 							new RdfTypeRDFDatatype<>(attrClass),
 							NodeMapperFactory.from(attrClass)));	
@@ -280,7 +278,7 @@ public class CkanPseudoNodeFactory {
 			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<T> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper) {
 		
 		registry.put(p,
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
 								new LazyCollection<>(
 								s.getCollectionProperty(attr, attrClass),
@@ -294,7 +292,7 @@ public class CkanPseudoNodeFactory {
 			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<T> clazz, RdfType<T> rdfType, NodeMapper<T> nodeMapper) {
 		
 		registry.put(p,
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
 								new CollectionFromConverter<>(
 										new SetFromJsonListString(s.getProperty(attr, String.class), true),
@@ -316,7 +314,7 @@ public class CkanPseudoNodeFactory {
 			Map<String, Function<PropertySource, PseudoRdfProperty>> targetRegistry) {
 
 		registry.put(p.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
 								new LazyCollection<>(
 								s.getCollectionProperty(attr, attrClass),
@@ -330,7 +328,7 @@ public class CkanPseudoNodeFactory {
 	
 	public static <T> Function<PropertySource, PseudoRdfProperty> createLiteralAccessor(String attrName, Class<T> clazz) {
 		Function<PropertySource, PseudoRdfProperty> result = 
-			s -> new PseudoRdfObjectPropertyImpl<>(
+			s -> new PseudoRdfPropertyImpl<>(
 					s.getPropertyAsSet(attrName, clazz),
 					new RdfTypeRDFDatatype<>(clazz),
 					NodeMapperFactory.from(clazz));
@@ -462,7 +460,7 @@ public class CkanPseudoNodeFactory {
 		// Given the property source s, return an accessor to itself
 		// For each source s (itself), wrap it as a new PseudoRdfResource
 		ckanDatasetAccessors.put(DCTerms.publisher.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorSingleton<>((CkanDataset)s.getSource()),
 //						new SingleValuedAccessorDirect<>(new CollectionFromSingleValuedAccessor<>(new SingleValuedAccessorDirect<>()),
 						new RdfTypeSimple<>(CkanDataset::new),
@@ -472,7 +470,7 @@ public class CkanPseudoNodeFactory {
 
 
 		ckanDatasetAccessors.put(DCAT.contactPoint.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorSingleton<>((CkanDataset)s.getSource()),
 						new RdfTypeSimple<>(CkanDataset::new),
 						new PseudoNodeMapper<>(CkanDataset.class,
@@ -482,7 +480,7 @@ public class CkanPseudoNodeFactory {
 		//new PropertySourcePrefix("extra:contact_",
 		
 		ckanResourceAccessors.put(Spdx.checksum.getURI(),
-				s -> new PseudoRdfObjectPropertyImpl<>(
+				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorSingleton<>((CkanResource)s.getSource()),
 						new RdfTypeSimple<>(CkanResource::new),
 						new PseudoNodeMapper<>(CkanResource.class,

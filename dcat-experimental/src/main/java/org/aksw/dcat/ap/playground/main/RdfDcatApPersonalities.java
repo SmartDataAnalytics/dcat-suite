@@ -15,6 +15,5 @@ public class RdfDcatApPersonalities {
 		p.add(RdfDcatApDataset.class, new SimpleImplementation(RdfDcatApDatasetImpl::new));
 		p.add(RdfDcatApDistribution.class, new SimpleImplementation(RdfDcatApDistributionImpl::new));
 		p.add(RdfDcatApAgent.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
-
 	}
 }

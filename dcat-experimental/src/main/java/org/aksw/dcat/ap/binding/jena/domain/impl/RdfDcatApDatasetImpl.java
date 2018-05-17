@@ -16,7 +16,6 @@ import org.aksw.dcat.ap.domain.api.DcatApContactPoint;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
 import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
-import org.aksw.dcat.ap.domain.api.View;
 import org.aksw.dcat.jena.domain.api.Adms;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
@@ -46,30 +45,6 @@ public class RdfDcatApDatasetImpl
 	@Override
 	public RdfDcatApDistribution createDistribution() {
 		return getModel().createResource().as(RdfDcatApDistribution.class);
-	}
-
-	@Override
-	public Object getEntity() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object getContext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <T extends View> boolean canRegardAs(Class<T> view) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public <T extends View> T regardAs(Class<T> view) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

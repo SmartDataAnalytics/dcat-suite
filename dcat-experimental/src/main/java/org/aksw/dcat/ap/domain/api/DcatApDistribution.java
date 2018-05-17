@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.Set;
 
 public interface DcatApDistribution
-	extends View
 {
 	String getTitle();
 	void setTitle(String title);

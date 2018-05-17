@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Set;
 
 public interface DcatApDataset
-	extends View
 {
 	/** Factory method for distributions - does not add them */
 	DcatApDistribution createDistribution();
