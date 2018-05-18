@@ -15,8 +15,7 @@
 
 	<modules>
 		<module>dcat-api-jena-core</module>
-
-		<module>ckan-deploy-core</module>
+		<module>dcat-suite-binding-ckan</module>
 		<module>dcat-suite-cli</module>
 		<module>dcat-suite-debian-cli</module>
 

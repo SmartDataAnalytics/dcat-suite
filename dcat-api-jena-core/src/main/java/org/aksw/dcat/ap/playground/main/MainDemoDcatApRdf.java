@@ -1,15 +1,11 @@
 package org.aksw.dcat.ap.playground.main;
 
-import org.aksw.commons.accessors.PropertySource;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.DcatApAgentFromPropertySource;
-import org.aksw.dcat.ap.binding.ckan.domain.impl.PropertySourceCkanDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDatasetImpl;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistributionImpl;
-import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
 import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
 import org.apache.jena.enhanced.BuiltinPersonalities;
@@ -19,8 +15,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.system.JenaSystem;
 import org.apache.jena.vocabulary.DCTerms;
-
-import eu.trentorise.opendata.jackan.model.CkanDataset;
 
 public class MainDemoDcatApRdf {
 
@@ -69,11 +63,11 @@ public class MainDemoDcatApRdf {
 		
 		// Create the ckan dataset bean
 		// NOTE Unfortunately the Jackan CkanDataset does not seem to cover all attributes
-		CkanDataset ckanDataset = new CkanDataset();
-		
-		// Abstract the bean as something that has properties - so it could also be plain json
-		PropertySource s = new PropertySourceCkanDataset(ckanDataset);
-		DcatApAgent publisher = new DcatApAgentFromPropertySource("extra:publisher_", s);
+//		CkanDataset ckanDataset = new CkanDataset();
+//		
+//		// Abstract the bean as something that has properties - so it could also be plain json
+//		PropertySource s = new PropertySourceCkanDataset(ckanDataset);
+//		DcatApAgent publisher = new DcatApAgentFromPropertySource("extra:publisher_", s);
 		
 		//ckanDataset = new DcatApCkanDatsetViewImpl(ckanDataset, personalities);
 		

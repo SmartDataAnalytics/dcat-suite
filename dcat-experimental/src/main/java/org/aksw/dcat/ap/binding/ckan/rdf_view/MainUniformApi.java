@@ -1,23 +1,14 @@
-package org.aksw.dcat.ap.playground.main;
-
-import java.util.Map;
-import java.util.function.Function;
+package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
-import org.apache.commons.collections4.Trie;
 import org.apache.jena.enhanced.BuiltinPersonalities;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.system.JenaSystem;
-import org.apache.jena.util.iterator.ExtendedIterator;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 

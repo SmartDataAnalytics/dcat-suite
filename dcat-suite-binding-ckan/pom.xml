@@ -10,7 +10,7 @@
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>ckan-deploy-core</artifactId>
+	<artifactId>dcat-suite-binding-ckan</artifactId>
 	<packaging>jar</packaging>
 
 

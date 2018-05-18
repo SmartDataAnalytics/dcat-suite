@@ -1,4 +1,4 @@
-package org.aksw.dcat.ap.playground.main;
+package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
 import java.util.Collection;
 
@@ -6,6 +6,7 @@ import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
