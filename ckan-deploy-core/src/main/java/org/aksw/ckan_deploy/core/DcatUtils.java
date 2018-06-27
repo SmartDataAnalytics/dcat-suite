@@ -1,6 +1,7 @@
 package org.aksw.ckan_deploy.core;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,7 +23,6 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Streams;
 
 public class DcatUtils {
