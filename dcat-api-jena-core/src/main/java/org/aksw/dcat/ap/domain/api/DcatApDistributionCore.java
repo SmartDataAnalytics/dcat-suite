@@ -3,7 +3,10 @@ package org.aksw.dcat.ap.domain.api;
 import java.time.Instant;
 import java.util.Set;
 
-public interface DcatApDistribution
+import org.aksw.dcat.jena.domain.api.DcatDistributionCore;
+
+public interface DcatApDistributionCore
+	extends DcatDistributionCore
 {
 	String getTitle();
 	void setTitle(String title);

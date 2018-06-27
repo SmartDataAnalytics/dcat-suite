@@ -4,10 +4,10 @@ import java.time.Instant;
 import java.util.Set;
 
 import org.aksw.commons.accessors.SingleValuedAccessor;
-import org.aksw.dcat.ap.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.domain.api.DcatApDistributionCore;
 
-public interface DcatApDistributionAccessor
-	extends DcatApDistribution
+public interface DcatApDistributionCoreAccessor
+	extends DcatApDistributionCore
 {
 	SingleValuedAccessor<String> title();
 	SingleValuedAccessor<String> description();

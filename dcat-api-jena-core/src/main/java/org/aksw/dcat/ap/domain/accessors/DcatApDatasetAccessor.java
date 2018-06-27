@@ -1,19 +1,17 @@
 package org.aksw.dcat.ap.domain.accessors;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.Set;
 
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApContactPoint;
-import org.aksw.dcat.ap.domain.api.DcatApDataset;
-import org.aksw.dcat.ap.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.domain.api.DcatApDatasetCore;
 import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 
 public interface DcatApDatasetAccessor
-	extends DcatApDataset
+	extends DcatApDatasetCore
 {
 	SingleValuedAccessor<String> title();
 	SingleValuedAccessor<String> description();
@@ -58,7 +56,7 @@ public interface DcatApDatasetAccessor
 	SingleValuedAccessor<DcatApAgent> publisher();
 	SingleValuedAccessor<DcatApContactPoint> contactPoint();
 
-	SingleValuedAccessor<Collection<DcatApDistribution>> distributions();
+	//SingleValuedAccessor<Collection<DcatApDistributionCore>> distributions();
 
 	
 	@Override default String getTitle() { return title().get(); }
@@ -140,6 +138,6 @@ public interface DcatApDatasetAccessor
 	@Override default DcatApContactPoint getContactPoint() { return contactPoint().get(); }
 	@Override default void setContactPoint(DcatApContactPoint contactPoint) { contactPoint().set(contactPoint); }
 
-	@Override default Collection<DcatApDistribution> getDistributions() { return distributions().get(); }
-	@Override default void setDistributions(Collection<DcatApDistribution> distributions) { distributions().set(distributions); }
+//	@Override default Collection<? extends DcatApDistributionCore> getDistributions() { return distributions().get(); }
+//	@Override default void setDistributions(Collection<? extends DcatApDistributionCore> distributions) { distributions().set(distributions); }
 }

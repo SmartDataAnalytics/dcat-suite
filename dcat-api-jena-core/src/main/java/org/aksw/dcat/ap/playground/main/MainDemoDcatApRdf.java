@@ -1,16 +1,16 @@
 package org.aksw.dcat.ap.playground.main;
 
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDatasetImpl;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistributionImpl;
-import org.aksw.dcat.ap.domain.api.DcatApDistribution;
 import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.system.JenaSystem;
@@ -20,13 +20,13 @@ public class MainDemoDcatApRdf {
 
 	public static void main(String[] args) {
 		JenaSystem.init();
-		BuiltinPersonalities.model.add(RdfDcatApDataset.class, new SimpleImplementation(RdfDcatApDatasetImpl::new));
-		BuiltinPersonalities.model.add(RdfDcatApDistribution.class, new SimpleImplementation(RdfDcatApDistributionImpl::new));
+		BuiltinPersonalities.model.add(DcatApDataset.class, new SimpleImplementation(RdfDcatApDatasetImpl::new));
+		BuiltinPersonalities.model.add(DcatApDistribution.class, new SimpleImplementation(RdfDcatApDistributionImpl::new));
 		BuiltinPersonalities.model.add(RdfDcatApAgent.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
 
 		
 		Model model = ModelFactory.createDefaultModel();
-		RdfDcatApDataset rdfDataset = model.createResource().as(RdfDcatApDataset.class);
+		DcatApDataset rdfDataset = model.createResource().as(DcatApDataset.class);
 		
 		rdfDataset.setTitle("World Domination Plans");
 		//plainDataset.setDescription("Top Secret");
@@ -36,7 +36,7 @@ public class MainDemoDcatApRdf {
 		rdfDataset.addLiteral(DCTerms.description, "Top Secret");		
 		
 		DcatApDistribution dist = rdfDataset.createDistribution();
-		rdfDataset.getDistributions().add(dist);
+		rdfDataset.getDistributions(Resource.class).add(dist);
 		
 		dist.setAccessUrl("http://some.url/");
 		dist.setTitle("My dist");

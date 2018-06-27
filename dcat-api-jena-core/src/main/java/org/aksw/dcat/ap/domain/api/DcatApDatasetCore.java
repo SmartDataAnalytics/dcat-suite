@@ -4,10 +4,13 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Set;
 
-public interface DcatApDataset
+import org.aksw.dcat.jena.domain.api.DcatDatasetCore;
+
+public interface DcatApDatasetCore
+	extends DcatDatasetCore
 {
 	/** Factory method for distributions - does not add them */
-	DcatApDistribution createDistribution();
+	DcatApDistributionCore createDistribution();
 		
 
 	String getTitle();
@@ -96,10 +99,10 @@ public interface DcatApDataset
 	
 	DcatApContactPoint getContactPoint();
 	void setContactPoint(DcatApContactPoint contactPoint);
-	
+
 //	Set<? extends DcatApDistribution<M>> getDistributions();
 //	void setDistributions(Set<? extends DcatApDistribution<M>> distributions);
 
-	Collection<DcatApDistribution> getDistributions();
-	void setDistributions(Collection<DcatApDistribution> distributions);
+	Collection<? extends DcatApDistributionCore> getDistributions();
+	void setDistributions(Collection<? extends DcatApDistributionCore> distributions);
 }

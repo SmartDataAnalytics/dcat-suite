@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistribution;
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
@@ -62,8 +62,8 @@ public class PseudoRdfConcept {
 		
 		
 		Model rdfModel = ModelFactory.createDefaultModel();
-		RdfDcatApDataset rdfDataset = rdfModel.createResource("http://my.data/set").as(RdfDcatApDataset.class);
-		RdfDcatApDistribution rdfDistribution = rdfModel.createResource("http://my.dist/ribution").as(RdfDcatApDistribution.class);
+		DcatApDataset rdfDataset = rdfModel.createResource("http://my.data/set").as(DcatApDataset.class);
+		DcatApDistribution rdfDistribution = rdfModel.createResource("http://my.dist/ribution").as(DcatApDistribution.class);
 		RdfDcatApAgent rdfPublisher = rdfModel.createResource("http://my.agent").as(RdfDcatApAgent.class);
 		
 		rdfDataset.setTitle("My dataset");
@@ -80,7 +80,7 @@ public class PseudoRdfConcept {
 		//PropertySource s = new PropertySourceCkanDataset(ckanDataset);
 
 		
-		RdfDcatApDataset dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(RdfDcatApDataset.class);
+		DcatApDataset dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(DcatApDataset.class);
 		System.out.println("TITLE: " + dataset.getTitle());
 		dataset.setDescription("Tunnelsystem");
 		System.out.println("TITLE: " + dataset.getTitle());
@@ -95,7 +95,7 @@ public class PseudoRdfConcept {
 		dataset.addProperty(DCAT.distribution, distribution);
 		//distribution.addProperty(DCTerms.description, "Test distri");
 		
-		RdfDcatApDistribution view = distribution.as(RdfDcatApDistribution.class);
+		DcatApDistribution view = distribution.as(DcatApDistribution.class);
 		view.setDescription("Download of the master plan");
 		
 		

@@ -46,21 +46,7 @@ public class PseudoRdfPropertyImpl<T>
 	public Collection<Node> getValues() {
 		//SetFromSingleValuedAccessor<T> backend = new SetFromSingleValuedAccessor<>(accessor);
 		
-		Converter<Node, T> converter = new Converter<Node, T>() {
-			@Override
-			protected T doForward(Node a) {
-				T result = nodeMapper.toJava(a);
-				return result;
-			}
-
-			@Override
-			protected Node doBackward(T b) {
-				Node result = nodeMapper.toNode(b);
-				return result;
-			}
-		};
-		
-		
+		Converter<Node, T> converter = new ConverterFromNodeMapper<>(nodeMapper);
 		Collection<T> backend = accessor.get();
 		
 		if(backend == null) {

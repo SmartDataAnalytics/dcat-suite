@@ -13,10 +13,10 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 
-public class RdfDcatApResource
+public class RdfDcatApResourceImpl
 	extends ResourceImpl
 {
-	public RdfDcatApResource(Node node, EnhGraph graph) {
+	public RdfDcatApResourceImpl(Node node, EnhGraph graph) {
 		super(node, graph);
 	}
 

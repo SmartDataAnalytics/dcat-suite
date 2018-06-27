@@ -3,9 +3,9 @@ package org.aksw.dcat.ap.binding.ckan.rdf_view;
 import java.util.Collection;
 
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
-import org.aksw.dcat.ap.domain.api.DcatApDistribution;
+import org.aksw.dcat.ap.domain.api.DcatApDistributionCore;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
 import org.apache.jena.enhanced.BuiltinPersonalities;
@@ -34,7 +34,7 @@ public class MainDcatApDemo {
         CkanResource ckanResource = new CkanResource();
         ckanResource.setDescription("test description");
 
-        RdfDcatApDataset dcatDataset = model.createResource().as(RdfDcatApDataset.class);
+        DcatApDataset dcatDataset = model.createResource().as(DcatApDataset.class);
         
         RdfDcatApAgent rdfPublisher = model.createResource("http://my.agent").as(RdfDcatApAgent.class);
 
@@ -57,9 +57,9 @@ public class MainDcatApDemo {
 		System.out.println("Extras: " + ckanDataset.getExtrasAsHashMap());
 		
 		
-		Collection<DcatApDistribution> distributions = dcatDataset.getDistributions();
+		Collection<DcatApDistributionCore> distributions = dcatDataset.getDistributions();
 
-		DcatApDistribution dist = dcatDataset.createDistribution();
+		DcatApDistributionCore dist = dcatDataset.createDistribution();
 		
 		distributions.add(dist);
 		//distributions.add(dist);

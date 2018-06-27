@@ -19,7 +19,7 @@ import org.aksw.commons.accessors.PropertySource;
 import org.aksw.commons.accessors.PropertySourcePrefix;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.converters.CastConverter;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDataset;
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingUtils;

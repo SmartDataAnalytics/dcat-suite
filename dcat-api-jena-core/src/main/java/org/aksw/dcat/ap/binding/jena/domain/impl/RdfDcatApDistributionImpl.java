@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.Set;
 
 import org.aksw.commons.accessors.SingleValuedAccessor;
-import org.aksw.dcat.ap.domain.accessors.DcatApDistributionAccessor;
+import org.aksw.dcat.ap.domain.accessors.DcatApDistributionCoreAccessor;
 import org.aksw.dcat.jena.domain.api.Adms;
 import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.apache.jena.enhanced.EnhGraph;
@@ -14,8 +14,8 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 
 public class RdfDcatApDistributionImpl
-	extends RdfDcatApResource
-	implements RdfDcatApDistribution, DcatApDistributionAccessor
+	extends RdfDcatApResourceImpl
+	implements DcatApDistribution, DcatApDistributionCoreAccessor
 {
 	public RdfDcatApDistributionImpl(Node node, EnhGraph graph) {
 		super(node, graph);
