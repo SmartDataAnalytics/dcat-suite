@@ -29,7 +29,7 @@
 
 		<dependency>
 			<groupId>org.aksw.dcat-suite</groupId>
-			<artifactId>ckan-deploy-core</artifactId>
+			<artifactId>dcat-suite-binding-ckan</artifactId>
 		</dependency>
 
 		<dependency>

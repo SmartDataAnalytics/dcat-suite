@@ -22,7 +22,7 @@
 	</modules>
 
 	<issueManagement>
-		<url>https://github.com/SmartDataAnalytics/ckan-deploy/issues</url>
+		<url>https://github.com/SmartDataAnalytics/dcat-suite/issues</url>
 		<system>GitHub</system>
 	</issueManagement>
 
@@ -35,9 +35,9 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/SmartDataAnalytics/ckan-deploy</url>
-		<connection>scm:git:git://github.com/SmartDataAnalytics/ckan-deploy.git</connection>
-		<developerConnection>scm:git:git@github.com:SmartDataAnalytics/ckan-deploy.git</developerConnection>
+		<url>https://github.com/SmartDataAnalytics/dcat-suite</url>
+		<connection>scm:git:git://github.com/SmartDataAnalytics/dcat-suite.git</connection>
+		<developerConnection>scm:git:git@github.com:SmartDataAnalytics/dcat-suite.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -100,7 +100,7 @@
 
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
-				<artifactId>ckan-deploy-core</artifactId>
+				<artifactId>dcat-suite-binding-ckan</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
