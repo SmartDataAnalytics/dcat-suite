@@ -5,16 +5,16 @@ import java.util.Set;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
 import org.aksw.commons.accessors.SingleValuedAccessorImpl;
+import org.aksw.dcat.jena.domain.impl.DcatEntityImpl;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.aksw.jena_sparql_api.utils.model.SetFromMappedPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.impl.ResourceImpl;
 
 public class RdfDcatApResourceImpl
-	extends ResourceImpl
+	extends DcatEntityImpl
 {
 	public RdfDcatApResourceImpl(Node node, EnhGraph graph) {
 		super(node, graph);

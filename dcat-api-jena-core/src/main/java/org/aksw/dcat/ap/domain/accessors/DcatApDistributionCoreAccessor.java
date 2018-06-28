@@ -11,8 +11,8 @@ public interface DcatApDistributionCoreAccessor
 {
 	SingleValuedAccessor<String> title();
 	SingleValuedAccessor<String> description();
-	SingleValuedAccessor<String> accessUrl();
-	SingleValuedAccessor<String> downloadUrl();	
+	SingleValuedAccessor<Set<String>> accessUrls();
+	SingleValuedAccessor<Set<String>> downloadUrls();	
 	SingleValuedAccessor<String> mediaType();
 	SingleValuedAccessor<String> format();
 	SingleValuedAccessor<String> license();
@@ -28,11 +28,11 @@ public interface DcatApDistributionCoreAccessor
 	@Override default String getTitle() { return title().get(); }
 	@Override default void setTitle(String title) { title().set(title); }
 
-	@Override default String getAccessUrl() { return accessUrl().get(); }
-	@Override default void setAccessUrl(String accessUrl) { accessUrl().set(accessUrl); }
+	@Override default Set<String> getAccessURLs() { return accessUrls().get(); }
+	//@Override default void setAccessUrls(Collection<String> accessUrls) { accessUrls().set(accessUrls); }
 
-	@Override default String getDownloadUrl() { return downloadUrl().get(); }
-	@Override default void setDownloadUrl(String downloadUrl) { downloadUrl().set(downloadUrl); }
+	@Override default Set<String> getDownloadURLs() { return downloadUrls().get(); }
+	//@Override default void setDownloadUrls(Collection<String> downloadUrls) { downloadUrls().set(downloadUrls); }
 
 	@Override default String getDescription() { return description().get(); }
 	@Override default void setDescription(String description) { description().set(description); }

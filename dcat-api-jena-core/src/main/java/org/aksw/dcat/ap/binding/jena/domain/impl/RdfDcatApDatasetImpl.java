@@ -7,13 +7,11 @@ import java.util.Set;
 
 import org.aksw.commons.accessors.CollectionFromConverter;
 import org.aksw.commons.accessors.SingleValuedAccessor;
-import org.aksw.commons.accessors.SingleValuedAccessorDirect;
 import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
 import org.aksw.commons.converters.CastConverter;
 import org.aksw.dcat.ap.domain.accessors.DcatApDatasetAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApContactPoint;
-import org.aksw.dcat.ap.domain.api.DcatApDistributionCore;
 import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 import org.aksw.dcat.jena.domain.api.Adms;
@@ -21,13 +19,10 @@ import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
-
-import com.google.common.base.Converter;
 
 public class RdfDcatApDatasetImpl
 	extends RdfDcatApResourceImpl 
@@ -58,7 +53,7 @@ public class RdfDcatApDatasetImpl
 	}
 
 	@Override
-	public SingleValuedAccessor<Set<String>> tags() {
+	public SingleValuedAccessor<Set<String>> keywords() {
 		return createSet(this, DCAT.keyword, NodeMapperFactory.string);
 	}
 

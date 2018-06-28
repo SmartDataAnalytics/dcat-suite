@@ -80,7 +80,7 @@ public class DcatCkanDeployUtils {
 	}
 		
 	public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload) {
-		String datasetName = dataset.getName();
+		String datasetName = dataset.getIdentifier();
 		CkanDataset remoteCkanDataset;
 		
 		boolean isDatasetCreationRequired = false;
@@ -156,11 +156,11 @@ public class DcatCkanDeployUtils {
 
 			logger.info("Deploying distribution " + distributionName);
 
-			Set<Resource> downloadUrls = dcatDistribution.getDownloadURLs();
+			Set<String> downloadUrls = dcatDistribution.getDownloadURLs();
 
 			List<String> resolvedUrls = downloadUrls.stream()
-					.filter(Resource::isURIResource)
-					.map(Resource::getURI)
+					//.filter(Resource::isURIResource)
+					//.map(Resource::getURI)
 					.map(iriResolver::resolveToStringSilent)
 					.collect(Collectors.toList());
 			

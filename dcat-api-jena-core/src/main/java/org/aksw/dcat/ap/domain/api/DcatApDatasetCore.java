@@ -19,7 +19,7 @@ public interface DcatApDatasetCore
 	String getDescription();
 	void setDescription(String description);
 	
-	Set<String> getTags();
+	Set<String> getKeywords();
 	//void setTags(Set<String tags>);
 	
 	
@@ -104,5 +104,5 @@ public interface DcatApDatasetCore
 //	void setDistributions(Set<? extends DcatApDistribution<M>> distributions);
 
 	Collection<? extends DcatApDistributionCore> getDistributions();
-	void setDistributions(Collection<? extends DcatApDistributionCore> distributions);
+	//void setDistributions(Collection<? extends DcatApDistributionCore> distributions);
 }

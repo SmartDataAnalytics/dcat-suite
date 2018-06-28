@@ -11,11 +11,11 @@ public interface DcatApDistributionCore
 	String getTitle();
 	void setTitle(String title);
 	
-	String getAccessUrl();
-	void setAccessUrl(String accessUrl);
-	
-	String getDownloadUrl();
-	void setDownloadUrl(String accessUrl);
+//	String getAccessUrl();
+//	void setAccessUrl(String accessUrl);
+//	
+//	String getDownloadUrl();
+//	void setDownloadUrl(String accessUrl);
 	
 	String getDescription();
 	void setDescription(String description);

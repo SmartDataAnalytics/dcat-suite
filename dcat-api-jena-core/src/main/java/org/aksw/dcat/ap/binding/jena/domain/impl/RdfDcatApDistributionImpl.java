@@ -32,13 +32,13 @@ public class RdfDcatApDistributionImpl
 	}
 
 	@Override
-	public SingleValuedAccessor<String> accessUrl() {
-		return create(this, DCAT.accessURL, NodeMapperFactory.uriString);
+	public SingleValuedAccessor<Set<String>> accessUrls() {
+		return createSet(this, DCAT.accessURL, NodeMapperFactory.uriString);
 	}
 
 	@Override
-	public SingleValuedAccessor<String> downloadUrl() {
-		return create(this, DCAT.downloadURL, NodeMapperFactory.uriString);
+	public SingleValuedAccessor<Set<String>> downloadUrls() {
+		return createSet(this, DCAT.downloadURL, NodeMapperFactory.uriString);
 	}
 
 	@Override

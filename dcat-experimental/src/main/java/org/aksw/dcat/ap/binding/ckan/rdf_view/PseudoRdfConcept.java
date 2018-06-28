@@ -3,9 +3,9 @@ package org.aksw.dcat.ap.binding.ckan.rdf_view;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
@@ -69,7 +69,7 @@ public class PseudoRdfConcept {
 		rdfDataset.setTitle("My dataset");
 		rdfDataset.setDescription("The master plan");
 
-		rdfDataset.getDistributions().add(rdfDistribution);
+		rdfDataset.getDistributions(DcatApDistribution.class).add(rdfDistribution);
 		rdfDataset.setPublisher(rdfPublisher);
 
 		rdfPublisher.setName("Some Publisher");

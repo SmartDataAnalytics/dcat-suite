@@ -163,7 +163,7 @@ public class DcatCkanRdfUtils {
 	 * @return
 	 */
 	public static String generateFallbackIri(DcatDataset dcatDataset, String baseIri) {
-		String result = Optional.ofNullable(dcatDataset.getName())
+		String result = Optional.ofNullable(dcatDataset.getIdentifier())
 				.map(id -> baseIri + "dataset/" + StringUtils.urlEncode(id)).orElseThrow(
 						() -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
 
@@ -171,7 +171,7 @@ public class DcatCkanRdfUtils {
 	}
 
 	public static String generateFallbackIri(DcatDistribution dcatDistribution, String baseIri) {
-		String result = Optional.ofNullable(dcatDistribution.getName())
+		String result = Optional.ofNullable(dcatDistribution.getIdentifier())
 				.map(id -> baseIri + "distribution/" + StringUtils.urlEncode(id)).orElseThrow(
 						() -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
 
@@ -198,7 +198,7 @@ public class DcatCkanRdfUtils {
 
 		for (CkanResource ckanResource : ckanDataset.getResources()) {
 			DcatDistribution dcatDistribution = model.createResource().as(DcatDistribution.class);
-			dcatDataset.getDistributions().add(dcatDistribution);
+			dcatDataset.getDistributions(DcatDistribution.class).add(dcatDistribution);
 
 			convertToDcat(dcatDistribution, ckanResource, pm);
 		}
@@ -224,7 +224,7 @@ public class DcatCkanRdfUtils {
 
 		dcatDataset.addProperty(RDF.type, DCAT.Dataset);
 
-		dcatDataset.setName(ckanDataset.getName());
+		dcatDataset.setIdentifier(ckanDataset.getName());
 		dcatDataset.setTitle(ckanDataset.getTitle());
 		dcatDataset.setDescription(ckanDataset.getNotes());
 
@@ -308,7 +308,7 @@ public class DcatCkanRdfUtils {
 		dcatDistribution.setFormat(ckanResource.getFormat());
 
 		Optional.ofNullable(ckanResource.getUrl())
-				.ifPresent(url -> dcatDistribution.setDownloadURL(dcatDistribution.getModel().createResource(url)));
+				.ifPresent(dcatDistribution::setDownloadURL);
 
 		othersToRdf(dcatDistribution, ckanResource.getOthers(), pm);
 	}
@@ -362,7 +362,7 @@ public class DcatCkanRdfUtils {
 
 	public static void convertToCkan(CkanDataset ckanDataset, DcatDataset dcatDataset) {
 
-		Optional.ofNullable(dcatDataset.getName()).ifPresent(ckanDataset::setName);
+		Optional.ofNullable(dcatDataset.getIdentifier()).ifPresent(ckanDataset::setName);
 		Optional.ofNullable(dcatDataset.getTitle()).ifPresent(ckanDataset::setTitle);
 		Optional.ofNullable(dcatDataset.getDescription()).ifPresent(ckanDataset::setNotes);
 

@@ -27,13 +27,13 @@ public class DcatEntityImpl
 //	}
 	
 	@Override
-	public String getName() {
+	public String getIdentifier() {
 		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.identifier, String.class).orElse(null);
 		return result;
 	}
 	
 	@Override
-	public void setName(String identifier) {
+	public void setIdentifier(String identifier) {
 		ResourceUtils.setLiteralProperty(this, DCTerms.identifier, identifier);
 	}
 

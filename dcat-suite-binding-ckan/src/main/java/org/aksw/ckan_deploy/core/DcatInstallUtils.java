@@ -65,7 +65,7 @@ public class DcatInstallUtils {
 		
 		logger.info("Downloading " + uri);
 		
-		String filename = Optional.ofNullable(dcatDistribution.getName())
+		String filename = Optional.ofNullable(dcatDistribution.getIdentifier())
 				.orElseThrow(() -> new RuntimeException("could not obtain a file name from downloadable distribution"));
 		
 		filename = StringUtils.trim(filename);

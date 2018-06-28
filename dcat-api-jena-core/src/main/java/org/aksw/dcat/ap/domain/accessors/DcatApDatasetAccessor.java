@@ -18,7 +18,7 @@ public interface DcatApDatasetAccessor
 	
 	// TODO Probably these should be live set views
 	// the setter could be interpreted as 'replace all values'
-	SingleValuedAccessor<Set<String>> tags();
+	SingleValuedAccessor<Set<String>> keywords();
 	SingleValuedAccessor<Set<String>> themes();
 
 	SingleValuedAccessor<String> identifier();
@@ -65,7 +65,7 @@ public interface DcatApDatasetAccessor
 	@Override default String getDescription() { return description().get(); }
 	@Override default void setDescription(String description) { description().set(description); }
 
-	@Override default Set<String> getTags() { return tags().get(); }
+	@Override default Set<String> getKeywords() { return keywords().get(); }
 
 	@Override default Set<String> getThemes() { return themes().get(); }
 

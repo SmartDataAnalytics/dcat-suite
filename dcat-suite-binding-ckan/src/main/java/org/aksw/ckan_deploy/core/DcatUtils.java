@@ -112,7 +112,9 @@ public class DcatUtils {
 	 * @return
 	 */
 	public static Optional<Collection<Resource>> tryGetGraphAccessURLs(DcatDistribution dcatDistribution, Predicate<String> isGraphName) {
-		Set<Resource> accessURLs = dcatDistribution.getAccessURLs();
+		Set<Resource> accessURLs = dcatDistribution.getAccessURLs().stream()
+				.map(ResourceFactory::createResource)
+				.collect(Collectors.toSet());
 		
 		// The set of accessURLs that match graphs
 		Set<Resource> graphAccessURLs = accessURLs.stream()

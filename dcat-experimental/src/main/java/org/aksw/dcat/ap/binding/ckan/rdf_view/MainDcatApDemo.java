@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
+import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApDistributionCore;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
@@ -57,9 +58,9 @@ public class MainDcatApDemo {
 		System.out.println("Extras: " + ckanDataset.getExtrasAsHashMap());
 		
 		
-		Collection<DcatApDistributionCore> distributions = dcatDataset.getDistributions();
+		Collection<DcatApDistribution> distributions = dcatDataset.getDistributions(DcatApDistribution.class);
 
-		DcatApDistributionCore dist = dcatDataset.createDistribution();
+		DcatApDistribution dist = dcatDataset.createDistribution();
 		
 		distributions.add(dist);
 		//distributions.add(dist);

@@ -38,7 +38,7 @@ public class MainDemoDcatApRdf {
 		DcatApDistribution dist = rdfDataset.createDistribution();
 		rdfDataset.getDistributions(Resource.class).add(dist);
 		
-		dist.setAccessUrl("http://some.url/");
+		dist.setAccessURL("http://some.url/");
 		dist.setTitle("My dist");
 		dist.setDescription("Some description");
 
