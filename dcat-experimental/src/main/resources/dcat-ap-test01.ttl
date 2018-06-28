@@ -1,0 +1,71 @@
+@prefix eg: <http://example.org/> .
+
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix spdx: <http://spdx.org/rdf/terms#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+
+eg:LinkedGeoData
+  a dcat:Dataset ;
+  dct:title "LinkedGeoData" ;
+  dct:description "RDF Conversion of OpenStreetMap" ;
+  dcat:keyword "OpenStreetMap", "RDF" ;
+  dcat:theme eg:OpenStreetMap, eg:RDF ;
+  dct:identifier "linkedgeodata" ;
+  dct:issued "" ;
+  dct:modified "" ;
+  owl:versionInfo "4.0.0-SNAPSHOT" ;
+  adms:versionNotes "New nominatim integration" ;
+  dct:language eg:en ;
+  dcat:landingPage <http://linkedgeodata.org/> ;
+  dcat:accrualPeriodicity eg:quaterly ;
+  dct:conformsTo eg:lgdo ;
+  dct:accessRights "access-rights" ;
+  foaf:page <http://linkedgeodata.org/OnlineAccess> ;
+  dct:provenance eg:provenance ;
+  dct:type eg:type ;
+  dct:hasVersion eg:hasVersion ;
+  dct:isVersionOf eg:isVersionOf ;
+  dct:source eg:source ;
+  adms:sample eg:sample ;
+  dct:spatial eg:spatial ;
+  dct:temporal eg:temporal ;
+  dct:publisher [
+    foaf:name "SDA Research Group" ;
+    foaf:mbox <mailto:cs@uni-leipzig.de> ;
+    foaf:homepage <http://sda.tech/> ;
+    dct:type eg:type ; 
+  ] ;
+  dcat:contactPoint [
+    vcard:fn "Claus" ;
+    vcard:hasEmail <mailto:cs@uni-leipzig.de2> 
+  ] ;
+  dcat:distribution eg:myDataset01_Distribution01 ;
+  .
+  
+
+eg:myDataset01_Distribution01
+  a dcat:Distribution ;
+  dct:title "Distribution" ;
+  dcat:accessURL <http://downloads.linkedgeodata.org/foo> ;
+  dcat:downloadURL <http://downloads.linkedgeodata.org/foobar> ;
+  dct:description "Some Distribution" ;
+  dcat:mediaType "application/n-triples" ;
+  dct:format "format" ;  
+  dct:licence eg:odbl ;
+  adms:status eg:status ;
+  dcat:byteSize 1000000 ;
+  dct:issued "" ;
+  dct:modified "" ;
+  dct:rights "rights" ;
+  foaf:page <http://foo.bar> ;
+  dct:language eg:en ;
+  dct:conformsTo eg:conformsTo ;
+  spdx:checksum [
+    spdx:checksumValue "abcde" ;
+    spdx:algorithm eg:sha1
+  ]
+  .

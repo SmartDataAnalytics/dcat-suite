@@ -3,7 +3,9 @@ package org.aksw.dcat.jena.domain.impl;
 import java.util.Set;
 
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.aksw.jena_sparql_api.utils.model.ResourceUtils;
+import org.aksw.jena_sparql_api.utils.model.SetFromMappedPropertyValues;
 import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
@@ -20,13 +22,14 @@ public class DcatDistributionImpl
 	}
 	
 	@Override
-	public Set<Resource> getAccessURLs() {
-		return new SetFromPropertyValues<>(this, DCAT.accessURL, Resource.class);
+	public Set<String> getAccessURLs() {
+		return new SetFromMappedPropertyValues<>(this, DCAT.accessURL, NodeMapperFactory.DEFAULT_URI_OR_STRING);
 	}
 
 	@Override
-	public Set<Resource> getDownloadURLs() {
-		return new SetFromPropertyValues<>(this, DCAT.downloadURL, Resource.class);
+	public Set<String> getDownloadURLs() {
+		return new SetFromMappedPropertyValues<>(this, DCAT.downloadURL, NodeMapperFactory.DEFAULT_URI_OR_STRING);
+//		return new SetFromPropertyValues<>(this, DCAT.downloadURL, Resource.class);
 	}
 
 	@Override

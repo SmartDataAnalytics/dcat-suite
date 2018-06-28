@@ -1,28 +1,25 @@
 package org.aksw.dcat.jena.domain.api;
 
-import java.util.Set;
-
-import org.apache.jena.rdf.model.Resource;
-
 public interface DcatDistribution
-	extends DcatEntity
+	extends DcatEntity, DcatDistributionCore
 {
-	// TODO Move to a subclass of datasetResource
-	Set<Resource> getAccessURLs();
-
-	Set<Resource> getDownloadURLs();
+//	Collection<Resource> getAccessResources();
+//	Collection<Resource> getDownloadResources();
+//	
+//	default Collection<String> getAccessUrls() {
+//		Collection<String> result = new CollectionFromConverter<>(getAccessResources(),
+//				Converter.from(getModel()::createResource, Resource::getURI));
+//		return result;
+//	}
+//
+//	default Collection<String> getDownloadUrls() {
+//		Collection<String> result = new CollectionFromConverter<>(getDownloadResources(),
+//				Converter.from(getModel()::createResource, Resource::getURI));
+//		return result;
+//	}
 	
-	String getFormat();
-	void setFormat(String format);
-	
-	// Assumes that getDownloadURLs returns a set view
-	default void setDownloadURL(Resource r) {
-		getDownloadURLs().clear();
-		getDownloadURLs().add(r);
-	}
-
-	default void setAccessURL(Resource r) {
-		getAccessURLs().clear();
-		getAccessURLs().add(r);
-	}
+//	default SpdxChecksum getChecksum() {
+//		return null;
+//		//ResourceUtils.getProperty(this, Spdx.ge)
+//	}
 }
