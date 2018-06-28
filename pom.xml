@@ -9,7 +9,7 @@
 
 	<packaging>pom</packaging>
 
-	<name>DCAT Tools</name>
+	<name>DCAT Suite</name>
 	<description>DCAT APIs and CLIs for downloading, transforming and deploying datasets</description>
 	<url>https://github.com/SmartDataAnalytics/dcat-suite</url>
 
@@ -19,6 +19,8 @@
 		<module>dcat-suite-binding-ckan</module>
 		<module>dcat-suite-cli</module>
 		<module>dcat-suite-debian-cli</module>
+
+		<module>dcat-experimental</module>
 	</modules>
 
 	<issueManagement>
