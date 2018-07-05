@@ -32,7 +32,7 @@ import org.apache.jena.util.iterator.WrappedIterator;
  * @author Claus Stadler, May 16, 2018
  *
  */
-public class PseudoNode
+public class NodeView
 	extends Node_Concrete
 {
 	//protected PropertySource entity;
@@ -48,7 +48,7 @@ public class PseudoNode
 	
 	
 	// The property source acts as the label
-	public PseudoNode(
+	public NodeView(
 			PropertySource source,
 			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
 			//Function<? super PropertySource, ? extends Object> getIdentifier) {
@@ -90,8 +90,8 @@ public class PseudoNode
     public boolean equals( Object other )
     {
     	boolean result;
-    	if(other instanceof PseudoNode) {
-    		PseudoNode o = (PseudoNode)other;
+    	if(other instanceof NodeView) {
+    		NodeView o = (NodeView)other;
     		result = 
     				Objects.equals(source, o.source) &&
     				Objects.equals(predicateToAccessor, o.predicateToAccessor);

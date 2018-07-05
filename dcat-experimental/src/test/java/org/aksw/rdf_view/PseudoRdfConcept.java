@@ -12,13 +12,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.dcat.ap.binding.ckan.rdf_view.CkanPseudoNodeFactory;
-import org.aksw.dcat.ap.binding.ckan.rdf_view.PseudoGraph;
+import org.aksw.dcat.ap.binding.ckan.rdf_view.GraphView;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
+import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -73,7 +73,7 @@ class NodeTransformSkolemizePseudoNode
 	}
 
 	public static Node defaultNodeFactory(Node node) {
-		Node result = node instanceof PseudoNode ? NodeFactory.createBlankNode() : node;
+		Node result = node instanceof NodeView ? NodeFactory.createBlankNode() : node;
 		return result;
 	}
 	
@@ -155,7 +155,7 @@ public class PseudoRdfConcept {
 		 * playground
 		 */
 		
-		Graph g = new PseudoGraph();
+		Graph g = new GraphView();
 		Model m = ModelFactory.createModelForGraph(g);
 		
 		
@@ -203,8 +203,8 @@ public class PseudoRdfConcept {
 		dataset.setDescription("Tunnelsystem");
 		System.out.println("TITLE: " + dataset.getTitle());
 
-		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getTitle());
-		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getNotes());
+		System.out.println(((CkanDataset)((NodeView)dataset.asNode()).getSource().getSource()).getTitle());
+		System.out.println(((CkanDataset)((NodeView)dataset.asNode()).getSource().getSource()).getNotes());
 		
 		//RDFDataMgr.write(System.out, dataset, lang);
 		
@@ -263,10 +263,10 @@ public class PseudoRdfConcept {
 		Resource rootA = inputModel.listSubjectsWithProperty(RDF.type, DCAT.Dataset).next();
 		
 		// Create a Jena Node that is actually backed by a CKAN domain object
-		PseudoNode rootB = CkanPseudoNodeFactory.get().createDataset();
+		NodeView rootB = CkanPseudoNodeFactory.get().createDataset();
 		DcatApDataset rB = m.asRDFNode(rootB).asResource().as(DcatApDataset.class);
 		
-		CkanDataset yyy = (CkanDataset)((PseudoNode)rootB).getSource().getSource();
+		CkanDataset yyy = (CkanDataset)((NodeView)rootB).getSource().getSource();
 
 		// Copy the properties of the input dataset to the CKAN domain object (via the RDF abstraction)
 		GraphCopy.copy(rootA, rootB);

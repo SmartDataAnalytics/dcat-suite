@@ -2,32 +2,43 @@ package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
 import java.util.Collection;
 
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
+import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.NullIterator;
 
-public class PseudoGraph
+/**
+ * A graph view for use with {@link NodeView} objects.
+ * This graph implementation does not have a state and thus does not contain any triples.
+ * Instead, triples are virtually created as follows:
+ * The find method requires the subject to match a NodeView object, otherwise an exception will be raised.
+ * The request to yield triples is then delegated to the NodeView object.
+ *  
+ * 
+ * @author Claus Stadler, Jul 5, 2018
+ *
+ */
+public class GraphView
 	extends GraphBase
 {
 
-	public PseudoNode getSubjectAsNode(Triple tp) {
-		PseudoNode s;
+	public NodeView getSubjectAsNode(Triple tp) {
+		NodeView s;
 
 		Node node = tp.getSubject();		
 		boolean strict = false;
 
 		
-		if(!(node instanceof PseudoNode)) {
+		if(!(node instanceof NodeView)) {
 			if(strict) {
-				throw new RuntimeException("Only nodes of type " + PseudoNode.class.getName() + " supported, got: " + node);
+				throw new RuntimeException("Only nodes of type " + NodeView.class.getName() + " supported, got: " + node);
 			} else {
 				s = null;
 			}
 		} else {
-			s = (PseudoNode)node;			
+			s = (NodeView)node;			
 		}
 
 		return s;
@@ -35,7 +46,7 @@ public class PseudoGraph
 
 	@Override
 	public void performAdd(Triple t) {
-		PseudoNode s = getSubjectAsNode(t);
+		NodeView s = getSubjectAsNode(t);
 		
 		Collection<Node> values = s.getPropertyValues(t.getPredicate().getURI());
 		values.add(t.getObject());
@@ -43,7 +54,7 @@ public class PseudoGraph
 	
 	@Override
 	public void performDelete(Triple t) {
-		PseudoNode s = getSubjectAsNode(t);
+		NodeView s = getSubjectAsNode(t);
 		
 		Collection<Node> values = s.getPropertyValues(t.getPredicate().getURI());
 		values.remove(t.getObject());
@@ -51,7 +62,7 @@ public class PseudoGraph
 
 	@Override
 	protected ExtendedIterator<Triple> graphBaseFind(Triple tp) {
-		PseudoNode s = getSubjectAsNode(tp);
+		NodeView s = getSubjectAsNode(tp);
 
 		ExtendedIterator<Triple> result;
 		if(s != null) {

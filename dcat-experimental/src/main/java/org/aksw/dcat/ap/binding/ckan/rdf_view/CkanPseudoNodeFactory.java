@@ -23,7 +23,7 @@ import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingUtils;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
+import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNodeMapper;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfProperty;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfPropertyImpl;
@@ -571,23 +571,23 @@ public class CkanPseudoNodeFactory {
 		return result;
 	}
 	
-	public PseudoNode createDataset() {
+	public NodeView createDataset() {
 		CkanDataset ckanDataset = new CkanDataset();
 
 		AccessorSupplierFactory<CkanDataset> accessorFactory = getAccessorFactory(CkanDataset.class);
 		PropertySource propertySource = new PropertySourceFromAccessorSupplier<CkanDataset>(ckanDataset, accessorFactory);
 		
-		PseudoNode result = new PseudoNode(propertySource, ckanDatasetAccessors);
+		NodeView result = new NodeView(propertySource, ckanDatasetAccessors);
 		return result;
 	}
 	
-	public PseudoNode createDistribution() {
+	public NodeView createDistribution() {
 		CkanResource ckanResource = new CkanResource();
 
 		AccessorSupplierFactory<CkanResource> accessorFactory = getAccessorFactory(CkanResource.class);
 		PropertySource propertySource = new PropertySourceFromAccessorSupplier<CkanResource>(ckanResource, accessorFactory);
 		
-		PseudoNode result = new PseudoNode(propertySource, ckanResourceAccessors);
+		NodeView result = new NodeView(propertySource, ckanResourceAccessors);
 		return result;
 	}
 	

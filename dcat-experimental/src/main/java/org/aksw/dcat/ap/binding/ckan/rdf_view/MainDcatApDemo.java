@@ -26,7 +26,7 @@ public class MainDcatApDemo {
          * playground
          */
         
-        Model model = ModelFactory.createModelForGraph(new PseudoGraph());
+        Model model = ModelFactory.createModelForGraph(new GraphView());
         
         
 

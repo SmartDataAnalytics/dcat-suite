@@ -38,20 +38,20 @@ public class PseudoNodeMapper<T>
 
 	@Override
 	public boolean canMap(Node node) {
-		boolean result = node instanceof PseudoNode; // and the wrapped entity must be an instance of clazz && ((PseudoNode)node);
+		boolean result = node instanceof NodeView; // and the wrapped entity must be an instance of clazz && ((PseudoNode)node);
 		return result;
 	}
 
 	@Override
 	public Node toNode(T obj) {
 		PropertySource ps = wrapper.apply(obj);
-		Node result = new PseudoNode(ps, propertyToAccessor);
+		Node result = new NodeView(ps, propertyToAccessor);
 		return result;
 	}
 
 	@Override
 	public T toJava(Node node) {
-		PseudoNode pseudoNode = (PseudoNode)node;
+		NodeView pseudoNode = (NodeView)node;
 		T result = (T)pseudoNode.getSource().getSource();
 		return result;
 	}	
