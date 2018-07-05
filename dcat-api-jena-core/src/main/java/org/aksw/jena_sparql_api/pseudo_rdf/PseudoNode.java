@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -40,6 +41,8 @@ public class PseudoNode
 	protected Map<String, Function<PropertySource, PseudoRdfProperty>> predicateToAccessor;
 	protected PropertySource source;
 	
+	
+	protected BlankNodeId blankNodeId;
 	//protected PropertySource source;
 	//protected Function<? super PropertySource, ? extends Object> getIdentifier;
 	
@@ -50,6 +53,9 @@ public class PseudoNode
 			Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
 			//Function<? super PropertySource, ? extends Object> getIdentifier) {
 		super(source);
+		
+		this.blankNodeId = BlankNodeId.create();
+		
 		this.source = source;
 		this.predicateToAccessor = propertyToAccessor;
 	}
@@ -73,7 +79,7 @@ public class PseudoNode
     public boolean isBlank() { return true; }
 
     @Override
-    public BlankNodeId getBlankNodeId()  { return (BlankNodeId) label; }
+    public BlankNodeId getBlankNodeId()  { return blankNodeId; } //return (BlankNodeId) label; }
     
     @Override
     public Object visitWith(NodeVisitor v) {
@@ -83,7 +89,23 @@ public class PseudoNode
     @Override
     public boolean equals( Object other )
     {
-    	return false;
+    	boolean result;
+    	if(other instanceof PseudoNode) {
+    		PseudoNode o = (PseudoNode)other;
+    		result = 
+    				Objects.equals(source, o.source) &&
+    				Objects.equals(predicateToAccessor, o.predicateToAccessor);
+    	} else {
+    		result = false;
+    	}
+    	
+    	return result;
+    }
+    
+    @Override
+    public int hashCode() {
+    	int result = Objects.hash(source, predicateToAccessor);
+    	return result;
     }
     
     

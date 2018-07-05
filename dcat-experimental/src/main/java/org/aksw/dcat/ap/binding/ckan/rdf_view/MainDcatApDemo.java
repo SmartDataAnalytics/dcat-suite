@@ -8,7 +8,6 @@ import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApDistributionCore;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.rdf.model.Model;
@@ -35,8 +34,9 @@ public class MainDcatApDemo {
         CkanResource ckanResource = new CkanResource();
         ckanResource.setDescription("test description");
 
+
         DcatApDataset dcatDataset = model.createResource().as(DcatApDataset.class);
-        
+
         RdfDcatApAgent rdfPublisher = model.createResource("http://my.agent").as(RdfDcatApAgent.class);
 
         dcatDataset.setPublisher(rdfPublisher);

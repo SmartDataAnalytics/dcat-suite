@@ -45,6 +45,7 @@ public class GraphCopy {
 			
 			Range<Long> multiplicity = tgtProperty.getMultiplicity();
 			
+			//System.out.println("Copying " + src + "." + pStr + " to " + tgtProperty.getValues());
 			System.out.println("Multiplicity of " + p + ": " + multiplicity);
 			
 			// Singleton attribute

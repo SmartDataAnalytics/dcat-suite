@@ -19,16 +19,14 @@ import org.aksw.commons.accessors.PropertySource;
 import org.aksw.commons.accessors.PropertySourcePrefix;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.converters.CastConverter;
-import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingUtils;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNodeMapper;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfPropertyImpl;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfProperty;
+import org.aksw.jena_sparql_api.pseudo_rdf.PseudoRdfPropertyImpl;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfType;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeRDFDatatype;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeSimple;
@@ -39,7 +37,6 @@ import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -52,8 +49,11 @@ import org.apache.jena.vocabulary.VCARD4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Converter;
+
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
+import eu.trentorise.opendata.jackan.model.CkanTag;
 
 /**
  * Entry point for creating Jena {@link Node} views over CKAN domain objects.
@@ -76,6 +76,12 @@ public class CkanPseudoNodeFactory {
 	//public Map<String, Function<>> targetToAccessorSupplier;
 	
 	public static ModelMappingRegistry modelMappingRegistry;
+
+	public static Map<String, Converter<?, ?>> viaMap = new HashMap<>();
+
+	static {
+		viaMap.put("ckanTag", Converter.from(CkanTag::new, CkanTag::getName));		
+	}
 
 	
 	public Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
@@ -140,7 +146,7 @@ public class CkanPseudoNodeFactory {
 
 	public static <T> void addCollectionMapping(
 			AccessorSupplierFactory<?> accessorSupplierFactory,
-			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, TypeMapper typeMapper, String dtypeUri) {
+			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, TypeMapper typeMapper, String dtypeUri, Converter<?, ?> converter) {
 		Class<T> clazz;
 		NodeMapper<T> nodeMapper;
 		RdfType<T> rdfType;
@@ -161,7 +167,7 @@ public class CkanPseudoNodeFactory {
 		
 		validateAccessor(accessorSupplierFactory, attr, Collection.class);
 		
-		addCollectionMapping(registry, p, attr, clazz, rdfType, nodeMapper);
+		addCollectionMapping(registry, p, attr, clazz, rdfType, nodeMapper, (Converter)converter);
 	
 	}
 	
@@ -274,15 +280,21 @@ public class CkanPseudoNodeFactory {
 							NodeMapperFactory.from(attrClass)));	
 	}
 
-	public static <T> void addCollectionMapping(
-			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<T> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper) {
+	public static <T, V> void addCollectionMapping(
+			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<V> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper, Converter<T, V> converter) {
+		
+		Converter<T, V> c = converter == null
+				? (Converter<T, V>)Converter.identity()
+				: converter;
 		
 		registry.put(p,
 				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
+							new CollectionFromConverter<>(
 								new LazyCollection<>(
-								s.getCollectionProperty(attr, attrClass),
-								ArrayList::new, true)),
+									s.getCollectionProperty(attr, attrClass),
+									ArrayList::new, true),
+								c)),
 							rdfType,
 							nodeMapper));	
 	}
@@ -339,8 +351,7 @@ public class CkanPseudoNodeFactory {
 	Map<Class<?>, AccessorSupplierFactory<?>> targetToAccessorFactory = new HashMap<>();
 
 	public void loadMappings(Model mappingModel) {
-		
-		
+				
 		List<Resource> mappings = mappingModel.listObjectsOfProperty(MappingVocab.mapping)
 				.filterKeep(RDFNode::isResource).mapWith(RDFNode::asResource).toList();
 
@@ -413,8 +424,16 @@ public class CkanPseudoNodeFactory {
 			Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
 			String predicate = mapping.getProperty(MappingVocab.predicate).getObject().asResource().getURI();
 			String key = mapping.getProperty(MappingVocab.key).getString();
-
-			CkanPseudoNodeFactory.addCollectionMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
+			String via = mapping.getProperty(MappingVocab.via).getString();
+			
+			Converter<?, ?> converter = viaMap.get(via);
+			if(via != null && converter == null) {
+				throw new RuntimeException("No converter registered for: " + via);
+			} else {
+				System.out.println("Converter found for" + via);
+			}
+			
+			CkanPseudoNodeFactory.addCollectionMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI(), converter);
 			
 		} else if(mappingType.equals(MappingVocab.JsonArrayMapping.getURI())) {
 			Resource dtype = mapping.getProperty(MappingVocab.type).getObject().asResource();				
@@ -440,7 +459,7 @@ public class CkanPseudoNodeFactory {
 		/* datasaset mappings */
 		addStringMapping(ckanDatasetAccessors, DCTerms.title.getURI(), "title");
 		addStringMapping(ckanDatasetAccessors, DCTerms.description.getURI(), "notes");
-		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword.getURI(), "tags", String.class, new RdfTypeRDFDatatype<>(String.class), NodeMapperFactory.string);		
+		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword.getURI(), "tags", String.class, new RdfTypeRDFDatatype<>(String.class), NodeMapperFactory.string, null);		
 		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme.getURI(), "extra:theme", String.class, new RdfTypeUri(), NodeMapperFactory.uriString);
 		addStringMapping(ckanDatasetAccessors, DCTerms.identifier.getURI(), "extra:identifier");
 		
