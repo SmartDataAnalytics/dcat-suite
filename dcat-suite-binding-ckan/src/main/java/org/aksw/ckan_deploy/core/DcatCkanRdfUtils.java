@@ -363,6 +363,7 @@ public class DcatCkanRdfUtils {
 	public static void convertToCkan(CkanDataset ckanDataset, DcatDataset dcatDataset) {
 
 		Optional.ofNullable(dcatDataset.getIdentifier()).ifPresent(ckanDataset::setName);
+		Optional.ofNullable(dcatDataset.getPublisher().getName()).ifPresent(ckanDataset::setOwnerOrg);
 		Optional.ofNullable(dcatDataset.getTitle()).ifPresent(ckanDataset::setTitle);
 		Optional.ofNullable(dcatDataset.getDescription()).ifPresent(ckanDataset::setNotes);
 

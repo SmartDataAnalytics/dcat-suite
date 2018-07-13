@@ -1,5 +1,7 @@
 package org.aksw.dcat.jena.domain.api;
 
+import org.aksw.dcat.ap.domain.api.DcatApAgent;
+
 public interface DcatEntityCore {
 //	String getCkanId();
 //	void setCkanId(String id);
@@ -13,4 +15,7 @@ public interface DcatEntityCore {
 
 	String getDescription();
 	void setDescription(String description);
+
+	DcatApAgent getPublisher() ;
+	void setPublisher(DcatApAgent agent) ;
 }

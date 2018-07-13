@@ -6,6 +6,7 @@ import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 import org.apache.jena.vocabulary.DCTerms;
+import org.aksw.dcat.ap.domain.api.DcatApAgent;
 
 public class DcatEntityImpl
 	extends ResourceImpl
@@ -61,5 +62,14 @@ public class DcatEntityImpl
 		ResourceUtils.setLiteralProperty(this, DCTerms.description, description);
 	}
 	
-	
+    @Override
+	public void setPublisher(DcatApAgent agent) {
+		ResourceUtils.setLiteralProperty(this, DCTerms.publisher, agent);
+	}
+
+	@Override
+	public DcatApAgent getPublisher() {
+		DcatApAgent result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.publisher, DcatApAgent.class).orElse(null);
+		return result;
+	}
 }
