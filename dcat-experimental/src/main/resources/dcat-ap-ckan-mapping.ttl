@@ -29,7 +29,7 @@ eg:dcatApMappingCollection
   a m:MappingCollection ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:title              ; m:key "title" ] ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:description        ; m:key "notes" ] ; 
-  m:mapping [ a m:CollectionMapping ; 
+  m:mapping [ a m:CollectionMapping ; m:via "ckanTag" ; # A collection of strings backed by ckan tags
               m:target dcat:Dataset      ; m:predicate dcat:keyword           ; m:key "tags" ] ; 
   m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dcat:theme             ; m:key "extra:theme" ] ;

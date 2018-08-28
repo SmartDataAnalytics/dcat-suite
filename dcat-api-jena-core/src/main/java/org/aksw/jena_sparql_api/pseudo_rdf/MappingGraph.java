@@ -23,14 +23,14 @@ import com.google.common.collect.HashBiMap;
 public class MappingGraph
 	extends GraphBase
 {
-	protected PseudoNode root;
-	protected BiMap<Node, PseudoNode> nodeMapping;
+	protected NodeView root;
+	protected BiMap<Node, NodeView> nodeMapping;
 	
 	
 	protected Graph rdfGraph;
 	protected Graph pseudoGraph;
 	
-	public MappingGraph(Graph delegate, Node rootA, PseudoNode rootB) {
+	public MappingGraph(Graph delegate, Node rootA, NodeView rootB) {
 		nodeMapping = HashBiMap.create();
 		nodeMapping.put(rootA, rootB);
 	}
@@ -39,7 +39,7 @@ public class MappingGraph
 	public void performAdd(Triple t) {
 		// Check if the subject is already mapped
 		Node s = t.getSubject();
-		PseudoNode ps = nodeMapping.get(s);
+		NodeView ps = nodeMapping.get(s);
 		
 		if(ps == null) {
 			// TODO Include a hint that the problem might be fixable by ordering the triples by dependency

@@ -26,7 +26,7 @@ import com.google.common.collect.Range;
  */
 public class GraphCopy {
 
-	public static void copy(Resource src, PseudoNode tgt) {
+	public static void copy(Resource src, NodeView tgt) {
 
 		System.out.println("Copying " + src + " to " + tgt);
 		
@@ -45,16 +45,17 @@ public class GraphCopy {
 			
 			Range<Long> multiplicity = tgtProperty.getMultiplicity();
 			
+			//System.out.println("Copying " + src + "." + pStr + " to " + tgtProperty.getValues());
 			System.out.println("Multiplicity of " + p + ": " + multiplicity);
 			
 			// Singleton attribute
 			if(multiplicity.equals(Range.singleton(1l))) {
-				Collection<PseudoNode> tgtOs = tgtProperty.getValues().stream()
-						.filter(x -> x instanceof PseudoNode)
-						.map(x -> (PseudoNode)x)
+				Collection<NodeView> tgtOs = tgtProperty.getValues().stream()
+						.filter(x -> x instanceof NodeView)
+						.map(x -> (NodeView)x)
 						.collect(Collectors.toList());
 				
-				PseudoNode tgtO = tgtOs.iterator().next();
+				NodeView tgtO = tgtOs.iterator().next();
 				
 				Collection<Resource> os = new SetFromPropertyValues<>(src, p, Resource.class);
 				Collection<Resource> srcOs = os.isEmpty() ? Collections.emptySet() : Collections.singleton(os.iterator().next());
@@ -91,8 +92,8 @@ public class GraphCopy {
 					//Node tgtO = rdfType.newInstance(srcO);
 					tgtOs.add(tgtNode);
 					
-					if(srcO.isResource() && tgtNode instanceof PseudoNode) {
-						PseudoNode tgtO = (PseudoNode)tgtNode;
+					if(srcO.isResource() && tgtNode instanceof NodeView) {
+						NodeView tgtO = (NodeView)tgtNode;
 						
 						Resource r = srcO.asResource();
 						copy(r, tgtO);
