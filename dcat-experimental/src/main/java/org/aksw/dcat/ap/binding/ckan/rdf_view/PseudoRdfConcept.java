@@ -6,11 +6,9 @@ import java.util.Arrays;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDatasetImpl;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
-import org.aksw.jena_sparql_api.pseudo_rdf.PseudoNode;
+import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.rdf.model.Model;
@@ -63,7 +61,7 @@ public class PseudoRdfConcept {
 		 * playground
 		 */
 		
-		Graph g = new PseudoGraph();
+		Graph g = new GraphView();
 		Model m = ModelFactory.createModelForGraph(g);
 		
 		
@@ -102,8 +100,8 @@ public class PseudoRdfConcept {
 		dataset.setDescription("Tunnelsystem");
 		System.out.println("TITLE: " + dataset.getTitle());
 
-		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getTitle());
-		System.out.println(((CkanDataset)((PseudoNode)dataset.asNode()).getSource().getSource()).getNotes());
+		System.out.println(((CkanDataset)((NodeView)dataset.asNode()).getSource().getSource()).getTitle());
+		System.out.println(((CkanDataset)((NodeView)dataset.asNode()).getSource().getSource()).getNotes());
 		
 		//RDFDataMgr.write(System.out, dataset, lang);
 		
@@ -246,7 +244,7 @@ public class PseudoRdfConcept {
 		
 		Model inputModel = RDFDataMgr.loadModel("dcat-ap-test01.ttl");
 		Resource rootA = inputModel.listSubjectsWithProperty(RDF.type, DCAT.Dataset).next();
-		PseudoNode rootB = CkanPseudoNodeFactory.get().createDataset();
+		NodeView rootB = CkanPseudoNodeFactory.get().createDataset();
 
 		GraphCopy.copy(rootA, rootB);
 		
