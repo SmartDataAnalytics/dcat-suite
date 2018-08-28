@@ -106,7 +106,7 @@ public class DcatCkanRdfUtils {
 	//		RDFDataMgr.write(System.err, dcatEntity.getModel(), RDFFormat.TURTLE_PRETTY);
 			
 			// Check if there is an extra:uri attribute
-			String uri = org.aksw.jena_sparql_api.utils.model.ResourceUtils.getPropertyValue(dcatEntity, DcatUtils.extraUri)
+			String uri = org.aksw.jena_sparql_api.utils.model.ResourceUtils.tryGetPropertyValue(dcatEntity, DcatUtils.extraUri)
 				.filter(RDFNode::isURIResource)
 				.map(RDFNode::asResource)
 				.map(Resource::getURI)
@@ -354,7 +354,7 @@ public class DcatCkanRdfUtils {
 
 	// TODO Move to ResourceUtils
 	public static Optional<String> getUri(Resource r, Property p) {
-		Optional<String> result = org.aksw.jena_sparql_api.utils.model.ResourceUtils.getPropertyValue(r, p)
+		Optional<String> result = org.aksw.jena_sparql_api.utils.model.ResourceUtils.tryGetPropertyValue(r, p)
 				.filter(RDFNode::isURIResource).map(RDFNode::asResource).map(Resource::getURI);
 
 		return result;

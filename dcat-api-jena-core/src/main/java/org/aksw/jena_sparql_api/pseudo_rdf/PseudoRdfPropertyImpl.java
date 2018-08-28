@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.aksw.commons.accessors.CollectionAccessor;
 import org.aksw.commons.accessors.CollectionFromConverter;
+import org.aksw.jena_sparql_api.utils.model.ConverterFromNodeMapper;
 import org.aksw.jena_sparql_api.utils.model.NodeMapper;
 import org.apache.jena.graph.Node;
 

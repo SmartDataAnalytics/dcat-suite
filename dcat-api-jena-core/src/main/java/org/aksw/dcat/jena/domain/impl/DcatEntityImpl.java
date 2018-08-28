@@ -28,7 +28,7 @@ public class DcatEntityImpl
 	
 	@Override
 	public String getIdentifier() {
-		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.identifier, String.class).orElse(null);
+		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.identifier, String.class);
 		return result;
 	}
 	
@@ -39,13 +39,13 @@ public class DcatEntityImpl
 
 	@Override
 	public String getTitle() {
-		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.title, String.class).orElse(null);
+		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.title, String.class);
 		return result;
 	}
 
 	@Override
 	public String getDescription() {
-		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.description, String.class).orElse(null);
+		String result = ResourceUtils.getLiteralPropertyValue(this, DCTerms.description, String.class);
 		return result;
 	}
 

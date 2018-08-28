@@ -34,7 +34,7 @@ public class DcatDistributionImpl
 
 	@Override
 	public String getFormat() {
-		return ResourceUtils.getLiteralPropertyValue(this, DCTerms.format, String.class).orElse(null);
+		return ResourceUtils.getLiteralPropertyValue(this, DCTerms.format, String.class);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDatasetImpl;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
 import org.aksw.jena_sparql_api.pseudo_rdf.PseudoGraph;
@@ -17,6 +18,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.system.JenaSystem;
 import org.apache.jena.vocabulary.DCAT;
@@ -37,6 +39,21 @@ public class PseudoRdfConcept {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PseudoRdfConcept.class);
 
+
+	public static void main2(String[] args) {
+
+		JenaSystem.init();
+		RdfDcatApPersonalities.init(BuiltinPersonalities.model);
+
+		Resource r = RDFDataMgr.loadModel("dcat-ap-test01.ttl").createResource("http://www.example.org/LinkedGeoData");
+		
+		DcatApDataset ds = r.as(DcatApDataset.class);
+		System.out.println(ds.getPublisher().getName());
+		ds.getPublisher().setName("Test");
+		System.out.println(ds.getPublisher().getName());
+
+		RDFDataMgr.write(System.out, r.getModel(), RDFFormat.TURTLE_PRETTY);
+	}
 	
 	public static void main(String[] args) {
 
