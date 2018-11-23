@@ -28,19 +28,19 @@
 eg:dcatApMappingCollection
   a m:MappingCollection ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate dct:title              ; m:key "title" ] ;
-  m:mapping [ m:target dcat:Dataset      ; m:predicate dct:description        ; m:key "notes" ] ; 
+  m:mapping [ m:target dcat:Dataset      ; m:predicate dct:description        ; m:key "notes" ] ;
   m:mapping [ a m:CollectionMapping ; m:via "ckanTag" ; # A collection of strings backed by ckan tags
-              m:target dcat:Dataset      ; m:predicate dcat:keyword           ; m:key "tags" ] ; 
+              m:target dcat:Dataset      ; m:predicate dcat:keyword           ; m:key "tags" ] ;
   m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dcat:theme             ; m:key "extra:theme" ] ;
-  m:mapping [ m:target dcat:Dataset      ; m:predicate dct:identifier         ; m:key "extra:identifier" ] ; 
-  m:mapping [ m:target dcat:Dataset      ; m:predicate adms:identifier        ; m:key "extra:alternate_identifier" ] ; 
+  m:mapping [ m:target dcat:Dataset      ; m:predicate dct:identifier         ; m:key "extra:identifier" ] ;
+  m:mapping [ m:target dcat:Dataset      ; m:predicate adms:identifier        ; m:key "extra:alternate_identifier" ] ;
   m:mapping [ m:type xsd:dateTime ;
               m:target dcat:Dataset      ; m:predicate dct:issued             ; m:key "metadata_created" ] ;
   m:mapping [ m:type xsd:dateTime ;
               m:target dcat:Dataset      ; m:predicate dct:modified           ; m:key "metadata_modified" ] ;
-  m:mapping [ m:target dcat:Dataset      ; m:predicate owl:versionInfo        ; m:key "version" ] ; 
-  m:mapping [ m:target dcat:Dataset      ; m:predicate adms:vesionNotes       ; m:key "extra:version_notes" ] ; 
+  m:mapping [ m:target dcat:Dataset      ; m:predicate owl:versionInfo        ; m:key "version" ] ;
+  m:mapping [ m:target dcat:Dataset      ; m:predicate adms:vesionNotes       ; m:key "extra:version_notes" ] ;
   m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dct:language           ; m:key "extra:language" ] ;
   m:mapping [ m:type r2rml:IRI ;

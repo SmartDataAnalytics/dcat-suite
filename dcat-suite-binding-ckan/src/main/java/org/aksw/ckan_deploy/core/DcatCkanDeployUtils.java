@@ -67,15 +67,18 @@ public class DcatCkanDeployUtils {
 		return result;
 	}
 
-
-	public static Optional<URI> newURI(String uri) {
-		Optional<URI> result;
+	public static URI newURI(String uri) {
+		URI result;
 		try {
-			result = Optional.of(new URI(uri));
+			result = new URI(uri);
 		} catch (URISyntaxException e) {
-			result = Optional.empty();
-			//throw new RuntimeException(e);
+			result = null;
 		}
+		return result;
+	}
+
+	public static Optional<URI> tryNewURI(String uri) {
+		Optional<URI> result = Optional.ofNullable(newURI(uri));
 		return result;
 	}
 		
@@ -165,7 +168,7 @@ public class DcatCkanDeployUtils {
 					.collect(Collectors.toList());
 			
 			List<URI> resolvedValidUrls = resolvedUrls.stream()
-					.map(str -> DcatCkanDeployUtils.newURI(str).orElse(null))
+					.map(str -> DcatCkanDeployUtils.tryNewURI(str).orElse(null))
 					.filter(r -> r != null)
 					.collect(Collectors.toList());
 			

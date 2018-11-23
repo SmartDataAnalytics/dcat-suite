@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.jsonldjava.shaded.com.google.common.base.Stopwatch;
 
 /**
  * A Dcat Repository is essentially a cache for downloads, typically backed by a file system.
@@ -71,6 +74,7 @@ public class DcatRepositoryDefault
 	protected Path dcatRepoRoot;
 	//protected Function<String, String> iriResolver;
 	
+	protected transient Path catalogFolder;
 	protected transient Path datasetsFolder;
 	protected transient Path distributionsFolder;
 	
@@ -79,9 +83,11 @@ public class DcatRepositoryDefault
 		this.dcatRepoRoot = dcatRepoRoot;
 		//this.iriResolver = iriResolver;
 		
+		catalogFolder = dcatRepoRoot.resolve("catalogs");
 		datasetsFolder = dcatRepoRoot.resolve("datasets");
 		distributionsFolder = dcatRepoRoot.resolve("distributions");
 	}
+	
 	
 	/**
 	 * Find a dataset with the given id in the repo 
@@ -122,7 +128,7 @@ public class DcatRepositoryDefault
 		
 		Path result;
 		
-		Path path = DcatCkanDeployUtils.newURI(url).flatMap(DcatCkanDeployUtils::pathsGet).orElse(null);
+		Path path = DcatCkanDeployUtils.tryNewURI(url).flatMap(DcatCkanDeployUtils::pathsGet).orElse(null);
 		if(path != null && Files.exists(path)) {
 			result = targetPath.resolve(path.getFileName());
 			Files.copy(path, result);
@@ -173,7 +179,7 @@ public class DcatRepositoryDefault
 		    String filename = index >= 0
 		    		? dispositionValue.substring(index + key.length(), dispositionValue.length() - 1)
 		    		//: DcatCkanDeployUtils.newURI(url).map(uri -> Paths.get(uri).getFileName().toString()).orElse(null);
-		    		: DcatCkanDeployUtils.newURI(url).map(uri -> Paths.get(uri.getPath()).getFileName().toString()).orElse(null);
+		    		: DcatCkanDeployUtils.tryNewURI(url).map(uri -> Paths.get(uri.getPath()).getFileName().toString()).orElse(null);
 		    		
 			result = filenameToPath.apply(filename);
 
@@ -223,7 +229,7 @@ public class DcatRepositoryDefault
 		
 		String str = dcatDistribution.getURI();
 
-		URI uri = DcatCkanDeployUtils.newURI(str).orElse(null);
+		URI uri = DcatCkanDeployUtils.tryNewURI(str).orElse(null);
 		Path relativeDistributionPath;
 		if(uri != null) {
 			// TODO Make uri -> path mapping configurable
@@ -269,8 +275,11 @@ public class DcatRepositoryDefault
 
 				
 				logger.info("Downloading " + downloadUrl);
+				Stopwatch stopwatch = Stopwatch.createStarted();
 				Path file = downloadFile(downloadUrl, dataFolder);
-				logger.info("Download finished:\n  Url: " + downloadUrl + "\n  File: " + file + "\n");
+				logger.info("Download finished [" + stopwatch.stop().elapsed(TimeUnit.SECONDS) + "]"
+						+ "\n  Url: " + downloadUrl
+						+ "\n  File: " + file + "\n");
 			}
 		}
 
