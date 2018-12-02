@@ -1,8 +1,10 @@
 package org.aksw.ckan_deploy.core;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,7 +69,28 @@ public class DcatCkanDeployUtils {
 		return result;
 	}
 
-	public static URI newURI(String uri) {
+	
+//	public static URL tryToURL(URI uri) {
+//		URL result;
+//		try {
+//			result = uri.toURL();
+//		} catch (MalformedURLException e) {
+//			throw new RuntimeException(e);
+//		}
+//		return result;
+//	}
+
+	public static URL toURL(URI uri) {
+		URL result;
+		try {
+			result = uri.toURL();
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+		return result;
+	}
+	
+  	public static URI newURI(String uri) {
 		URI result;
 		try {
 			result = new URI(uri);
