@@ -124,6 +124,12 @@
 				<version>${jena-sparql-api.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-mapper-core</artifactId>
+				<version>${jena-sparql-api.version}</version>
+			</dependency>
+
 			<!-- Bulk loading to virtuoso -->
 			<dependency>
 				<groupId>org.hobbit</groupId>

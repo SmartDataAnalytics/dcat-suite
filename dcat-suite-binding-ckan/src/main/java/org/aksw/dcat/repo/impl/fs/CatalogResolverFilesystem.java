@@ -206,9 +206,13 @@ public class CatalogResolverFilesystem
 	}	
 	
 	public DistributionResolver doCacheDistribution(
-			String datasetId,
+			//String datasetId,
 			String requestDistributionId,
 			DistributionResolver dr) {
+		
+		DatasetResolver datar = dr.getDatasetResolver();
+		String datasetId = datar.getDataset().getURI();
+		
 		Function<String, String> iriResolver = iri -> iri;
 		Collection<URL> urls = dr.getDistribution().getDownloadURLs().stream()
 				.map(iriResolver::apply)
@@ -217,11 +221,12 @@ public class CatalogResolverFilesystem
 				.map(DcatCkanDeployUtils::toURL)
 				.collect(Collectors.toList());
 
+		
 		for(URL url : urls) {
 			doCacheDistribution(datasetId, requestDistributionId, dr, url);
 		}
 		
-		return new DistributionResolverFilesystem(datasetResolver, dcatDistribution);
+		return new DistributionResolverFilesystem(datar, dr.getDistribution());
 	}
 
 	
