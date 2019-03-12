@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
@@ -26,6 +27,7 @@ import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
@@ -132,7 +134,7 @@ public class MainCliDcatSuite {
 	@Parameters(separators = "=", commandDescription = "Deploy datasets to a local Virtuoso via OBDC")
 	public static class CommandDeployVirtuoso {
 
-		@Parameter(description = "The DCAT file which to deploy", required = true)
+		@Parameter(description = "The DCAT file which to deploy") //, required = true)
 		protected String file;
 
 		@Parameter(names = { "--ds" ,"--dataset"} , description = "Datasets which to deploy (iri, identifier or title)")
@@ -341,18 +343,35 @@ public class MainCliDcatSuite {
 		
 		String dcatSource = cmDeployVirtuoso.file;
 		
-		Function<String, String> iriResolver = createIriResolver(dcatSource);
+		Collection<String> datasetIds;
+		
 		CatalogResolver catalogResolver = CatalogResolverUtils.createCatalogResolverDefault();
 
-		Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(dcatSource);
+		Function<String, String> iriResolver = null;
+		if(dcatSource != null) {		
+			iriResolver = createIriResolver(dcatSource);
+			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(dcatSource);
+			Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
+			datasetIds = dcatDatasets.stream().map(Resource::getURI).collect(Collectors.toList());
+			
+		} else {
+			datasetIds = cmDeployVirtuoso.datasets;
+//
+//			catalogResolver.resolveDataset(datasetId)
+//			
+//			
+//			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
+		}
+		
 
-		Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
+
+
 		
 		logger.info("Detected datasets:");
-		for(DcatDataset dcatDataset: dcatDatasets) {
+		for(String dcatDataset: datasetIds) {
 			logger.info("  " + dcatDataset);
 		}
-		logger.info(dcatDatasets.size() + " datasets enqueued");
+		logger.info(datasetIds.size() + " datasets enqueued");
 		
 		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
 		
@@ -375,8 +394,9 @@ public class MainCliDcatSuite {
 				
 				VirtuosoBulkLoad.logEnable(conn, 2, 0);
 
-				for(DcatDataset dcatDataset : dcatDatasets) {
-					String datasetId = dcatDataset.getURI();
+				//for(DcatDataset dcatDataset : dcatDatasets) {
+				for(String datasetId : datasetIds) {
+					//String datasetId = dcatDataset.getURI();
 					DatasetResolver datasetResolver = catalogResolver.resolveDataset(datasetId).blockingGet();
 					
 					DcatDeployVirtuosoUtils.deploy(
@@ -384,7 +404,7 @@ public class MainCliDcatSuite {
 							iriResolver,
 							dockerClient,
 							dockerContainerId,
-							null,
+							Paths.get("/tmp/"),
 							allowedFolder,
 							cmDeployVirtuoso.nosymlinks,
 							conn);
