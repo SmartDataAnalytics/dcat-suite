@@ -20,6 +20,9 @@ import org.aksw.ckan_deploy.core.DcatRepository;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
 import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.repo.api.CatalogResolver;
+import org.aksw.dcat.repo.api.DatasetResolver;
+import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
@@ -339,7 +342,7 @@ public class MainCliDcatSuite {
 		String dcatSource = cmDeployVirtuoso.file;
 		
 		Function<String, String> iriResolver = createIriResolver(dcatSource);
-		DcatRepository dcatRepository = createDcatRepository();
+		CatalogResolver catalogResolver = CatalogResolverUtils.createCatalogResolverDefault();
 
 		Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(dcatSource);
 
@@ -373,8 +376,18 @@ public class MainCliDcatSuite {
 				VirtuosoBulkLoad.logEnable(conn, 2, 0);
 
 				for(DcatDataset dcatDataset : dcatDatasets) {
-				
-					DcatDeployVirtuosoUtils.deploy(dcatRepository, dcatDataset, iriResolver, dockerClient, dockerContainerId, null, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
+					String datasetId = dcatDataset.getURI();
+					DatasetResolver datasetResolver = catalogResolver.resolveDataset(datasetId).blockingGet();
+					
+					DcatDeployVirtuosoUtils.deploy(
+							datasetResolver,
+							iriResolver,
+							dockerClient,
+							dockerContainerId,
+							null,
+							allowedFolder,
+							cmDeployVirtuoso.nosymlinks,
+							conn);
 				}
 			
 				conn.commit();

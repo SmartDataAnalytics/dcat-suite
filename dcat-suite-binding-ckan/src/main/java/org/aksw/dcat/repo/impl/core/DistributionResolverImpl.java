@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import org.aksw.ckan_deploy.core.DcatDeployVirtuosoUtils;
@@ -18,25 +17,17 @@ import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
-import org.aksw.dcat.repo.impl.cache.CatalogResolverCaching;
-import org.aksw.dcat.repo.impl.ckan.CatalogResolverCkan;
-import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
-import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
 
 import com.spotify.docker.client.DockerClient;
 
 import eu.trentorise.opendata.commons.internal.org.apache.commons.lang3.SystemUtils;
-import eu.trentorise.opendata.jackan.CkanClient;
 import virtuoso.jdbc4.VirtuosoDataSource;
 
 /**
@@ -74,6 +65,7 @@ public class DistributionResolverImpl
 
 	transient protected CatalogResolver crf;
 
+	
 	public static void main(String[] args) throws Exception {
 		Dataset ds = TDB2Factory.connectDataset(SystemUtils.USER_HOME + "/.dcat/db.tdb2");
 		try(RDFConnection conn = RDFConnectionFactory.connect(ds)) {
@@ -81,46 +73,9 @@ public class DistributionResolverImpl
 			JenaPluginUtils.registerJenaResourceClass(DcatResolverConfig.class);
 			JenaPluginUtils.registerJenaResourceClass(DcatResolverCkan.class);
 			
-			
-			//Model configModel = ModelFactory.createDefaultModel();
-			String configUrl = SystemUtils.USER_HOME + "/.dcat/settings.ttl";
-			Model configModel = RDFDataMgr.loadModel(configUrl);
-			List<DcatResolverConfig> configs = configModel
-					.listResourcesWithProperty(ResourceFactory.createProperty("http://www.example.org/resolvers"))
-					.mapWith(r -> r.as(DcatResolverConfig.class))
-					.toList();
-
-			CatalogResolverMulti coreResolver = new CatalogResolverMulti();
-			
-			for(DcatResolverConfig config : configs) {
-				Collection<DcatResolverCkan> resolvers = config.resolvers(DcatResolverCkan.class);
-				for(DcatResolverCkan ckanResolverSpec : resolvers) {
-					System.out.println("Got: " + ckanResolverSpec.getApiKey());	
-					System.out.println("Got: " + ckanResolverSpec.getUrl());
-					
-					
-					String ckanApiUrl = ckanResolverSpec.getUrl();
-					String ckanApiKey = ckanResolverSpec.getApiKey();
-					
-//					CkanClient ckanClient = new CkanClient("http://ckan.qrowd.aksw.org", "25b91078-fbc6-4b3a-93c5-acfce414bbeb");
-					CkanClient ckanClient = new CkanClient(ckanApiUrl, ckanApiKey);
-					CatalogResolver ckanResolver = new CatalogResolverCkan(ckanClient);
-					coreResolver.getResolvers().add(ckanResolver);
-				}			
-			}
-			
-			
-				
-			
-			//String id = "http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/fb3fed1f-cc9a-4232-a876-b185d8e002c8/download/osm-bremen-2018-04-04-ways-amenity.sorted.nt.bz2";
-			//String id = "fb3fed1f-cc9a-4232-a876-b185d8e002c8";
-			//String id = "http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity";
+			CatalogResolver cr = CatalogResolverUtils.createCatalogResolverDefault();
 			
 			String id = "org-linkedgeodata-osm-bremen-2018-04-04";
-			CatalogResolver cr = new CatalogResolverCaching(
-					CatalogResolverFilesystem.createDefault(),
-					coreResolver);
-			
 			DatasetResolver dr = cr.resolveDataset(id).blockingGet();
 
 			String dist = dr.getDataset().getDistributions().iterator().next().getURI();
