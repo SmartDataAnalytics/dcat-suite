@@ -2,6 +2,7 @@ package org.aksw.dcat.repo.impl.ckan;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
 
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.DatasetResolver;
@@ -37,6 +38,7 @@ public class DistributionResolverCkan
 		return open(dcatDistribution.getDownloadURL());
 	}
 
+
 	@Override
 	public InputStream open(String url) throws Exception {
 		boolean isValid = dcatDistribution.getDownloadURLs().contains(url);
@@ -48,5 +50,10 @@ public class DistributionResolverCkan
 		}
 		
 		return result;
+	}
+
+	@Override
+	public Path getPath() {
+		return null;
 	}
 }

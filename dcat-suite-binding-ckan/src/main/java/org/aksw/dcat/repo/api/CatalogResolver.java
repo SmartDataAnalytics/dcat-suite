@@ -1,5 +1,7 @@
 package org.aksw.dcat.repo.api;
 
+import java.net.URL;
+
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 
 import io.reactivex.Flowable;
@@ -17,6 +19,7 @@ public interface CatalogResolver {
 	Maybe<DatasetResolver> resolveDataset(String datasetId);
 	Flowable<DistributionResolver> resolveDistribution(String distributionId);
 
+	Maybe<URL> resolveDownload(String downloadUri) throws Exception;
 
 	/**
 	 * Resolve a distributionId in regard to a given dataset.

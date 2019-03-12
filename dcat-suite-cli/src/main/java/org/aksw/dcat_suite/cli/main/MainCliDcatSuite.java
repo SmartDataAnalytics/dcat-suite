@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -27,6 +28,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
+import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.Streams;
+import com.spotify.docker.client.DockerClient;
 
 import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
@@ -147,6 +150,9 @@ public class MainCliDcatSuite {
 		@Parameter(names = "--allowed", description = "A writeable folder readable by virtuoso")
 		protected String allowed = ".";
 
+		@Parameter(names = "--docker", description = "Id of a docker container - files will be copied into the container to the folder specified by --allowed")
+		protected String docker = null;
+		
 		@Parameter(names = "--nosymlinks", description = "Copy datsets to the allowed folder instead of linking them")
 		protected boolean nosymlinks = false;
 
@@ -171,7 +177,7 @@ public class MainCliDcatSuite {
 
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
 		
 		CommandMain cm = new CommandMain();
@@ -328,7 +334,7 @@ public class MainCliDcatSuite {
 		return result;
 	}
 
-	private static void processDeployVirtuoso(CommandDeployVirtuoso cmDeployVirtuoso) throws IOException {
+	private static void processDeployVirtuoso(CommandDeployVirtuoso cmDeployVirtuoso) throws Exception {
 		
 		String dcatSource = cmDeployVirtuoso.file;
 		
@@ -347,6 +353,14 @@ public class MainCliDcatSuite {
 		
 		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
 		
+		String dockerContainerId = cmDeployVirtuoso.docker;
+		DockerClient dockerClient = null;
+		if(dockerContainerId != null) {
+			dockerClient = DockerServiceSystemDockerClient
+					.create(true, Collections.emptyMap(), Collections.emptySet())
+					.getDockerClient();
+		}
+		
 		VirtuosoDataSource dataSource = new VirtuosoDataSource();
 		dataSource.setPassword(cmDeployVirtuoso.pass);
 		dataSource.setUser(cmDeployVirtuoso.user);
@@ -360,7 +374,7 @@ public class MainCliDcatSuite {
 
 				for(DcatDataset dcatDataset : dcatDatasets) {
 				
-					DcatDeployVirtuosoUtils.deploy(dcatRepository, dcatDataset, iriResolver, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
+					DcatDeployVirtuosoUtils.deploy(dcatRepository, dcatDataset, iriResolver, dockerClient, dockerContainerId, null, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
 				}
 			
 				conn.commit();

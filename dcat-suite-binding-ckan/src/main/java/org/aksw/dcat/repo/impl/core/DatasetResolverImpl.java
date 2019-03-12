@@ -1,6 +1,9 @@
-package org.aksw.dcat.repo.api;
+package org.aksw.dcat.repo.impl.core;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.repo.api.CatalogResolver;
+import org.aksw.dcat.repo.api.DatasetResolver;
+import org.aksw.dcat.repo.api.DistributionResolver;
 
 import io.reactivex.Flowable;
 
@@ -30,10 +33,6 @@ public class DatasetResolverImpl
 
 	@Override
 	public CatalogResolver getCatalogResolver() {
-		// TODO Auto-generated method stub
-		return null;
+		return catalogResolver;
 	}
-
-
-
 }

@@ -90,6 +90,19 @@ public class DcatCkanDeployUtils {
 		return result;
 	}
 	
+	
+  	public static URL newURL(String uri) {
+  		// There was some reason why to go from String to URL via URI... but i forgot...
+  		URI tmp = newURI(uri);
+  		URL result;
+  		try {
+			result = tmp.toURL();
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+  		return result;
+  	}
+	
   	public static URI newURI(String uri) {
 		URI result;
 		try {

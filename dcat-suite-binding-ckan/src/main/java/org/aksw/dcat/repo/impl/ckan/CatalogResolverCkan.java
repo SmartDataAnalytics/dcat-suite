@@ -1,13 +1,16 @@
 package org.aksw.dcat.repo.impl.ckan;
 
+import java.net.URL;
+
+import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
 import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
-import org.aksw.dcat.repo.api.DatasetResolverImpl;
 import org.aksw.dcat.repo.api.DistributionResolver;
+import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.slf4j.Logger;
@@ -25,12 +28,18 @@ public class CatalogResolverCkan
 	private static final Logger logger = LoggerFactory.getLogger(CatalogResolverCkan.class);
 	
 	protected CkanClient ckanClient;
-	protected String prefix;
+	//protected String prefix;
 	
-	public CatalogResolverCkan(CkanClient ckanClient, String prefix) {
+	public CatalogResolverCkan(CkanClient ckanClient) {
+//		this(ckanClient, null);
+		super();
 		this.ckanClient = ckanClient;
-		this.prefix = prefix;
 	}
+
+//	public CatalogResolverCkan(CkanClient ckanClient, String prefix) {
+//		this.ckanClient = ckanClient;
+//		this.prefix = prefix;
+//	}
 	
 	@Override
 	public Maybe<DatasetResolver> resolveDataset(String datasetId) {
@@ -92,5 +101,11 @@ public class CatalogResolverCkan
 				.flatMap(d -> d.resolveDistribution(distributionId));
 		// atasetResolver::resolveDistribution
 		return result;
+	}
+
+	@Override
+	public Maybe<URL> resolveDownload(String downloadUri) {
+		URL url = DcatCkanDeployUtils.newURL(downloadUri);
+		return Maybe.just(url);
 	}
 }

@@ -170,7 +170,7 @@ public class RdfDcatApDatasetImpl
 	@Override
 	public SingleValuedAccessor<DcatApAgent> publisher() {
 		return new SingleValuedAccessorFromCollection<>(
-				new CollectionFromConverter<DcatApAgent, RdfDcatApAgent>(
+				new CollectionFromConverter<DcatApAgent, RdfDcatApAgent, Collection<RdfDcatApAgent>>(
 						(Collection<RdfDcatApAgent>)new SetFromPropertyValues<RdfDcatApAgent>(this, DCTerms.publisher, RdfDcatApAgent.class),
 						new CastConverter<DcatApAgent, RdfDcatApAgent>()));
 						

@@ -2,8 +2,8 @@ package org.aksw.ckan_deploy.core;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,8 +11,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -20,6 +20,7 @@ import java.util.function.Function;
 import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.utils.model.ResourceUtils;
 import org.apache.jena.graph.Triple;
@@ -31,9 +32,13 @@ import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DcatDeployVirtuosoUtils {
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+import com.spotify.docker.client.DockerClient;
 
+public class DcatDeployVirtuosoUtils {
 	private static final Logger logger = LoggerFactory.getLogger(DcatDeployVirtuosoUtils.class);
+
 
 	
 	/**
@@ -74,16 +79,37 @@ public class DcatDeployVirtuosoUtils {
 		return result;
 	}
 
-	
 	public static void deploy(
-			DcatRepository dcatRepository,
-			DcatDataset dcatDataset,
+			//DcatRepository dcatRepository,
+			//DcatDataset dcatDataset,
+			DatasetResolver dr,
 			Function<String, String> iriResolver,
 			//IRIResolver iriResolver,
+			DockerClient dockerClient,
+			String dockerContainerId,
+			Path unzipFolder,
 			Path allowedFolder,
 			boolean noSymlink,
 			Connection conn) throws SQLException, IOException, URISyntaxException {
 
+		//Set<Path> toDelete = new HashSet<>();
+
+		DcatDataset dcatDataset = dr.getDataset();
+		
+		if(unzipFolder == null) {
+			if(dockerContainerId == null) {
+				unzipFolder = allowedFolder;
+			}
+		}
+		
+		// Create a sub-folder in the unzip folder for bulk-copying into the container
+		
+		// TODO Should we ensure a fresh folder? Probably...
+		if(dockerContainerId != null) {
+			unzipFolder = unzipFolder.resolve(dockerContainerId);
+//			toDelete.add(unzipFolder);
+		}
+		
 		String datasetDefaultGraph = DcatCkanRdfUtils.getUri(dcatDataset, dcatDefaultGraph).orElse(null);
 		
 		String defaultGraphGroupIri = DcatCkanRdfUtils.getUri(dcatDataset, dcatDefaultGraphGroup).orElse(null);
@@ -94,14 +120,9 @@ public class DcatDeployVirtuosoUtils {
 		// Issue what if dataset and distribution specify a defaultGraph?
 		// Right now the dataset level default graph takes precedence
 		
-		if(defaultGraphGroupIri != null) {
-			logger.info("Creating graph group <" + defaultGraphGroupIri + ">");
-			VirtuosoBulkLoad.graphGroupCreate(conn, defaultGraphGroupIri, 1);
-
-		}
 		
+		Multimap<Path, String> fileToGraph = LinkedHashMultimap.create();
 		
-		Set<Path> toDelete = new HashSet<>();
 		try {
 			for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
 
@@ -116,16 +137,32 @@ public class DcatDeployVirtuosoUtils {
 						;
 				
 				
-				if(defaultGraphGroupIri != null && effectiveGraphIri != null) {
-					logger.info("Adding graph <" + effectiveGraphIri + "> as member of graph group <" + defaultGraphGroupIri + ">");
-					VirtuosoBulkLoad.graphGroupIns(conn, defaultGraphGroupIri, effectiveGraphIri);
-				}
 				
 				if(effectiveGraphIri != null) {
-					
-					Collection<URI> dataUris;
+					Collection<Path> dataUris;
 					try {
-						dataUris = dcatRepository.resolveDistribution(dcatDistribution, iriResolver);
+						dataUris = dr.resolveDistribution(dcatDistribution.getURI())
+								.flatMap(distributionResolver -> distributionResolver.resolveDownload().toFlowable())
+								.map(URL::toURI)
+								.map(Paths::get)
+								//.map(DistributionResolver::getPath)
+//								.map(xxx -> {
+//									Path p = xxx.getPath();
+//									System.out.println(p);
+//									return p;
+//								})
+								//.map(xxx -> xxx.getDistribution().getDownloadURL())
+								//.map(DcatCkanDeployUtils::newURI)
+								.toList()
+								.blockingGet()
+								;
+						
+						System.out.println(dataUris);
+//								.stream()
+//								.map(DcatDistribution::getDownloadURL)
+//								.map(DcatCkanDeployUtils::newURI)
+//								.collect(Collectors.toSet());
+						//dataUris = dcatRepository.resolveDistribution(dcatDistribution, iriResolver);
 					} catch(Exception e) {
 						logger.warn("Error resolving distribution" + dcatDistribution, e);
 						// TODO Require permissive=true flag to proceed
@@ -138,10 +175,10 @@ public class DcatDeployVirtuosoUtils {
 //							.map(Resource::getURI)
 //							.orElse(null);
 	
-					for(URI dataUri : dataUris) {
+					for(Path dataUri : dataUris) {
 					
 						//String url = iriResolver.resolveToStringSilent(downloadURL);
-						Path path = Paths.get(dataUri);
+						Path path = dataUri;//Paths.get(dataUri);
 						
 						
 						String contentType = Files.probeContentType(path);
@@ -156,10 +193,10 @@ public class DcatDeployVirtuosoUtils {
 	
 							String unzippedFilename = com.google.common.io.Files.getNameWithoutExtension(filename);
 								
-							actualFile = allowedFolder.resolve(".tmp-load-" + unzippedFilename);
+							actualFile = unzipFolder.resolve(".tmp-load-" + unzippedFilename);
 							
 							if(!Files.exists(actualFile)) {
-								Path tmpFile = allowedFolder.resolve(".tmp-unzip-" + unzippedFilename);
+								Path tmpFile = unzipFolder.resolve(".tmp-unzip-" + unzippedFilename);
 								Files.deleteIfExists(tmpFile);
 								
 								logger.info("bzip archive detected, unzipping to " + tmpFile.toAbsolutePath());
@@ -171,7 +208,8 @@ public class DcatDeployVirtuosoUtils {
 								Files.move(tmpFile, actualFile);
 							}
 							
-							toDelete.add(actualFile);
+							fileToGraph.put(actualFile, effectiveGraphIri);
+							//toDelete.add(actualFile);
 						} else {
 							actualFile = allowedFolder.resolve(".tmp-load-" + filename);
 	
@@ -183,28 +221,59 @@ public class DcatDeployVirtuosoUtils {
 								}
 							}
 							
-							toDelete.add(actualFile);
+							fileToGraph.put(actualFile, effectiveGraphIri);
+							//toDelete.add(actualFile);
 						}
-
-						logger.info("Preparing Virtuoso Bulk load:\n  File: " + actualFile.toAbsolutePath() + "\n  Graph: " + effectiveGraphIri + "\n");
-
-						//logger.info("Registering " + actualFile.toAbsolutePath() + " with Virtuoso RDF Loader");
-						
-						String allowedDir = allowedFolder.toString();
-						String actualFilename = actualFile.getFileName().toString();
-						
-						VirtuosoBulkLoad.ldDir(conn, allowedDir, actualFilename, effectiveGraphIri);
 					}
+					
 				}
 			}
 			
+
+			
+			if(dockerContainerId != null) {
+				try {
+					//Path tgtPath = allowedFolder.resolve(actualFile.getFileName());
+					//dockerClient.copyToContainer(actualFile.getParent(), dockerContainerId, tgtPath.toString());
+					dockerClient.copyToContainer(unzipFolder, dockerContainerId, allowedFolder.toString());
+				} catch(Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+			
+			if(defaultGraphGroupIri != null) {
+				logger.info("Creating graph group <" + defaultGraphGroupIri + ">");
+				VirtuosoBulkLoad.graphGroupCreate(conn, defaultGraphGroupIri, 1);
+
+			}
+
+			
+			for(Entry<Path, String> e : fileToGraph.entries()) {
+			
+				Path actualFile = e.getKey();
+				String effectiveGraphIri = e.getValue();
+				//actualFile : toDelete
+				
+				
+				logger.info("Preparing Virtuoso Bulk load:\n  File: " + actualFile.toAbsolutePath() + "\n  Graph: " + effectiveGraphIri + "\n");
+	
+				//logger.info("Registering " + actualFile.toAbsolutePath() + " with Virtuoso RDF Loader");
+				
+				String allowedDir = allowedFolder.toString();
+				String actualFilename = actualFile.getFileName().toString();
+				
+				VirtuosoBulkLoad.ldDir(conn, allowedDir, actualFilename, effectiveGraphIri);
+			}
+
 			logger.info("Virtuoso RDF Loader started ...");
 			VirtuosoBulkLoad.rdfLoaderRun(conn);
 			logger.info("Virtuoso RDF Loader finished.");
 			//dcatDataset
+
 		}
 		finally {
-			for(Path path : toDelete) {
+			for(Path path : fileToGraph.keySet()) { //toDelete) {
 				try {
 					if(Files.exists(path)) {
 						logger.info("Deleting file " + path.toAbsolutePath());
@@ -217,4 +286,3 @@ public class DcatDeployVirtuosoUtils {
 		}
 	}
 }
-	
