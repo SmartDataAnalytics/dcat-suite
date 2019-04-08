@@ -514,8 +514,13 @@ public class CatalogResolverFilesystem
 			: resolvePath(u);
 			
 		// Make absolute paths relative (i.e. remove leading slashes)
-		Path root = Paths.get("");
-		Path result = root.relativize(tmp);
+		Path result;
+		if(tmp.isAbsolute()) {
+			Path root = tmp.getRoot();
+			result = root.relativize(tmp);
+		} else {
+			result = tmp;
+		}
 			
 		logger.info("Resolved: " + uri + "\n  to: " + result + "\n  via: " + u);
 		return result;
