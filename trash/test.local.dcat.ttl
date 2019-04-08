@@ -1,0 +1,26 @@
+@prefix eg: <http://www.example.org/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+
+eg:dataset-dbpedia-2016-10-core
+  a dcat:Dataset ;
+  dcat:defaultGraph <http://dbpedia.org> ;
+  dcat:distribution
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/article_categories_sorted_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/category_labels_sorted_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/genders_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/geo_coordinates_mappingbased_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/homepages_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/images_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/infobox_properties_sorted_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/infobox_properties_mapped_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/instance_types_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/labels_sorted_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/mappingbased_literals_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/mappingbased_objects_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/skos_categories_en.ttl.bz2> ] ,
+    [ dcat:downloadURL <file:///net4/hobbitdata/FTP-DATA/dbpedia/downloads.dbpedia.org/2016-10/core-i18n/en/category_labels_en.ttl.bz2> ] ;
+  .
+
+

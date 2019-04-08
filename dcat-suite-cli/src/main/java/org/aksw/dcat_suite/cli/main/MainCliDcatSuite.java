@@ -42,6 +42,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.StandardSystemProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.Streams;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
@@ -395,7 +396,7 @@ public class MainCliDcatSuite {
 			}
 		}
 
-		if(hostName == null || hostName.equals("127.0.0.1")) {
+		if(Strings.isNullOrEmpty(hostName)) {// || hostName.equals("127.0.0.1")) {
 			hostName = "localhost";
 		}
 
