@@ -288,6 +288,7 @@ public class CatalogResolverFilesystem
 	@Override
 	public Maybe<URL> doCacheDownload(URL downloadUrl) throws IOException {
 		String downloadUri = downloadUrl.toString();
+		logger.info("Download folder: " + downloadFolder);
 		Path folder = downloadFolder.resolve(resolvePath(downloadUri)).resolve("_file");
 		
 		// Check if the folder already contains a file
@@ -337,6 +338,8 @@ public class CatalogResolverFilesystem
 	// TODO Result should probably be a Single / CompletableFuture
 	@Override
 	public Maybe<URL> resolveDownload(String downloadUri) throws Exception {
+		logger.info("Download folderx: " + downloadFolder);
+
 		Path folder = downloadFolder.resolve(resolvePath(downloadUri)).resolve("_file");
 		
 		Maybe<URL> result;
