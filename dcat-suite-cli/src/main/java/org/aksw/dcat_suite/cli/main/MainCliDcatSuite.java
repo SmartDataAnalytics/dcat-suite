@@ -165,6 +165,9 @@ public class MainCliDcatSuite {
 		@Parameter(names = "--nosymlinks", description = "Copy datsets to the allowed folder instead of linking them")
 		protected boolean nosymlinks = false;
 
+		@Parameter(names = "--tmp", description = "Temporary directory for e.g. unzipping large files")
+		protected String tmpFolder = StandardSystemProperty.JAVA_IO_TMPDIR.value() + "/dcat/";
+
 	}
 
 	public static void showCkanDatasets(CkanClient ckanClient) {
@@ -350,6 +353,8 @@ public class MainCliDcatSuite {
 		Collection<String> datasetIds;
 		CatalogResolver catalogResolver;
 
+		Path tempDir = Paths.get(cmDeployVirtuoso.tmpFolder);
+		
 		Function<String, String> iriResolver = null;
 		if(dcatSource != null) {		
 			iriResolver = createIriResolver(dcatSource);
@@ -422,7 +427,7 @@ public class MainCliDcatSuite {
 							iriResolver,
 							dockerClient,
 							dockerContainerId,
-							Paths.get("/tmp/.dcat/"),
+							tempDir,
 							allowedFolder,
 							cmDeployVirtuoso.nosymlinks,
 							conn);
