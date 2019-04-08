@@ -338,7 +338,7 @@ public class CatalogResolverFilesystem
 	// TODO Result should probably be a Single / CompletableFuture
 	@Override
 	public Maybe<URL> resolveDownload(String downloadUri) throws Exception {
-		logger.info("Download folderx: " + downloadFolder);
+//		logger.info("Download folderx: " + downloadFolder);
 
 		Path folder = downloadFolder.resolve(resolvePath(downloadUri)).resolve("_file");
 		
@@ -509,10 +509,14 @@ public class CatalogResolverFilesystem
 	public static Path resolvePath(String uri)  {
 		URI u = DcatCkanDeployUtils.newURI(uri);
 		
-		Path result = u == null ?
+		Path tmp = u == null ?
 			Paths.get(StringUtils.urlEncode(uri))
 			: resolvePath(u);
-		
+			
+		// Make absolute paths relative (i.e. remove leading slashes)
+		Path root = Paths.get("");
+		Path result = root.relativize(tmp);
+			
 		logger.info("Resolved: " + uri + "\n  to: " + result + "\n  via: " + u);
 		return result;
 	}
