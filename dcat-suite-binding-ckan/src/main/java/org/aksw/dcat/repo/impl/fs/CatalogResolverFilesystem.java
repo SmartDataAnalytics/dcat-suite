@@ -506,7 +506,11 @@ public class CatalogResolverFilesystem
 	public static Path resolvePath(String uri)  {
 		URI u = DcatCkanDeployUtils.newURI(uri);
 		
-		Path result = u == null ? Paths.get(StringUtils.urlEncode(uri)) : resolvePath(u);
+		Path result = u == null ?
+			Paths.get(StringUtils.urlEncode(uri))
+			: resolvePath(u);
+		
+		logger.info("Resolved: " + uri + "\n  to: " + result + "\n  via: " + u);
 		return result;
 	}
 
