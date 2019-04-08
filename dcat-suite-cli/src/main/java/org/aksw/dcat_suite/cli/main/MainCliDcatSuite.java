@@ -44,6 +44,7 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.Streams;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.messages.ContainerInfo;
 
 import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
@@ -146,7 +147,7 @@ public class MainCliDcatSuite {
 		protected int port = 1111;
 
 		@Parameter(names = "--host", description = "Hostname")
-		protected String host = "localhost";
+		protected String host = null; //"localhost";
 
 		@Parameter(names = "--user", description = "Username")
 		protected String user = "dba";
@@ -381,17 +382,29 @@ public class MainCliDcatSuite {
 		
 		String dockerContainerId = cmDeployVirtuoso.docker;
 		DockerClient dockerClient = null;
+		
+		String hostName = cmDeployVirtuoso.host;
 		if(dockerContainerId != null) {
 			dockerClient = DockerServiceSystemDockerClient
 					.create(true, Collections.emptyMap(), Collections.emptySet())
 					.getDockerClient();
+			
+			if(hostName == null) {
+				ContainerInfo containerInfo = dockerClient.inspectContainer(dockerContainerId);
+				hostName = containerInfo.networkSettings().ipAddress();				
+			}
 		}
+
+		if(hostName == null || hostName.equals("127.0.0.1")) {
+			hostName = "localhost";
+		}
+
 		
 		VirtuosoDataSource dataSource = new VirtuosoDataSource();
 		dataSource.setPassword(cmDeployVirtuoso.pass);
 		dataSource.setUser(cmDeployVirtuoso.user);
 		dataSource.setPortNumber(cmDeployVirtuoso.port);
-		dataSource.setServerName(cmDeployVirtuoso.host);
+		dataSource.setServerName(hostName);
 
 		try {
 			try(Connection conn = dataSource.getConnection()) {
