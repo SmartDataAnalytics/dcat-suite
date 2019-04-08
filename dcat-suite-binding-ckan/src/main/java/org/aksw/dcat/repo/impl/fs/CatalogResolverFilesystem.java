@@ -184,7 +184,8 @@ public class CatalogResolverFilesystem
 					.filter(Files::exists)
 					.collect(Collectors.toList());
 				
-				System.out.println("Entries: " + datasets);
+				logger.info("Resolved distribution " + distributionId + " to " + datasets);
+				//System.out.println("Entries: " + datasets);
 				if(datasets.isEmpty()) {
 					result = Flowable.empty();
 				} else if(datasets.size() == 1) {

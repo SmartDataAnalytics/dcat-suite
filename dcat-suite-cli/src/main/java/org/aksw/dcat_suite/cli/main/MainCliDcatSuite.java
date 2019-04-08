@@ -23,6 +23,7 @@ import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
+import org.aksw.dcat.repo.impl.core.CatalogResolverModel;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.apache.jena.query.Dataset;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.Streams;
 import com.spotify.docker.client.DockerClient;
 
@@ -325,7 +327,7 @@ public class MainCliDcatSuite {
 	
 	public static DcatRepository createDcatRepository() throws IOException 
 	{
-		String userDirStr = System.getProperty("user.home");
+		String userDirStr = StandardSystemProperty.USER_HOME.value();
 		Path userFolder = Paths.get(userDirStr);
 		if(!Files.exists(userFolder)) {
 			throw new RuntimeException("Failed to find user directory");
@@ -344,8 +346,7 @@ public class MainCliDcatSuite {
 		String dcatSource = cmDeployVirtuoso.file;
 		
 		Collection<String> datasetIds;
-		
-		CatalogResolver catalogResolver = CatalogResolverUtils.createCatalogResolverDefault();
+		CatalogResolver catalogResolver;
 
 		Function<String, String> iriResolver = null;
 		if(dcatSource != null) {		
@@ -354,7 +355,10 @@ public class MainCliDcatSuite {
 			Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
 			datasetIds = dcatDatasets.stream().map(Resource::getURI).collect(Collectors.toList());
 			
+			catalogResolver = CatalogResolverUtils.wrapWithDiskCache(new CatalogResolverModel(dcatModel));
 		} else {
+			catalogResolver = CatalogResolverUtils.createCatalogResolverDefault();
+
 			datasetIds = cmDeployVirtuoso.datasets;
 //
 //			catalogResolver.resolveDataset(datasetId)
@@ -404,7 +408,7 @@ public class MainCliDcatSuite {
 							iriResolver,
 							dockerClient,
 							dockerContainerId,
-							Paths.get("/tmp/"),
+							Paths.get("/tmp/.dcat/"),
 							allowedFolder,
 							cmDeployVirtuoso.nosymlinks,
 							conn);

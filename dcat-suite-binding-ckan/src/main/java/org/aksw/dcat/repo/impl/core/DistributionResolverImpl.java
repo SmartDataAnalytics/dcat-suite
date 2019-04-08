@@ -70,8 +70,8 @@ public class DistributionResolverImpl
 		Dataset ds = TDB2Factory.connectDataset(SystemUtils.USER_HOME + "/.dcat/db.tdb2");
 		try(RDFConnection conn = RDFConnectionFactory.connect(ds)) {
 			
-			JenaPluginUtils.registerJenaResourceClass(DcatResolverConfig.class);
-			JenaPluginUtils.registerJenaResourceClass(DcatResolverCkan.class);
+			JenaPluginUtils.registerJenaResourceClasses(DcatResolverConfig.class);
+			JenaPluginUtils.registerJenaResourceClasses(DcatResolverCkan.class);
 			
 			CatalogResolver cr = CatalogResolverUtils.createCatalogResolverDefault();
 			

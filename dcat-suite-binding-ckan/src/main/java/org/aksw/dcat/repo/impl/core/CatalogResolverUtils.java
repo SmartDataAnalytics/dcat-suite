@@ -26,6 +26,14 @@ public class CatalogResolverUtils {
 		return result;
 	}
 	
+	public static CatalogResolver wrapWithDiskCache(CatalogResolver coreCatalogResolver) {
+		CatalogResolver result = new CatalogResolverCaching(
+				CatalogResolverFilesystem.createDefault(),
+				coreCatalogResolver);
+
+		return result;
+	}
+	
 	/**
 	 * 
 	 * dcatPath is e.g. ~/.dcat
@@ -68,9 +76,7 @@ public class CatalogResolverUtils {
 		//String id = "fb3fed1f-cc9a-4232-a876-b185d8e002c8";
 		//String id = "http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity";
 		
-		CatalogResolver result = new CatalogResolverCaching(
-				CatalogResolverFilesystem.createDefault(),
-				coreResolver);
+		CatalogResolver result = wrapWithDiskCache(coreResolver);
 
 		return result;
 	}

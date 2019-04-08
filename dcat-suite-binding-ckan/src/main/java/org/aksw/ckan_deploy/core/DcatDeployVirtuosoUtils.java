@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.LogStream;
+import com.spotify.docker.client.messages.ExecCreation;
 
 public class DcatDeployVirtuosoUtils {
 	private static final Logger logger = LoggerFactory.getLogger(DcatDeployVirtuosoUtils.class);
@@ -92,6 +94,8 @@ public class DcatDeployVirtuosoUtils {
 			boolean noSymlink,
 			Connection conn) throws SQLException, IOException, URISyntaxException {
 
+		PackerRegistry packerRegistry = PackerRegistry.createDefault();
+
 		//Set<Path> toDelete = new HashSet<>();
 
 		DcatDataset dcatDataset = dr.getDataset();
@@ -108,6 +112,10 @@ public class DcatDeployVirtuosoUtils {
 		if(dockerContainerId != null) {
 			unzipFolder = unzipFolder.resolve(dockerContainerId);
 //			toDelete.add(unzipFolder);
+		}
+		
+		if(unzipFolder != null) {
+			Files.createDirectories(unzipFolder);
 		}
 		
 		String datasetDefaultGraph = DcatCkanRdfUtils.getUri(dcatDataset, dcatDefaultGraph).orElse(null);
@@ -141,7 +149,7 @@ public class DcatDeployVirtuosoUtils {
 				if(effectiveGraphIri != null) {
 					Collection<Path> dataUris;
 					try {
-						dataUris = dr.resolveDistribution(dcatDistribution.getURI())
+						dataUris = dr.resolveDistribution(dcatDistribution.asNode().toString())
 								.flatMap(distributionResolver -> distributionResolver.resolveDownload().toFlowable())
 								.map(URL::toURI)
 								.map(Paths::get)
@@ -188,8 +196,10 @@ public class DcatDeployVirtuosoUtils {
 						String filename = path.getFileName().toString();
 						
 						Path actualFile;
+						//"application/x-partial-download"
 						if("application/x-bzip".equals(contentType)) {
 							
+							PathTransform unzipper = packerRegistry.getMap().get(contentType);
 	
 							String unzippedFilename = com.google.common.io.Files.getNameWithoutExtension(filename);
 								
@@ -201,8 +211,10 @@ public class DcatDeployVirtuosoUtils {
 								
 								logger.info("bzip archive detected, unzipping to " + tmpFile.toAbsolutePath());
 								
-								try(InputStream in = new MetaBZip2CompressorInputStream(Files.newInputStream(path))) {
-									Files.copy(in, tmpFile);
+								try {
+									unzipper.transform(path, tmpFile);
+								} catch(Exception e) {
+									logger.warn("Failed to unzip " + path, e);
 								}
 								
 								Files.move(tmpFile, actualFile);
@@ -233,6 +245,9 @@ public class DcatDeployVirtuosoUtils {
 			
 			if(dockerContainerId != null) {
 				try {
+					logger.info("Docker container [" + dockerContainerId + "]: Copying folder");
+					logger.info("  Source path on host     : " + unzipFolder);
+					logger.info("  Target path in container: " + allowedFolder);
 					//Path tgtPath = allowedFolder.resolve(actualFile.getFileName());
 					//dockerClient.copyToContainer(actualFile.getParent(), dockerContainerId, tgtPath.toString());
 					dockerClient.copyToContainer(unzipFolder, dockerContainerId, allowedFolder.toString());
@@ -268,11 +283,31 @@ public class DcatDeployVirtuosoUtils {
 
 			logger.info("Virtuoso RDF Loader started ...");
 			VirtuosoBulkLoad.rdfLoaderRun(conn);
-			logger.info("Virtuoso RDF Loader finished.");
-			//dcatDataset
-
+			logger.info("Virtuoso RDF Loader finished.");			
 		}
 		finally {
+			if(dockerContainerId != null) {
+				for(Path path : fileToGraph.keySet()) {
+
+					Path actualFilename = path.getFileName();
+					Path fileInContainer = allowedFolder.resolve(actualFilename);
+
+					
+					String execOutput = "";
+					try {
+						logger.info("Docker container [" + dockerContainerId + "]: Removing file " + fileInContainer);
+						String[] command = {"rm", escapeCliArg("" + fileInContainer)};
+						ExecCreation execCreation = dockerClient.execCreate(
+						    dockerContainerId, command, DockerClient.ExecCreateParam.attachStdout(),
+						DockerClient.ExecCreateParam.attachStderr());
+						LogStream output = dockerClient.execStart(execCreation.id());
+						execOutput = output.readFully();
+					} catch(Exception f) {
+						logger.warn("Could not remove file inside container: " + fileInContainer + "\n" + execOutput, f);
+					}
+				}
+			}
+			
 			for(Path path : fileToGraph.keySet()) { //toDelete) {
 				try {
 					if(Files.exists(path)) {
@@ -284,5 +319,10 @@ public class DcatDeployVirtuosoUtils {
 				}
 			}
 		}
+	}
+	
+	public static String escapeCliArg(String arg) {
+		String result = "'" + arg == null ? "" : arg.replace("'", "\\'") + "'";
+		return result;
 	}
 }

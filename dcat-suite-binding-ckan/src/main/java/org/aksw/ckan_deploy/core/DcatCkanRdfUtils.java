@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -46,7 +47,9 @@ public class DcatCkanRdfUtils {
 	}
 	
 	public static void normalizeDcatModel(Model model) {
-		DcatUtils.listDcatDatasets(model).forEach(DcatCkanRdfUtils::normalizeDataset);
+		for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(model)) {
+			DcatCkanRdfUtils.normalizeDataset(dcatDataset);
+		}
 	}
 	
 	public static void normalizeDataset(DcatDataset dcatDataset) {
@@ -55,6 +58,28 @@ public class DcatCkanRdfUtils {
 		for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
 			normalizeDistribution(dcatDistribution);
 		}
+		
+		// Skolemize dcat distributions
+		// TODO We should natively support anonymous distributions and
+		// thus get rid of the need of the subsequent snippet
+		//String datasetNamespace = dcatDataset.getNameSpace();
+
+		if(dcatDataset.isURIResource()) {
+			for(DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
+				Resource downloadUrl = org.aksw.jena_sparql_api.utils.model.ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
+						.toList().stream()
+						.filter(RDFNode::isURIResource)
+						.map(RDFNode::asResource)
+						.findFirst().orElse(null);
+				
+				if(downloadUrl != null && dcatDistribution.isAnon()) {
+					// Allocate an id
+					String id = dcatDataset.getURI() + "/distribution-" + downloadUrl.getLocalName();
+					logger.info("Skolemized a blank node to " + id);
+					ResourceUtils.renameResource(dcatDistribution, id);				
+				}
+			}
+		}		
 	}
 
 
