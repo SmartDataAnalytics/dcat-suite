@@ -78,7 +78,7 @@ public class SetFromJsonListString
 			}
 			
 			@Override
-			protected void doRemove() {
+			protected void doRemove(Object item) {
 				// serialize the array without the item
 				it.remove();
 				updateList(list);

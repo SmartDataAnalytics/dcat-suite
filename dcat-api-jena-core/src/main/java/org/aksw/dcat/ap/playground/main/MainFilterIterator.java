@@ -68,7 +68,7 @@ public class MainFilterIterator {
 					return finish();
 				}
 				@Override
-				public void doRemove() { baseIt.remove(); }
+				public void doRemove(T item) { baseIt.remove(); }
 			};
 		};
 	}

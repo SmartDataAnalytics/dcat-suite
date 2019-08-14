@@ -59,7 +59,7 @@ public class SetFromCkanExtras
 				return finish();
 			}
 			@Override
-			public void doRemove() { baseIt.remove(); }
+			public void doRemove(String item) { baseIt.remove(); }
 		};
 	}
 

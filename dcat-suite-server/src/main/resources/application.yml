@@ -1,0 +1,18 @@
+server:
+    port: 8086
+    compression:
+        enabled: true
+        excluded-user-agents: 
+        mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/n-triples
+        min-response-size: 1
+#    context-path: /
+
+spring: 
+    main:
+        banner-mode: "off"     
+
+logging: 
+    level: 
+        org: 
+            springframework: DEBUG
+

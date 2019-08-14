@@ -21,7 +21,7 @@ public class JenaPluginDcatSuiteCkanBinding
 	}
 	
 	public static void init() {
-		JenaPluginUtils.registerJenaResourceClassesUsingPackageScan(
+		JenaPluginUtils.scan(
 				DcatResolverCkan.class.getPackage().getName(),
 				BuiltinPersonalities.model,
 				PrefixMapping.Extended);
