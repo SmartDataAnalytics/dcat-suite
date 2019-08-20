@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -40,7 +40,7 @@ public class DcatCkanRdfUtils {
 //		org.aksw.jena_sparql_api.utils.model.ResourceUtils
 //			.listPropertyValues(r, source)
 //			.forEach(v -> r.addProperty(target, v));		
-		List<RDFNode> values = org.aksw.jena_sparql_api.utils.model.ResourceUtils
+		List<RDFNode> values = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
 			.listPropertyValues(r, source).toList();
 		
 		values.forEach(v -> r.addProperty(target, v));		
@@ -66,7 +66,7 @@ public class DcatCkanRdfUtils {
 
 		if(dcatDataset.isURIResource()) {
 			for(DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
-				Resource downloadUrl = org.aksw.jena_sparql_api.utils.model.ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
+				Resource downloadUrl = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
 						.toList().stream()
 						.filter(RDFNode::isURIResource)
 						.map(RDFNode::asResource)
@@ -131,7 +131,7 @@ public class DcatCkanRdfUtils {
 	//		RDFDataMgr.write(System.err, dcatEntity.getModel(), RDFFormat.TURTLE_PRETTY);
 			
 			// Check if there is an extra:uri attribute
-			String uri = org.aksw.jena_sparql_api.utils.model.ResourceUtils.tryGetPropertyValue(dcatEntity, DcatUtils.extraUri)
+			String uri = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.tryGetPropertyValue(dcatEntity, DcatUtils.extraUri)
 				.filter(RDFNode::isURIResource)
 				.map(RDFNode::asResource)
 				.map(Resource::getURI)
@@ -139,7 +139,7 @@ public class DcatCkanRdfUtils {
 	
 			if(uri != null) {
 				// remove the property
-				org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatEntity, DcatUtils.extraUri, null);
+				org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatEntity, DcatUtils.extraUri, null);
 			}
 			
 			result = uri == null
@@ -379,7 +379,7 @@ public class DcatCkanRdfUtils {
 
 	// TODO Move to ResourceUtils
 	public static Optional<String> getUri(Resource r, Property p) {
-		Optional<String> result = org.aksw.jena_sparql_api.utils.model.ResourceUtils.tryGetPropertyValue(r, p)
+		Optional<String> result = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.tryGetPropertyValue(r, p)
 				.filter(RDFNode::isURIResource).map(RDFNode::asResource).map(Resource::getURI);
 
 		return result;

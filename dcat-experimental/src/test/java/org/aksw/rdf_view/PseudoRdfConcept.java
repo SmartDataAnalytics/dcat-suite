@@ -275,14 +275,14 @@ public class PseudoRdfConcept {
 		yyy.getTags().add(new CkanTag("FOOOOOOO", null));
 		
 		System.out.println("Got tags via RDF API: " +
-				org.aksw.jena_sparql_api.utils.model.ResourceUtils.listPropertyValues(rB, DCAT.keyword).toList());
+				org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.listPropertyValues(rB, DCAT.keyword).toList());
 
 		// Remove via java API
 		Iterator<?> it = rB.getKeywords().iterator(); it.next(); it.remove();
 		System.out.println("Got tags from underyling CKAN entity: " + yyy.getTags().stream().map(CkanTag::getName).collect(Collectors.toList()));		
 
 		// Remove first tag via RDF level
-		org.aksw.jena_sparql_api.utils.model.ResourceUtils.listPropertyValues(rB, DCAT.keyword).removeNext();
+		org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.listPropertyValues(rB, DCAT.keyword).removeNext();
 		System.out.println("Got tags from underyling CKAN entity: " + yyy.getTags().stream().map(CkanTag::getName).collect(Collectors.toList()));		
 
 		rB.getKeywords().add("test");

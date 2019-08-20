@@ -2,7 +2,7 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 
 import java.util.Collection;
 
-import org.aksw.jena_sparql_api.utils.model.NodeMapper;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
 import org.apache.jena.graph.Node;
 
 import com.google.common.collect.Range;

@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import org.aksw.jena_sparql_api.utils.model.NodeMapper;
-import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
+import org.aksw.jena_sparql_api.rdf.collections.SetFromPropertyValues;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;

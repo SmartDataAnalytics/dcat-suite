@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.aksw.jena_sparql_api.utils.model.SetFromLiteralPropertyValues;
-import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
+import org.aksw.jena_sparql_api.rdf.collections.SetFromLiteralPropertyValues;
+import org.aksw.jena_sparql_api.rdf.collections.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Resource;

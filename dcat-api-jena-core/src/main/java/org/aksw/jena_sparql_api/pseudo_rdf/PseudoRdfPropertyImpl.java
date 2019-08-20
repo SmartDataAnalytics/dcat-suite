@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import org.aksw.commons.accessors.CollectionAccessor;
 import org.aksw.commons.accessors.CollectionFromConverter;
-import org.aksw.jena_sparql_api.utils.model.ConverterFromNodeMapper;
-import org.aksw.jena_sparql_api.utils.model.NodeMapper;
+import org.aksw.jena_sparql_api.rdf.collections.ConverterFromNodeMapper;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
 import org.apache.jena.graph.Node;
 
 import com.google.common.base.Converter;
@@ -47,7 +47,7 @@ public class PseudoRdfPropertyImpl<T>
 	public Collection<Node> getValues() {
 		//SetFromSingleValuedAccessor<T> backend = new SetFromSingleValuedAccessor<>(accessor);
 		
-		Converter<Node, T> converter = new ConverterFromNodeMapper<>(nodeMapper);
+		Converter<T, Node> converter = new ConverterFromNodeMapper<>(nodeMapper).reverse();
 		Collection<T> backend = accessor.get();
 		
 		if(backend == null) {

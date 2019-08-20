@@ -15,6 +15,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -42,8 +43,12 @@ public class ServerConfig {
 		}
 	}
 	
-	
+	// Variants: Accept-Encoding;gzip;br, Accept-Language;en ;fr
+	// Variant header: https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html
+	//https://spring.io/blog/2013/05/11/content-negotiation-using-spring-mvc
+//	https://www.logicbig.com/tutorials/spring-framework/spring-web-mvc/spring-mvc-custom-converter.html
 	// https://stackoverflow.com/questions/44168781/how-can-i-register-a-custom-httpmessageconverter-to-deal-with-an-invalid-content
+	// https://www.baeldung.com/spring-httpmessageconverter-rest
 	@Bean
 	public HttpMessageConverter<Model> createNTriplesHttpMessageConverter() {
 //	    MarshallingHttpMessageConverter xmlConverter = new MarshallingHttpMessageConverter();
@@ -59,7 +64,7 @@ public class ServerConfig {
 			@Override
 			public boolean canWrite(Class<?> clazz, MediaType mediaType) {
 //				System.out.println("canWrite: " + clazz + " - " + mediaType);
-				return true;
+				return Model.class.isAssignableFrom(clazz);
 			}
 
 			@Override
@@ -78,8 +83,13 @@ public class ServerConfig {
 
 			@Override
 			public void write(Model t, MediaType contentType, HttpOutputMessage outputMessage)
-					throws IOException, HttpMessageNotWritableException {
-				outputMessage.getHeaders().setContentType(contentType);
+					throws IOException, HttpMessageNotWritableException
+			{
+				HttpHeaders headers = outputMessage.getHeaders();
+				headers.setContentType(contentType);
+				//headers.setVary(Arrays.asList("Accept,Accept-Encoding"));
+				headers.set("Variants", "Accept;text/plain,Accept-Encoding;gzip;br");
+				
 		        RDFDataMgr.write(outputMessage.getBody(), t, RDFFormat.NTRIPLES);
 			}
 			

@@ -6,7 +6,7 @@ import java.util.Set;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.dcat.ap.domain.accessors.DcatApDistributionCoreAccessor;
 import org.aksw.dcat.jena.domain.api.Adms;
-import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.vocabulary.FOAF;
@@ -23,76 +23,76 @@ public class RdfDcatApDistributionImpl
 
 	@Override
 	public SingleValuedAccessor<String> title() {
-		return create(this, DCTerms.title, NodeMapperFactory.string);
+		return create(this, DCTerms.title, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> description() {
-		return create(this, DCTerms.description, NodeMapperFactory.string);
+		return create(this, DCTerms.description, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> accessUrls() {
-		return createSet(this, DCAT.accessURL, NodeMapperFactory.uriString);
+		return createSet(this, DCAT.accessURL, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> downloadUrls() {
-		return createSet(this, DCAT.downloadURL, NodeMapperFactory.uriString);
+		return createSet(this, DCAT.downloadURL, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> mediaType() {
-		return create(this, DCAT.mediaType, NodeMapperFactory.string);
+		return create(this, DCAT.mediaType, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> format() {
-		return create(this, DCTerms.format, NodeMapperFactory.string);
+		return create(this, DCTerms.format, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> license() {
-		return create(this, DCTerms.license, NodeMapperFactory.uriString);
+		return create(this, DCTerms.license, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> status() {
-		return create(this, Adms.status, NodeMapperFactory.uriString);
+		return create(this, Adms.status, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Long> byteSize() {
-		return create(this, DCAT.byteSize, NodeMapperFactory.from(Long.class));
+		return create(this, DCAT.byteSize, NodeMappers.from(Long.class));
 	}
 
 	@Override
 	public SingleValuedAccessor<Instant> issued() {
-		return create(this, DCTerms.issued, NodeMapperFactory.from(Instant.class));
+		return create(this, DCTerms.issued, NodeMappers.from(Instant.class));
 	}
 
 	@Override
 	public SingleValuedAccessor<Instant> modified() {
-		return create(this, DCTerms.modified, NodeMapperFactory.from(Instant.class));
+		return create(this, DCTerms.modified, NodeMappers.from(Instant.class));
 	}
 
 	@Override
 	public SingleValuedAccessor<String> rights() {
-		return create(this, DCTerms.rights, NodeMapperFactory.uriString);
+		return create(this, DCTerms.rights, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> pages() {
-		return createSet(this, FOAF.page, NodeMapperFactory.uriString);
+		return createSet(this, FOAF.page, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> conformsTo() {
-		return createSet(this, DCTerms.conformsTo, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.conformsTo, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> languages() {
-		return createSet(this, DCTerms.language, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.language, NodeMappers.uriString);
 	}	
 }

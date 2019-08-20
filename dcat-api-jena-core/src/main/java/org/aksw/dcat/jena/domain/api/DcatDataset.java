@@ -2,7 +2,7 @@ package org.aksw.dcat.jena.domain.api;
 
 import java.util.Collection;
 
-import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
+import org.aksw.jena_sparql_api.rdf.collections.SetFromPropertyValues;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCAT;
 

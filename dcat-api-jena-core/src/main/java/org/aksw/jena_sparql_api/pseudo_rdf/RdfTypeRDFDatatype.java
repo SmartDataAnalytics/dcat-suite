@@ -2,7 +2,7 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 
 import java.util.Objects;
 
-import org.aksw.jena_sparql_api.utils.model.NodeMapperRdfDatatype;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapperFromRdfDatatype;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
@@ -29,14 +29,14 @@ public class RdfTypeRDFDatatype<T>
 	@Override
 	public boolean canNewInstance(RDFNode rdfNode) {
 		Node node = rdfNode.asNode();
-		boolean result = NodeMapperRdfDatatype.canMapCore(node, dtype);
+		boolean result = NodeMapperFromRdfDatatype.canMapCore(node, dtype);
 		return result;
 	}
 
 	@Override
 	public T newInstance(RDFNode rdfNode) {
 		Node node = rdfNode.asNode();
-		T result = NodeMapperRdfDatatype.toJavaCore(node, dtype);
+		T result = NodeMapperFromRdfDatatype.toJavaCore(node, dtype);
 		return result;
 	}
 

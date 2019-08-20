@@ -56,7 +56,7 @@
 	</developers>
 
 	<properties>
-		<jena.version>3.11.0</jena.version>
+		<jena.version>3.12.0</jena.version>
 		<jena-sparql-api.subversion>2-SNAPSHOT</jena-sparql-api.subversion>
 
 		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
@@ -205,6 +205,12 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-web</artifactId>
 				<version>${spring-boot.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-classic</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>

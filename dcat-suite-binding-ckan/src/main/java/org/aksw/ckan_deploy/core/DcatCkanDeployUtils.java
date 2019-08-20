@@ -272,7 +272,7 @@ public class DcatCkanDeployUtils {
 		
 			Resource newDownloadUrl = ResourceFactory.createResource(remoteCkanResource.getUrl());
 		
-			org.aksw.jena_sparql_api.utils.model.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
+			org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
 		}
 	}
 	

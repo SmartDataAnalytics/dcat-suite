@@ -15,8 +15,8 @@ import org.aksw.dcat.ap.domain.api.DcatApContactPoint;
 import org.aksw.dcat.ap.domain.api.PeriodOfTime;
 import org.aksw.dcat.ap.domain.api.Spatial;
 import org.aksw.dcat.jena.domain.api.Adms;
-import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
-import org.aksw.jena_sparql_api.utils.model.SetFromPropertyValues;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
+import org.aksw.jena_sparql_api.rdf.collections.SetFromPropertyValues;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.vocabulary.FOAF;
@@ -44,115 +44,115 @@ public class RdfDcatApDatasetImpl
 
 	@Override
 	public SingleValuedAccessor<String> title() {
-		return create(this, DCTerms.title, NodeMapperFactory.string);
+		return create(this, DCTerms.title, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> description() {
-		return create(this, DCTerms.description, NodeMapperFactory.string);
+		return create(this, DCTerms.description, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> keywords() {
-		return createSet(this, DCAT.keyword, NodeMapperFactory.string);
+		return createSet(this, DCAT.keyword, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> themes() {
-		return createSet(this, DCAT.theme, NodeMapperFactory.uriString);
+		return createSet(this, DCAT.theme, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> identifier() {
-		return create(this, DCTerms.identifier, NodeMapperFactory.string);
+		return create(this, DCTerms.identifier, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> alternateIdentifier() {
-		return create(this, Adms.identifier, NodeMapperFactory.uriString);
+		return create(this, Adms.identifier, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Instant> issued() {
-		return create(this, DCTerms.issued, NodeMapperFactory.from(Calendar.class))
+		return create(this, DCTerms.issued, NodeMappers.from(Calendar.class))
 				.convert(null);
 		// TODO Add a proper converter
 	}
 
 	@Override
 	public SingleValuedAccessor<Instant> modified() {
-		return create(this, DCTerms.modified, NodeMapperFactory.from(Calendar.class))
+		return create(this, DCTerms.modified, NodeMappers.from(Calendar.class))
 				.convert(null);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> versionInfo() {
-		return create(this, OWL.versionInfo, NodeMapperFactory.string);
+		return create(this, OWL.versionInfo, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> versionNotes() {
-		return create(this, Adms.versionNotes, NodeMapperFactory.string);
+		return create(this, Adms.versionNotes, NodeMappers.string);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> languages() {
-		return createSet(this, DCTerms.language, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.language, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> landingPage() {
-		return create(this, DCAT.landingPage, NodeMapperFactory.uriString);
+		return create(this, DCAT.landingPage, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> accrualPeriodicity() {
-		return create(this, DCTerms.accrualPeriodicity, NodeMapperFactory.uriString);
+		return create(this, DCTerms.accrualPeriodicity, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> conformsTo() {
-		return createSet(this, DCTerms.conformsTo, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.conformsTo, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> accessRights() {
-		return create(this, DCTerms.accessRights, NodeMapperFactory.uriString);
+		return create(this, DCTerms.accessRights, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> pages() {
-		return createSet(this, FOAF.page, NodeMapperFactory.uriString);
+		return createSet(this, FOAF.page, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> provenance() {
-		return create(this, DCTerms.provenance, NodeMapperFactory.uriString);
+		return create(this, DCTerms.provenance, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<String> type() {
-		return create(this, DCTerms.type, NodeMapperFactory.uriString);
+		return create(this, DCTerms.type, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> hasVersions() {
-		return createSet(this, DCTerms.hasVersion, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.hasVersion, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> isVersionOf() {
-		return createSet(this, DCTerms.isVersionOf, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.isVersionOf, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> sources() {
-		return createSet(this, DCTerms.source, NodeMapperFactory.uriString);
+		return createSet(this, DCTerms.source, NodeMappers.uriString);
 	}
 
 	@Override
 	public SingleValuedAccessor<Set<String>> samples() {
-		return createSet(this, Adms.sample, NodeMapperFactory.uriString);
+		return createSet(this, Adms.sample, NodeMappers.uriString);
 	}
 
 	@Override
@@ -172,7 +172,7 @@ public class RdfDcatApDatasetImpl
 		return new SingleValuedAccessorFromCollection<>(
 				new CollectionFromConverter<DcatApAgent, RdfDcatApAgent, Collection<RdfDcatApAgent>>(
 						(Collection<RdfDcatApAgent>)new SetFromPropertyValues<RdfDcatApAgent>(this, DCTerms.publisher, RdfDcatApAgent.class),
-						new CastConverter<DcatApAgent, RdfDcatApAgent>()));
+						new CastConverter<RdfDcatApAgent, DcatApAgent>()));
 						
 		
 		///return createSet(this, DCTerms.publisher, NodeMapperFactory.PASSTHROUGH);

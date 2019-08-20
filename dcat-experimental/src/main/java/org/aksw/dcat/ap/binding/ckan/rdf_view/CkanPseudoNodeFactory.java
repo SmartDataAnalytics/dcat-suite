@@ -31,8 +31,8 @@ import org.aksw.jena_sparql_api.pseudo_rdf.RdfType;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeRDFDatatype;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeSimple;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeUri;
-import org.aksw.jena_sparql_api.utils.model.NodeMapper;
-import org.aksw.jena_sparql_api.utils.model.NodeMapperFactory;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
@@ -140,7 +140,7 @@ public class CkanPseudoNodeFactory {
 
 
 	public static void addStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr) {
-		addSimpleMapping(registry, p, attr, String.class, new RdfTypeRDFDatatype<>(String.class), NodeMapperFactory.string);
+		addSimpleMapping(registry, p, attr, String.class, new RdfTypeRDFDatatype<>(String.class), NodeMappers.string);
 	}
 	
 
@@ -152,7 +152,7 @@ public class CkanPseudoNodeFactory {
 		RdfType<T> rdfType;
 		if(dtypeUri.equals(MappingVocab.r2rmlIRI.getURI())) {
 			clazz = (Class<T>)String.class;
-			nodeMapper = (NodeMapper<T>)NodeMapperFactory.uriString;
+			nodeMapper = (NodeMapper<T>)NodeMappers.uriString;
 			rdfType = (RdfType<T>)new RdfTypeUri();
 //			addUriStringMapping(registry, dtypeUri, attr);
 		} else {
@@ -162,7 +162,7 @@ public class CkanPseudoNodeFactory {
 			}
 			clazz = (Class<T>)rdfDatatype.getJavaClass();
 			rdfType = new RdfTypeRDFDatatype<>(clazz);
-			nodeMapper = NodeMapperFactory.from(clazz);
+			nodeMapper = NodeMappers.from(clazz);
 		}
 		
 		validateAccessor(accessorSupplierFactory, attr, Collection.class);
@@ -179,7 +179,7 @@ public class CkanPseudoNodeFactory {
 		RdfType<T> rdfType;
 		if(dtypeUri.equals(MappingVocab.r2rmlIRI.getURI())) {
 			clazz = (Class<T>)String.class;
-			nodeMapper = (NodeMapper<T>)NodeMapperFactory.uriString;
+			nodeMapper = (NodeMapper<T>)NodeMappers.uriString;
 			rdfType = (RdfType<T>)new RdfTypeUri();
 //			addUriStringMapping(registry, dtypeUri, attr);
 		} else {
@@ -189,7 +189,7 @@ public class CkanPseudoNodeFactory {
 			}
 			clazz = (Class<T>)rdfDatatype.getJavaClass();
 			rdfType = new RdfTypeRDFDatatype<>(clazz);
-			nodeMapper = NodeMapperFactory.from(clazz);
+			nodeMapper = NodeMappers.from(clazz);
 		}
 		
 		validateAccessor(accessorSupplierFactory, attr, String.class);
@@ -251,7 +251,7 @@ public class CkanPseudoNodeFactory {
 				throw new RuntimeException("Provided TypeMapper did not contain a RDFDatatype for " + dtypeUri);
 			}
 			Class<T> clazz = (Class<T>) rdfDatatype.getJavaClass();
-			NodeMapper<T> nodeMapper = NodeMapperFactory.from(clazz);
+			NodeMapper<T> nodeMapper = NodeMappers.from(clazz);
 			
 			validateAccessor(accessorSupplierFactory, attr, clazz);
 			addSimpleMapping(registry, p, attr, clazz, new RdfTypeRDFDatatype<>(clazz), nodeMapper);
@@ -259,7 +259,7 @@ public class CkanPseudoNodeFactory {
 	}
 
 	public static void addUriStringMapping(Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr) {
-		addSimpleMapping(registry, p, attr, String.class, new RdfTypeUri(), NodeMapperFactory.uriString);
+		addSimpleMapping(registry, p, attr, String.class, new RdfTypeUri(), NodeMappers.uriString);
 	}
 
 	
@@ -277,14 +277,14 @@ public class CkanPseudoNodeFactory {
 				s -> new PseudoRdfPropertyImpl<>(
 							new CollectionAccessorFromCollectionValue<>(s.getCollectionProperty(attr, attrClass)),
 							new RdfTypeRDFDatatype<>(attrClass),
-							NodeMapperFactory.from(attrClass)));	
+							NodeMappers.from(attrClass)));	
 	}
 
 	public static <T, V> void addCollectionMapping(
-			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<V> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper, Converter<T, V> converter) {
+			Map<String, Function<PropertySource, PseudoRdfProperty>> registry, String p, String attr, Class<V> attrClass, RdfType<T> rdfType, NodeMapper<T> nodeMapper, Converter<V, T> converter) {
 		
-		Converter<T, V> c = converter == null
-				? (Converter<T, V>)Converter.identity()
+		Converter<V, T> c = converter == null
+				? (Converter<V, T>)Converter.identity()
 				: converter;
 		
 		registry.put(p,
@@ -343,7 +343,7 @@ public class CkanPseudoNodeFactory {
 			s -> new PseudoRdfPropertyImpl<>(
 					s.getPropertyAsSet(attrName, clazz),
 					new RdfTypeRDFDatatype<>(clazz),
-					NodeMapperFactory.from(clazz));
+					NodeMappers.from(clazz));
 
 			return result;
 	}
@@ -459,8 +459,8 @@ public class CkanPseudoNodeFactory {
 		/* datasaset mappings */
 		addStringMapping(ckanDatasetAccessors, DCTerms.title.getURI(), "title");
 		addStringMapping(ckanDatasetAccessors, DCTerms.description.getURI(), "notes");
-		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword.getURI(), "tags", String.class, new RdfTypeRDFDatatype<>(String.class), NodeMapperFactory.string, null);		
-		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme.getURI(), "extra:theme", String.class, new RdfTypeUri(), NodeMapperFactory.uriString);
+		addCollectionMapping(ckanDatasetAccessors, DCAT.keyword.getURI(), "tags", String.class, new RdfTypeRDFDatatype<>(String.class), NodeMappers.string, null);		
+		addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme.getURI(), "extra:theme", String.class, new RdfTypeUri(), NodeMappers.uriString);
 		addStringMapping(ckanDatasetAccessors, DCTerms.identifier.getURI(), "extra:identifier");
 		
 //		DcatDataset x;
