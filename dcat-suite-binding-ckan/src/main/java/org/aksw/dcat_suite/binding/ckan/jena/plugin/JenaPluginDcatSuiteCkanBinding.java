@@ -8,7 +8,7 @@ import org.apache.jena.sys.JenaSubsystemLifecycle;
 
 public class JenaPluginDcatSuiteCkanBinding
 	implements JenaSubsystemLifecycle
-{
+{	
 	@Override
 	public void start() {
 		init();
