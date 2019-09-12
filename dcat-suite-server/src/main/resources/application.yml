@@ -3,9 +3,10 @@ server:
     compression:
         enabled: true
         excluded-user-agents: 
-        mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/n-triples
+        mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/n-triples,application/turtle,text/turtle,application/x-turtle,application/rdf+xml,application/rdf+json
         min-response-size: 1
 #    context-path: /
+#
 
 spring: 
     main:

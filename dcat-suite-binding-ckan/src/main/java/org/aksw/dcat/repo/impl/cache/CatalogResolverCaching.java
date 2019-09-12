@@ -3,6 +3,7 @@ package org.aksw.dcat.repo.impl.cache;
 import java.net.URL;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
@@ -33,6 +34,15 @@ public class CatalogResolverCaching
 				.map(dr -> new DatasetResolverImpl(this, dr.getDataset()));
 	}
 
+	
+//	@Override
+//	public Flowable<DistributionResolver> resolveDistribution(DcatDataset dataset, DcatDistribution distribution) {
+//		return cache.resolveDistribution(distributionId).switchIfEmpty(
+//				backend.resolveDistribution(distributionId)
+//					.map(distR -> cache.doCacheDistribution(distributionId, distR)))
+//			.map(distR -> new DistributionResolverImpl(new DatasetResolverImpl(this, distR.getDatasetResolver().getDataset()), distR.getDistribution()));	
+//	}
+//
 	@Override
 	public Flowable<DistributionResolver> resolveDistribution(String distributionId) {
 		return cache.resolveDistribution(distributionId).switchIfEmpty(

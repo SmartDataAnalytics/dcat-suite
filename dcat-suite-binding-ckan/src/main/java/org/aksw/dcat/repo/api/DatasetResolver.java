@@ -1,6 +1,9 @@
 package org.aksw.dcat.repo.api;
 
+import java.util.Collection;
+
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.jena.domain.api.DcatDistribution;
 
 import io.reactivex.Flowable;
 
@@ -18,6 +21,21 @@ public interface DatasetResolver {
 	// This should not happen, but we allow enumeration of these cases - hence, the result is a flowable
 	Flowable<DistributionResolver> resolveDistribution(String distributionId) throws Exception;
 
+	//Flowable<DistributionResolver> resolveDistribution(DcatDistribution distribution);
+	//Flowable<DistributionResolver> resolveDistributions();
+	
+	
+	default Flowable<DistributionResolver> resolveDistributions() {
+		DcatDataset dcatDataset = getDataset();
+				
+		Collection<? extends DcatDistribution> distributions = dcatDataset.getDistributions();
+		
+		Flowable<DistributionResolver> result = Flowable.fromIterable(distributions)
+			.flatMap(dist -> resolveDistribution(dist.getURI()));
+		
+		return result;
+	}
+	
 //	Flowable<DistributionResolver> resolveDistribution(
 //			Resource dcatDistribution,
 //			Function<String, String> iriResolver) throws Exception;

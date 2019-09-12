@@ -5,11 +5,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MainCliWebServer {
+public class MainCliDataNodeServer {
 	public static void main(String[] args) throws Exception {
 		ARQ.enableBlankNodeResultLabels();
 		ARQ.setFalse(ARQ.constantBNodeLabels);
 
-		SpringApplication.run(MainCliWebServer.class, args);
+		SpringApplication.run(MainCliDataNodeServer.class, args);
 	}
 }

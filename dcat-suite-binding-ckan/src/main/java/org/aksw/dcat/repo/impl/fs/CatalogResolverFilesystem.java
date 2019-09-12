@@ -526,6 +526,15 @@ public class CatalogResolverFilesystem
 		return result;
 	}
 
+	/**
+	 * Default mapping of URIs to relative paths
+	 * 
+	 * scheme://host:port/path?query becomes
+	 * host/port/path/query
+	 * 
+	 * @param uri
+	 * @return
+	 */
 	public static Path resolvePath(URI uri) {
 		String a = Optional.ofNullable(uri.getHost()).orElse("");
 		String b = uri.getPort() == -1 ? "" : Integer.toString(uri.getPort());

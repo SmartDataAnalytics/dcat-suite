@@ -5,4 +5,5 @@ public interface OpVisitor<T> {
 	T visit(OpConstruct op);
 	T visit(OpUpdateRequest op);
 	T visit(OpUnion op);
+	T visit(OpPersist op);
 }

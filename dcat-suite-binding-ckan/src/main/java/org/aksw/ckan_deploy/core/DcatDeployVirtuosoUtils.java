@@ -149,7 +149,7 @@ public class DcatDeployVirtuosoUtils {
 				if(effectiveGraphIri != null) {
 					Collection<Path> dataUris;
 					try {
-						dataUris = dr.resolveDistribution(dcatDistribution.asNode().toString())
+						dataUris = dr.resolveDistributions()//dcatDistribution.asNode().toString())
 								.flatMap(distributionResolver -> distributionResolver.resolveDownload().toFlowable())
 								.map(URL::toURI)
 								.map(Paths::get)
@@ -199,7 +199,7 @@ public class DcatDeployVirtuosoUtils {
 						//"application/x-partial-download"
 						if("application/x-bzip".equals(contentType)) {
 							
-							PathTransform unzipper = packerRegistry.getMap().get(contentType);
+							PathCoder unzipper = packerRegistry.getMap().get(contentType);
 	
 							String unzippedFilename = com.google.common.io.Files.getNameWithoutExtension(filename);
 								
@@ -212,7 +212,7 @@ public class DcatDeployVirtuosoUtils {
 								logger.info("bzip archive detected, unzipping to " + tmpFile.toAbsolutePath());
 								
 								try {
-									unzipper.transform(path, tmpFile);
+									unzipper.decode(path, tmpFile);
 								} catch(Exception e) {
 									logger.warn("Failed to unzip " + path, e);
 								}

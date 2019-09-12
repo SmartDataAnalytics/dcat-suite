@@ -5,23 +5,31 @@ public class OpMapper
 {
 	@Override
 	public Op visit(OpModel op) {
+		System.out.println("Op: " + op);
 		return null;
 	}
 
 	@Override
 	public Op visit(OpConstruct op) {
+		System.out.println("Op: " + op);
 		return null;
 	}
 
 	@Override
 	public Op visit(OpUpdateRequest op) {
-		// TODO Auto-generated method stub
+		System.out.println("Op: " + op);
 		return null;
 	}
 
 	@Override
 	public Op visit(OpUnion op) {
-		// TODO Auto-generated method stub
+		System.out.println("Op: " + op);
+		return null;
+	}
+
+	@Override
+	public Op visit(OpPersist op) {
+		System.out.println("Op: " + op);
 		return null;
 	}
 }

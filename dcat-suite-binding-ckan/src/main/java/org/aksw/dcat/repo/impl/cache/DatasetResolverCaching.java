@@ -23,6 +23,12 @@ public class DatasetResolverCaching
 		return dr.getDataset();
 	}
 
+//	@Override
+//	public Flowable<DistributionResolver> resolveDistributions(DcatDistribution distribution) throws Exception {
+//		return cr.resolveDistributions(this, distribution);
+//	}
+
+
 	@Override
 	public Flowable<DistributionResolver> resolveDistribution(String distributionId) throws Exception {
 		return cr.resolveDistribution(distributionId);

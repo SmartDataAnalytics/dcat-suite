@@ -89,6 +89,10 @@ public class DcatRepositoryDefault
 	}
 	
 	
+	public Path getDcatRepoRoot() {
+		return dcatRepoRoot;
+	}
+	
 	/**
 	 * Find a dataset with the given id in the repo 
 	 * 

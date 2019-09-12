@@ -11,6 +11,12 @@ import io.reactivex.Maybe;
  * A catalog resolver can resolve
  * - datasets
  * - distributions
+ * - downloads
+ * 
+ * The results are RxJava objects in order to allow setting timeouts.
+ * For instance, sometimes requests to remote services may take very long,
+ * such as due to network or load issues. This API design is an attempt to
+ * allow for dealing with such cases.
  * 
  * @author Claus Stadler, Nov 22, 2018
  *
@@ -18,7 +24,6 @@ import io.reactivex.Maybe;
 public interface CatalogResolver {
 	Maybe<DatasetResolver> resolveDataset(String datasetId);
 	Flowable<DistributionResolver> resolveDistribution(String distributionId);
-
 	Maybe<URL> resolveDownload(String downloadUri) throws Exception;
 
 	/**
@@ -36,4 +41,9 @@ public interface CatalogResolver {
 
 	// TODO This should be part of an internal interface
 	Flowable<DistributionResolver> resolveDistribution(DcatDataset dataset, String distributionId);
+
+
+	// TODO This should be part of an internal interface
+//	Flowable<DistributionResolver> resolveDistribution(DcatDataset dataset);
+
 }

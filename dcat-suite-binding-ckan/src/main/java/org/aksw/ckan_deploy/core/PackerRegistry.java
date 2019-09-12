@@ -4,26 +4,26 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class PackerRegistry {
-	protected Map<String, PathTransform> mimeTypeToTransform;
+	protected Map<String, PathCoder> mimeTypeToTransform;
 	
-	public PackerRegistry(Map<String, PathTransform> mimeTypeToTransform) {
+	public PackerRegistry(Map<String, PathCoder> mimeTypeToTransform) {
 		this.mimeTypeToTransform = mimeTypeToTransform;
 	}
 	
-	public Map<String, PathTransform> getMap() {
+	public Map<String, PathCoder> getMap() {
 		return mimeTypeToTransform;
 	}
 	
 	public static PackerRegistry createDefault() {
-		Map<String, PathTransform> mimeTypeToTransform = new LinkedHashMap<>();
+		Map<String, PathCoder> mimeTypeToTransform = new LinkedHashMap<>();
 
 		String mimeType = "application/x-bzip";
 		
-		PathTransform lbzip = new PathTransformLbZip();
+		PathCoder lbzip = new PathCoderLbZip();
 		if(lbzip.cmdExists()) {
 			mimeTypeToTransform.put(mimeType, lbzip);
 		} else {
-			lbzip = new PathTransformNativBzip();
+			lbzip = new PathCoderNativBzip();
 			mimeTypeToTransform.put(mimeType, lbzip);
 		}
 		
