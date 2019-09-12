@@ -548,17 +548,35 @@ class HttpAssetManagerFromPath
 		
 		File file = source.getFile();
 		Path src = Paths.get(file.toURI());
-		Path dest;
+		Path dest = null;
 
 		// Execute the plan
 		for(TransformStep step : plan) {
 			dest = step.destPath;
-			logger.info("Creating " + dest + " from " + src);
-			step.method.apply(src, dest)
-				.blockingGet();
+			
+			if(!Files.exists(dest)) {
+
+				Path tmp;
+				for(int i = 0; ; ++i) {
+					String idx = i == 0 ? "" : "-" + i;
+					tmp = dest.getParent().resolve(dest.getFileName().toString() + idx + ".tmp");
+					if(!Files.exists(tmp)) {
+						break;
+					}
+				}
+				
+				logger.info("Creating " + dest + " from " + src + " via tmp " + tmp);
+				step.method.apply(src, tmp)
+					.blockingGet();
+				
+				Files.move(tmp, dest);
+			}
+			
 
 			src = dest;
 		}
+		
+		System.out.println("Generated: " + dest);
 
 		return null;
 	}
