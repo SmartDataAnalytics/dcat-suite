@@ -406,23 +406,23 @@ class HttpAssetManagerFromPath
 	
 	
 	static class TransformStep {
-		String suffix;
+		Path destPath;
 		BiFunction<Path, Path, Single<Integer>> method;
 		
-		public TransformStep(String suffix, BiFunction<Path, Path, Single<Integer>> method) {
+		public TransformStep(Path destPath, BiFunction<Path, Path, Single<Integer>> method) {
 			super();
-			this.suffix = suffix;
+			this.destPath = destPath;
 			this.method = method;
 		}
 
 		@Override
 		public String toString() {
-			return "TransformStep [suffix=" + suffix + ", method=" + method + "]";
+			return "TransformStep [suffix=" + destPath + ", method=" + method + "]";
 		}
 	}
 	
-	protected TransformStep createTransformStep(String suffix, BiFunction<Path, Path, Single<Integer>> method) {
-		return new TransformStep(suffix, method);
+	protected TransformStep createTransformStep(Path destPath, BiFunction<Path, Path, Single<Integer>> method) {
+		return new TransformStep(destPath, method);
 	}
 	
 	/**
@@ -435,7 +435,7 @@ class HttpAssetManagerFromPath
 	 * @return
 	 * @throws Exception 
 	 */
-	public CompletableFuture<FileEntityEx> convert(FileEntityEx source, String baseName, Path tgtPath, String tgtContentType, List<String> tgtEncodings) throws Exception {
+	public CompletableFuture<FileEntityEx> convert(FileEntityEx source, Path rawTgtBasePath, String tgtContentType, List<String> tgtEncodings) throws Exception {
 		// Decode 
 		PathEncoderRegistry coders = PathEncoderRegistry.get();
 		
@@ -445,11 +445,14 @@ class HttpAssetManagerFromPath
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("No content type on file entity: " + source));
 
+		Path tgtBasePath = rawTgtBasePath.getParent();
+		String tgtBaseName = rawTgtBasePath.getFileName().toString();
+
 		String srcExt = ctExtensions.getPrimary().get(srcContentType);;
-		String srcBaseName = baseName + "." + srcExt;
+		String decodeBaseName = tgtBaseName + "." + srcExt;
 		
 		String tgtExt = ctExtensions.getPrimary().get(tgtContentType);;
-		String tgtBaseName = baseName + "." + tgtExt;
+		String encodeBaseName = tgtBaseName + "." + tgtExt;
 		
 		
 		//String baseNameCt = baseName + "." + srcBaseName;
@@ -485,7 +488,9 @@ class HttpAssetManagerFromPath
 
 	
 			String suffix = toFileExtension(srcEncodings.subList(0, i));
-			String fullName = srcBaseName + suffix;
+			Path fullName = tgtBasePath.resolve(decodeBaseName + suffix);
+
+			//String fullName = srcBaseName + suffix;
 //			String fileExtension = codingExtensions.getPrimary().get(srcEncoding);
 			TransformStep step = createTransformStep(fullName, coder::decode);
 			plan.add(step);
@@ -518,7 +523,7 @@ class HttpAssetManagerFromPath
 		};
 		
 		{
-			TransformStep step = createTransformStep(tgtBaseName, convert);
+			TransformStep step = createTransformStep(tgtBasePath.resolve(encodeBaseName), convert);
 			plan.add(step);
 		}
 		
@@ -531,7 +536,7 @@ class HttpAssetManagerFromPath
 			}
 
 			String suffix = toFileExtension(tgtEncodings.subList(0, i + 1));
-			String fullName = tgtBaseName + suffix;
+			Path fullName = tgtBasePath.resolve(encodeBaseName + suffix);
 
 //			String fileExtension = codingExtensions.getPrimary().get(srcEncoding);
 			TransformStep step = createTransformStep(fullName, coder::encode);
@@ -542,11 +547,17 @@ class HttpAssetManagerFromPath
 
 		
 		File file = source.getFile();
-		Path srcPath = Paths.get(file.toURI());
+		Path src = Paths.get(file.toURI());
+		Path dest;
 
 		// Execute the plan
-		for(TransformStep item : plan) {
-			System.out.println(item);
+		for(TransformStep step : plan) {
+			dest = step.destPath;
+			logger.info("Creating " + dest + " from " + src);
+			step.method.apply(src, dest)
+				.blockingGet();
+
+			src = dest;
 		}
 
 		return null;
@@ -598,7 +609,7 @@ public class MainDataNodeClientRequest {
 		FileEntityEx fe = m.get(r, null);
 		
 		System.out.println("Source file entity: " + fe.getFile());
-		m.convert(fe, "yay", Paths.get("/tmp"), WebContent.contentTypeRDFXML, Arrays.asList("gzip"));
+		m.convert(fe, Paths.get("/tmp/yay"), WebContent.contentTypeRDFXML, Arrays.asList("gzip"));
 		
 		System.out.println("Done");
 		

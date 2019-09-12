@@ -36,7 +36,7 @@ public class PathCoderGzip
 //				"-c",
 //				"gzip -cdk " + i + " > " + o
 //			};
-		String[] result = {"/bin/gzip", "--cdk", input.toString()};
+		String[] result = {"/bin/gzip", "-cdk", input.toString()};
 
 		return result;
 	}
@@ -49,7 +49,7 @@ public class PathCoderGzip
 //				"-c",
 //				"gzip -ck " + i + " > " + o
 //			};
-		String[] result = {"/bin/gzip", "--ck", input.toString()};
+		String[] result = {"/bin/gzip", "-ck", input.toString()};
 		return result;
 	}
 
