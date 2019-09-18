@@ -1,7 +1,6 @@
 package org.aksw.dcat_suite.server.conneg;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,14 +28,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.ckan_deploy.core.PathCoder;
 import org.aksw.ckan_deploy.core.PathEncoderRegistry;
+import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
 import org.aksw.dcat_suite.server.conneg.HttpAssetManagerFromPath.TransformStep;
+import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
 import org.apache.beam.repackaged.beam_sdks_java_core.com.google.common.collect.Iterables;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -51,22 +51,25 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.WebContent;
-import org.apache.jena.vocabulary.DCAT;
+import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.StandardSystemProperty;
+import com.google.common.base.Strings;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
 import com.google.common.net.MediaType;
 
 import avro.shaded.com.google.common.collect.Maps;
@@ -74,85 +77,103 @@ import io.reactivex.Single;
 
 
 
-interface HttpAssetManager {
-	/**
-	 * Retrieve an HttpEntity from the asset mangaer
-	 * 
-	 * @author raven
-	 *
-	 */
-	CompletableFuture<HttpEntity> get(HttpRequest request);
-	CompletableFuture<?> put(String baseName, Supplier<? extends HttpEntity> supplier);	
-}
-
 /**
- * A bundle of two maps, with the purpose of denoting a primary association between values of K and V
- * while also allowing for relating Vs to Ks.
+ * A simple cache for files.
  * 
- * Use case:
- * The primary file extension for content type 'application/turtle' is 'ttl',
- * However, the file extension 'turtle' is understood as an alternative of that content type.
- * In consequence: writes makes use of the primary file extension,
- * whereas reads can make use of the alternative ones.
+ * The parameters of the cache and files are as follows:
+ * cache:
+ *   maximum size - when this size is reached, start evicting files
+ * 
+ * files:
+ *   minLife: Files are typically not removed if this life time has not been reached yet (e.g. 1 day)
+ *   minLifeCritical: If disk space is low, removal may still be allowed 
+ *   maxLife: If a file exceeds this size, always remove it
+ * 
+ *   
  * 
  * 
  * @author raven
  *
- * @param <K>
- * @param <V>
  */
-class MapPair<K, V> {
-	protected Map<K, V> primary = new LinkedHashMap<>();
-	protected Map<V, K> alternatives = new LinkedHashMap<>();
+class FileCache {
+	protected Path basePath;
 	
-	public MapPair() {
+
+	protected HashSpace hashSpace;
+
+//	protected Path tempPath;
+	
+	protected long maxSize;
+	protected long maxLife;
+
+	protected Function<String, Path> keyToPath;
+	
+	
+
+	
+	public Path get(String key) {
+		Path path = keyToPath.apply(key);
+		
+		Path tgt = basePath.resolve(path);
+		
+		return tgt;
 	}
 
-	public Map<K, V> getPrimary() {
-		return primary;
-	}
-
-	public Map<V, K> getAlternatives() {
-		return alternatives;
-	}
-	
 	/**
-	 * Convenience method to set a primary mapping and its reverse mapping
+	 * 
 	 * 
 	 * @param key
-	 * @param value
+	 * @param entity
 	 * @return
 	 */
-	public MapPair<K, V> putPrimary(K key, V value) {
-		primary.put(key, value);
-		alternatives.put(value, key);
+	public Path put(String key, RdfEntity<?> entity) {
+		// Check if an md5 hash is set
+		Resource meta = entity.getMetadata();
 		
-		return this;
+		
+		
+		String algo = Strings.nullToEmpty(ResourceUtils.getLiteralPropertyValue(meta, Spdx.algorithm, String.class));
+		String hash = ResourceUtils.getLiteralPropertyValue(meta, Spdx.checksumValue, String.class);
+
+		
+		String effectiveHash = null;
+		
+		Path tgtPath = null;
+		// allow names like 'sha256'
+		if(algo.toLowerCase().startsWith("sha256")) {
+			effectiveHash = hash;
+		} else {
+			InputStream in = entity.getContent();
+			try {
+				Path tempPath = null;
+				Path tempFile = Files.createTempFile(tempPath, "cache-", ".dat");
+				Files.copy(in, tempFile);
+				HashCode hashCode = com.google.common.io.Files.asByteSource(tempFile.toFile()).hash(Hashing.sha256());
+				effectiveHash = hashCode.toString();
+			} catch(Exception e) {
+				throw new RuntimeException(e);
+			}
+
+			// Now check the hash space for whether that entry already exists			
+			tgtPath = hashSpace.get(effectiveHash).resolve("_content");
+//			if(Files.exists(path)) {
+//
+//			}
+		}
+		
+		
+		//Path path = keyToPath.apply(key);
+
+
+		return tgtPath;
 	}
+
 }
 
-/**
- * Custom subclass in order to allow for clean access to the file.
- * (IMO FileEntity should already provide that getter)
- * 
- * @author raven
- *
- */
-class FileEntityEx
-	extends FileEntity
-{
-	public FileEntityEx(File file, ContentType contentType) {
-		super(file, contentType);
-	}
 
-	public FileEntityEx(File file) {
-		super(file);
-	}
 
-	public File getFile() {
-		return file;
-	}
-}
+
+
 
 /**
  * Resource resolver that maps HTTP requests 
@@ -164,10 +185,18 @@ class HttpAssetManagerFromPath
 	//implements HttpAssetManager
 {
 	private static final Logger logger = LoggerFactory.getLogger(HttpAssetManagerFromPath.class);
+	
+	/**
+	 * Base path for the repository (persistent cache) area
+	 */
 	protected Path basePath;
+		
+	protected HashSpace hashSpace;
 	
 	public HttpAssetManagerFromPath(Path basePath) {
 		this.basePath = basePath;
+		
+		hashSpace = new HashSpaceImpl(basePath.resolve("hash-space"));
 		
 		uriToPath = CatalogResolverFilesystem::resolvePath;
 		
@@ -201,124 +230,18 @@ class HttpAssetManagerFromPath
 //	protected Map<String, String> encodingToFileExtension = new LinkedHashMap<>();
 	
 	
-	public static float qValueOf(HeaderElement h) {
-		float result = Optional.ofNullable(h.getParameterByName("q"))
-						.map(NameValuePair::getValue)
-						.map(Float::parseFloat)
-						.orElse(1.0f);
-		return result;
-	}
-
-	public static Stream<Header> streamHeaders(Header[] headers) {
-		Stream<Header> result = headers == null ? Stream.empty() :
-			Arrays.asList(headers).stream();
-		
-		return result;
-	}
-
-	public static Stream<HeaderElement> getElements(Header[] headers) {
-		Stream<HeaderElement> result = streamHeaders(headers)
-				.flatMap(h -> Arrays.asList(h.getElements()).stream());
-		
-		return result;
-	}
-
-	public static Stream<HeaderElement> getElements(Header[] headers, String name) {
-		Stream<HeaderElement> result = streamHeaders(headers)
-				.filter(Objects::nonNull)
-				.filter(h -> h.getName().equalsIgnoreCase(name))
-				.flatMap(h -> Arrays.asList(h.getElements()).stream());
-		
-		return result;
-	}
-
-	public Map<String, Float> getOrderedValues(Header[] headers, String name) {
-		Map<String, Float> result = getElements(headers, name)
-			.collect(Collectors.toMap(e -> e.getName(), e -> qValueOf(e)));
-		return result;
-	}
-	
-	
-	public static List<MediaType> supportedMediaTypes() {
-		return supportedMediaTypes(RDFLanguages.getRegisteredLanguages());
-	}
-	
-	public static List<MediaType> supportedMediaTypes(Collection<Lang> langs) {
-		List<MediaType> types = langs.stream()
-				// Models can surely be served using based languages
-				// TODO but what about quad based formats? I guess its fine to serve a quad based dataset
-				// with only a default graph
-				//.filter(RDFLanguages::isTriples)
-				.flatMap(lang -> Stream.concat(
-						Stream.of(lang.getContentType().getContentType()),
-						lang.getAltContentTypes().stream()))
-				.map(MediaType::parse)
-				.collect(Collectors.toList());
-		return types;
-	}
 
 	
-	public FileEntityEx deriveHeadersFromFileExtension(File resultFile, String fileName) {
-		// TODO Should we remove trailing slashes?
-		
-		String contentType = null;
-		List<String> codings = new ArrayList<>();
-		
 
-		String current = fileName;
-		
-		while(true) {
-			String ext = com.google.common.io.Files.getFileExtension(current);
-			
-			if(ext == null) {
-				break;
-			}
-			
-			// Classify the extension - once it maps to a content type, we are done
-			String coding = codingExtensions.getAlternatives().get(ext);
-			String ct = ctExtensions.getAlternatives().get(ext);
+	
 
-			// Prior validation of the maps should ensure that at no point a file extension
-			// denotes both a content type and a coding
-			assert !(coding != null && ct != null) :
-				"File extension conflict: '" + ext + "' maps to " + coding + " and " + ct;  
-			
-			if(coding != null) {
-				codings.add(coding);
-			}
-			
-			if(ct != null) {
-				contentType = ct;//MediaType.parse(ct);
-				break;
-			}
-			
-			// both coding and ct were null - skip
-			if(coding == null && ct == null) {
-				break;
-			}
-			
-			current = com.google.common.io.Files.getNameWithoutExtension(current);//current.substring(0, current.length() - ext.length());
-		}
-		
-		FileEntityEx fileEntity = null;
-
-		if(contentType != null) {
-			fileEntity = new FileEntityEx(resultFile);
-			fileEntity.setContentType(contentType);
-			if(codings.isEmpty()) {
-				// nothing to do
-			} else {
-				String str = codings.stream().collect(Collectors.joining(","));
-				fileEntity.setContentEncoding(str);
-			}
-		}
-		
-		return fileEntity;
-
-	}
 	
 	public FileEntityEx pathToEntity(Path path) {
-		FileEntityEx result = deriveHeadersFromFileExtension(path.toFile(), path.getFileName().toString());
+		RdfEntityInfo info = deriveHeadersFromFileExtension(path.getFileName().toString());
+		
+		FileEntityEx result = info == null
+				? null
+				: new FileEntityEx(path, info); 
 		
 		return result;
 	}
@@ -344,6 +267,19 @@ class HttpAssetManagerFromPath
 	 */
 	public FileEntityEx get(HttpRequest request, Function<HttpRequest, Entry<HttpRequest, HttpResponse>> executor) throws IOException {
 		Header[] headers = request.getAllHeaders();		
+		
+		// TODO The request typically points to a dataset
+		// But in general it might also refer to a distributon, a download or even into the hash space.
+		// the dataset may have multiple distributions
+		// and each distribution may either point to remote downloads or locally generated resources
+		// but in all cases, we first need to translate it into the set of download urls
+		// the download url then points into an entry in the hash space
+		// and for this hash space entry, we check whether transformations have been applied 
+		
+		// design issues:
+		// how to add overlays? e.g. maybe there is simply a 'layers' directory in the dataset?
+		// the purpose of layers is to add third-party information to existing datasets
+		// how to save download files for non-download distributions?
 		
 		String uri = request.getRequestLine().getUri();
 		Path relativePath = uriToPath.apply(uri);
@@ -395,7 +331,7 @@ class HttpAssetManagerFromPath
 		
 		Map<FileEntityEx, Float> entityToScore = new HashMap<>();
 		for(FileEntityEx fe : fileEntities) {
-			MediaType mt = MediaType.parse(fe.getContentType().getValue());
+			MediaType mt = MediaType.parse(fe.getInfo().getContentType());
 			
 			for(MediaType range : supportedMediaTypes) {
 				if(mt.is(range)) {
@@ -426,10 +362,13 @@ class HttpAssetManagerFromPath
 			
 			Entry<HttpRequest, HttpResponse> response = executor.apply(request);
 			//Header[] responseHeaders = response.getAllHeaders();
-	
+
 	//		resourcePath.resolve(data + suffix)
 //			result = saveResponse(resourcePath, response.getKey(), response.getValue());
-			result = saveResponse(Paths.get("/tmp/downloadtest"), response.getKey(), response.getValue());
+			
+			
+			
+			result = saveResponse(resourcePath, response.getKey(), response.getValue());
 		
 		}
 
@@ -444,92 +383,8 @@ class HttpAssetManagerFromPath
 	
 	
 
-	/**
-	 * Derives the suffix which to append to the base path from the entity's headers.
-	 * 
-	 * @param basePath
-	 * @param entity
-	 * @throws IOException 
-	 * @throws UnsupportedOperationException 
-	 */
-	public FileEntityEx saveResponse(Path basePath, HttpRequest request, HttpResponse response) throws UnsupportedOperationException, IOException {
-		HttpEntity entity = response.getEntity();
-		
-		// If the type is application/octet-steam we
-		// can try to derive content type and encodings from
-		// a content-disposition header or the original URI
-		// In fact, we can try both things, and see whether any yields results
-		// the results can be verified afterwards (e.g. by Files.probeContentType)
-		// hm, since content-disposition seems to be non-standard maybe we can also just ignore it
-
-		String ct = getValue(new Header[] { entity.getContentType() }, HttpHeaders.CONTENT_TYPE);
-		
-		HttpEntity meta = entity;
-		if(ct.equalsIgnoreCase(ContentType.APPLICATION_OCTET_STREAM.getMimeType())) {
-			String uri = request.getRequestLine().getUri();
-			File dummyFile = new File(StandardSystemProperty.JAVA_IO_TMPDIR.value());
-			meta = deriveHeadersFromFileExtension(dummyFile, uri);
-		}
-		
-		
-		
-		
-		String suffix = toFileExtension(new Header[] { meta.getContentType(), meta.getContentEncoding() });
-		
-		Path finalPath = basePath.getParent().resolve(basePath.getFileName().toString() + suffix);
-		
-		Path tmp = allocateTmpFile(finalPath);
-		Files.copy(entity.getContent(), tmp, StandardCopyOption.REPLACE_EXISTING);
-		Files.move(tmp, finalPath, StandardCopyOption.ATOMIC_MOVE);
-		
-		FileEntityEx result = new FileEntityEx(finalPath.toFile());
-		result.setContentType(meta.getContentType());
-		result.setContentEncoding(meta.getContentEncoding());
-		
-		return result;
-	}
+			
 	
-	
-	
-	public String toFileExtension(Header[] headers) {
-		String result = toFileExtensionCt(headers) +
-				toFileExtension(getValues(headers, HttpHeaders.CONTENT_ENCODING));
-		return result;
-	}
-	
-	public String getValue(Header[] headers, String name) {
-		List<String> contentTypes = getValues(headers, name);
-		if(contentTypes.size() != 1) {
-			throw new RuntimeException("Exactly one content type expected, got: " + contentTypes);
-		}
-
-		return contentTypes.get(0);
-	}
-	
-	
-	
-	public String toFileExtensionCt(Header[] headers) {
-		
-		String ct = getValue(headers, HttpHeaders.CONTENT_TYPE);
-		String result = ctExtensions.getPrimary().get(ct);
-		Objects.requireNonNull(result, "Could not find file extension for content type: " + ct);
-		result = "." + result;
-		return result;		
-	}
-	
-	public String toFileExtension(List<String> codings) {
-		List<String> parts = new ArrayList<>(codings.size());
-		
-		for(String coding : codings) {
-			String part = Objects.requireNonNull(codingExtensions.getPrimary().get(coding));
-			parts.add(part);
-		}
-		
-		String result = parts.stream().collect(Collectors.joining("."));
-		
-		result = result.isEmpty() ? result : "." + result;
-		return result;
-	}
 
 	public List<String> getValues(Header header) {
 		List<String> result = getElements(new Header[] { header })					
@@ -539,25 +394,8 @@ class HttpAssetManagerFromPath
 			return result;
 
 	}
-	
-	public List<String> getValues(Header header, String name) {
-		List<String> result = getValues(new Header[] { header }, name);
-		return result;
-	}
 
-	public List<String> getValues(Header[] headers, String name) {
-		List<String> result = getElements(headers, name)					
-			.map(HeaderElement::getName)
-			.collect(Collectors.toList());
 
-		return result;
-	}
-	
-	public String toFileExtension(String contentType) {
-		String result = Objects.requireNonNull(ctExtensions.getPrimary().get(contentType));
-		result = result.isEmpty() ? result : "." + result;
-		return result;
-	}
 
 //	public  String toFileExtension(String contentType, List<String> codings) {
 //		List<String> parts = new ArrayList<>(1 + codings.size());
@@ -605,18 +443,25 @@ class HttpAssetManagerFromPath
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<TransformStep> createPlan(FileEntityEx source, Path rawTgtBasePath, String tgtContentType, List<String> tgtEncodings) {
+	public List<TransformStep> createPlan(
+			RdfFileEntity source,
+//			PathGroup srcPathGroup,
+//			PathGroup tgtPathGroup,
+			Path relTgtBasePath, // relative path of the target resource
+			String tgtContentType,
+			List<String> tgtEncodings) {
 		// Decode 
 		PathEncoderRegistry coders = PathEncoderRegistry.get();
 		
 //		String srcContentType = source.getContentType().getElements()[0].get
-		String srcContentType = Arrays.asList(source.getContentType().getElements()).stream()
-				.map(HeaderElement::getName)
-				.findFirst()
-				.orElseThrow(() -> new RuntimeException("No content type on file entity: " + source));
+		String srcContentType = source.getInfo().getContentType();
+//		String srcContentType = Arrays.asList(source.getInfo().getContentType().getElements()).stream()
+//				.map(HeaderElement::getName)
+//				.findFirst()
+//				.orElseThrow(() -> new RuntimeException("No content type on file entity: " + source));
 
-		Path tgtBasePath = rawTgtBasePath.getParent();
-		String tgtBaseName = rawTgtBasePath.getFileName().toString();
+		//Path tgtBasePath = rawTgtBasePath.getParent();
+		String tgtBaseName = relTgtBasePath.getFileName().toString();
 
 		String srcExt = ctExtensions.getPrimary().get(srcContentType);;
 		String decodeBaseName = tgtBaseName + "." + srcExt;
@@ -627,7 +472,7 @@ class HttpAssetManagerFromPath
 		
 		//String baseNameCt = baseName + "." + srcBaseName;
 		
-		List<String> srcEncodings = getValues(source.getContentEncoding(), HttpHeaders.CONTENT_ENCODING); 
+		List<String> srcEncodings = source.getInfo().getContentEncodings();//getValues(source.getContentEncoding(), HttpHeaders.CONTENT_ENCODING); 
 //		Optional
 //					.ofNullable(source.getContentEncoding())
 //					.map(Header::getElements)
@@ -734,8 +579,7 @@ class HttpAssetManagerFromPath
 
 		//List<TransformStep> plan = createPlan(source, rawTgtBasePath, tgtContentType, tgtEncodings);
 		
-		File file = source.getFile();
-		Path src = Paths.get(file.toURI());
+		Path src = source.getRelativePath();
 		Path dest = src;
 
 		// Execute the plan
@@ -762,46 +606,7 @@ class HttpAssetManagerFromPath
 	}
 	
 	
-	public static Path allocateTmpFile(Path tgt) {
-		Path result;
-		for(int i = 0; ; ++i) {
-			String idx = i == 0 ? "" : "-" + i;
-			result = tgt.getParent().resolve(tgt.getFileName().toString() + idx + ".tmp");
-			
-			// Check if the file is stale - no changes within a certain amount of time
-			try {
-				if(Files.exists(result)) {
-					FileTime ft = Files.getLastModifiedTime(result);
-					Instant now = Instant.now();
-					Instant then = ft.toInstant();
-					
-					long numHours = ChronoUnit.HOURS.between(then, now);
-					if(numHours > 24) {
-						logger.info("Removing apparently stale tmp file " + result);
-						Files.delete(result);
-					}
-				}
-			} catch(Exception e) {
-				logger.warn("Attempt to check stale state and potentially removal of file failed " + result, e);
-			}
-			
-			if(!Files.exists(result)) {
-				try {
-					// There is is tiny chance that creation fails
-					// because another process created the file just now
-					// The more likely case for the call below to fail is some write error due to
-					// out of disk space, privileges or file system errors
-					Files.createFile(result);
-				} catch(Exception e) {
-					throw new RuntimeException(e);
-				}
-				break;
-			}
-		}
-		
-		return result;
-	}
-	
+
 //	public static <T> T safeMove(Path src, Path tgt, Function<Path, T> fn) {
 //		Path tmp;
 //		for(int i = 0; ; ++i) {
@@ -840,49 +645,7 @@ class HttpAssetManagerFromPath
 
 public class MainDataNodeClientRequest {
 	
-	/**
-	 * May rewrite an original request and returns it together with its response
-	 * 
-	 * @param request
-	 * @return
-	 */
-	public static Entry<HttpRequest, HttpResponse> resolveRequest(HttpRequest request) {
-		request.getRequestLine().getUri();
-		
-		// Extract a dataset id from the URI
-		// Check all data catalogs for whether they can resolve the id
-		
-		// Fake a request to a catalog for now - the result is a dcat model
-		Model m = RDFDataMgr.loadModel("/home/raven/.dcat/repository/datasets/data/www.example.org/dataset-dbpedia-2016-10-core/_content/dcat.ttl");
-		
-		//System.out.println(m.size());
-		
-		String url = m.listObjectsOfProperty(DCAT.downloadURL).mapWith(x -> x.asNode().getURI()).next();
-		System.out.println(url);
-		
-		HttpClient client = HttpClientBuilder.create().build();
-		
-		
-		HttpUriRequest myRequest =
-				RequestBuilder
-				.copy(request)
-				.setUri(url)
-				.build();
-		
-		//new DefaultHttpRequestFactory().
-		HttpResponse response;
-		try {
-			response = client.execute(myRequest);
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
-		//client.execute(request, context)
-		
-		//m.listObjectsOfProperty(DCAT.downloadURL).toList();
-		
-		//throw new RuntimeException("not implemented yet");
-		return Maps.immutableEntry(myRequest, response);
-	}
+
 	
 	public static void mainProcessTest(String[] args) {
 		PathCoder coder = PathEncoderRegistry.get().getCoder("bzip");
@@ -897,6 +660,7 @@ public class MainDataNodeClientRequest {
 
 	// Test to resolve a file name to an http entity
 	public static void main(String[] args) throws Exception {
+		
 		Path userDir = Paths.get(StandardSystemProperty.USER_HOME.value());
 		HttpAssetManagerFromPath m = new HttpAssetManagerFromPath(userDir.resolve(".dcat/test"));
 		
@@ -908,7 +672,7 @@ public class MainDataNodeClientRequest {
 		
 		FileEntityEx fe = m.get(r, MainDataNodeClientRequest::resolveRequest);
 		
-		System.out.println("Source file entity: " + fe.getFile());
+		System.out.println("Source file entity: " + fe.getRelativePath());
 		
 		List<TransformStep> plan = m.createPlan(fe, Paths.get("/tmp/yay"), WebContent.contentTypeRDFXML, Arrays.asList("gzip"));
 		m.execPlan(fe, plan);
