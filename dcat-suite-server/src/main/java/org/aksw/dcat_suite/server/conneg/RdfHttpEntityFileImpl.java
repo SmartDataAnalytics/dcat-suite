@@ -1,6 +1,7 @@
 package org.aksw.dcat_suite.server.conneg;
 
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 import org.apache.jena.rdf.model.Resource;
 
@@ -29,9 +30,16 @@ public class RdfHttpEntityFileImpl
 	}
 
 	@Override
-	public Resource getInfo() {
+	public Resource getCombinedInfo() {
 		Path absPath = getAbsolutePath();
 		Resource result = resource.getResourceStore().getInfo(absPath);
 		return result;
 	}
+
+	@Override
+	public void updateInfo(Consumer<? super Resource> consumer) {
+		ResourceStore store = getResource().getResourceStore();
+		store.updateInfo(getAbsolutePath(), consumer);
+	}
+		
 }

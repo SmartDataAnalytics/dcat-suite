@@ -33,7 +33,7 @@ public class ContentTypeUtils {
 	
 		// TODO We need a registry for coders similar to RDFLanguages
 		codingExtensions.putPrimary("gzip", "gz");
-		codingExtensions.putPrimary("bzip", "bz2");
+		codingExtensions.putPrimary("bzip2", "bz2");
 	}
 	
 	
@@ -78,6 +78,22 @@ public class ContentTypeUtils {
 	public static String toFileExtension(String contentType) {
 		String result = Objects.requireNonNull(ctExtensions.getPrimary().get(contentType));
 		result = result.isEmpty() ? result : "." + result;
+		return result;
+	}
+
+	
+	public  String toFileExtension(String contentType, List<String> codings) {
+		List<String> parts = new ArrayList<>(1 + codings.size());
+		
+		String part = Objects.requireNonNull(ctExtensions.getPrimary().get(contentType));
+		parts.add(part);
+		
+		for(String coding : codings) {
+			part = Objects.requireNonNull(codingExtensions.getPrimary().get(coding));
+			parts.add(part);
+		}
+		
+		String result = parts.stream().collect(Collectors.joining("."));
 		return result;
 	}
 

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.ckan_deploy.core.PathCoder;
-import org.aksw.ckan_deploy.core.PathEncoderRegistry;
+import org.aksw.ckan_deploy.core.PathCoderRegistry;
 import org.aksw.dcat.ap.domain.api.Spdx;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
 import org.aksw.dcat_suite.server.conneg.HttpAssetManagerFromPath.TransformStep;
@@ -331,7 +331,7 @@ class HttpAssetManagerFromPath
 		
 		Map<FileEntityEx, Float> entityToScore = new HashMap<>();
 		for(FileEntityEx fe : fileEntities) {
-			MediaType mt = MediaType.parse(fe.getInfo().getContentType());
+			MediaType mt = MediaType.parse(fe.getCombinedInfo().getContentType());
 			
 			for(MediaType range : supportedMediaTypes) {
 				if(mt.is(range)) {
@@ -397,20 +397,6 @@ class HttpAssetManagerFromPath
 
 
 
-//	public  String toFileExtension(String contentType, List<String> codings) {
-//		List<String> parts = new ArrayList<>(1 + codings.size());
-//		
-//		String part = Objects.requireNonNull(ctExtensions.getPrimary().get(contentType));
-//		parts.add(part);
-//		
-//		for(String coding : codings) {
-//			part = Objects.requireNonNull(codingExtensions.getPrimary().get(coding));
-//			parts.add(part);
-//		}
-//		
-//		String result = parts.stream().collect(Collectors.joining("."));
-//		return result;
-//	}
 	
 	
 	static class TransformStep {
@@ -433,147 +419,7 @@ class HttpAssetManagerFromPath
 		return new TransformStep(destPath, method);
 	}
 	
-	/**
-	 * Provide a plan that converts the given source file entity to a file in the target
-	 * with the given content type and encoding 
-	 * 
-	 * @param source
-	 * @param contentType
-	 * @param encodings
-	 * @return
-	 * @throws Exception 
-	 */
-	public List<TransformStep> createPlan(
-			RdfFileEntity source,
-//			PathGroup srcPathGroup,
-//			PathGroup tgtPathGroup,
-			Path relTgtBasePath, // relative path of the target resource
-			String tgtContentType,
-			List<String> tgtEncodings) {
-		// Decode 
-		PathEncoderRegistry coders = PathEncoderRegistry.get();
-		
-//		String srcContentType = source.getContentType().getElements()[0].get
-		String srcContentType = source.getInfo().getContentType();
-//		String srcContentType = Arrays.asList(source.getInfo().getContentType().getElements()).stream()
-//				.map(HeaderElement::getName)
-//				.findFirst()
-//				.orElseThrow(() -> new RuntimeException("No content type on file entity: " + source));
 
-		//Path tgtBasePath = rawTgtBasePath.getParent();
-		String tgtBaseName = relTgtBasePath.getFileName().toString();
-
-		String srcExt = ctExtensions.getPrimary().get(srcContentType);;
-		String decodeBaseName = tgtBaseName + "." + srcExt;
-		
-		String tgtExt = ctExtensions.getPrimary().get(tgtContentType);;
-		String encodeBaseName = tgtBaseName + "." + tgtExt;
-		
-		
-		//String baseNameCt = baseName + "." + srcBaseName;
-		
-		List<String> srcEncodings = source.getInfo().getContentEncodings();//getValues(source.getContentEncoding(), HttpHeaders.CONTENT_ENCODING); 
-//		Optional
-//					.ofNullable(source.getContentEncoding())
-//					.map(Header::getElements)
-//					.map(Arrays::asList)
-//					.orElse(Collections.emptyList()).stream()					
-//				.map(HeaderElement::getName)
-//				.collect(Collectors.toList());
-
-		// Find out how many encodings are the same from the start of the lists
-		int offset = 0;
-		int min = Math.min(srcEncodings.size(), tgtEncodings.size());
-		for(int i = 0; i < min; ++i) {
-			if(srcEncodings.get(i) == tgtEncodings.get(i)) {
-				++offset; // == i + 1
-			} else {
-				break;
-			}
-		}		
-		
-		List<TransformStep> plan = new ArrayList<>(); 
-
-		// Decode up to the final offset of the common path head
-		for(int i = srcEncodings.size() - 1; i >= offset; --i) {
-			String srcEncoding = srcEncodings.get(i);
-			PathCoder coder = coders.getCoder(srcEncoding);
-			if(coder == null) {
-				throw new RuntimeException("No coder found for " + srcEncoding);
-			}
-
-	
-			String suffix = toFileExtension(srcEncodings.subList(0, i));
-			Path fullName = tgtBasePath.resolve(decodeBaseName + suffix);
-
-			//String fullName = srcBaseName + suffix;
-//			String fileExtension = codingExtensions.getPrimary().get(srcEncoding);
-			TransformStep step = createTransformStep(fullName, coder::decode);
-			plan.add(step);
-		}
-
-		Lang srcLang = RDFLanguages.nameToLang(srcContentType);
-
-		Lang tgtLang = RDFLanguages.nameToLang(tgtContentType);
-		
-		// Perform content type conversion
-		BiFunction<Path, Path, Single<Integer>> convert = (src, tgt) -> {
-			
-			Model m = ModelFactory.createDefaultModel();
-			try {
-				RDFDataMgr.read(m, Files.newInputStream(src, StandardOpenOption.READ), srcLang);
-			} catch (IOException e1) {
-				throw new RuntimeException(e1);
-			}
-	
-			try(OutputStream out = Files.newOutputStream(tgt,
-					StandardOpenOption.CREATE,
-					StandardOpenOption.WRITE,
-					StandardOpenOption.TRUNCATE_EXISTING)) {
-				RDFDataMgr.write(out, m, tgtLang);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-
-			return Single.just(0);
-		};
-		
-		{
-			TransformStep step = createTransformStep(tgtBasePath.resolve(encodeBaseName), convert);
-			plan.add(step);
-		}
-		
-		// Encode from the final offset of the common path head
-		for(int i = offset; i < tgtEncodings.size(); ++i) {
-			String tgtEncoding = tgtEncodings.get(i);
-			PathCoder coder = coders.getCoder(tgtEncoding);
-			if(coder == null) {
-				throw new RuntimeException("No coder found for " + tgtEncoding);
-			}
-
-			String suffix = toFileExtension(tgtEncodings.subList(0, i + 1));
-			Path fullName = tgtBasePath.resolve(encodeBaseName + suffix);
-
-//			String fileExtension = codingExtensions.getPrimary().get(srcEncoding);
-			TransformStep step = createTransformStep(fullName, coder::encode);
-			plan.add(step);
-
-//			plan.add(coder::encode);
-		}
-
-		// Traverse the plan backwards and check if any of the steps are already complete
-		// If so, all prior steps can be skipped
-		for(int i = plan.size() - 1; i >= 0; --i) {
-			TransformStep step = plan.get(i);
-			Path destPath = step.destPath;
-			if(Files.exists(destPath)) {
-				plan = plan.subList(i + 1, plan.size());
-				break;
-			}
-		}
-		
-		return plan;
-	}
 	
 	public CompletableFuture<FileEntityEx> execPlan(FileEntityEx source, List<TransformStep> plan) throws Exception {
 
@@ -648,7 +494,7 @@ public class MainDataNodeClientRequest {
 
 	
 	public static void mainProcessTest(String[] args) {
-		PathCoder coder = PathEncoderRegistry.get().getCoder("bzip");
+		PathCoder coder = PathCoderRegistry.get().getCoder("bzip");
 		
 		Single<Integer> single = coder.encode(Paths.get("/tmp/test.txt"), Paths.get("/tmp/test.bz2"));
 //		Single<Integer> single = coder.encode(Paths.get("/tmp/germany-latest.osm.pbf"), Paths.get("/tmp/test.bz2"));

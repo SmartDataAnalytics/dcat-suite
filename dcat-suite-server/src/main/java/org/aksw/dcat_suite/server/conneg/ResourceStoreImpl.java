@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -227,6 +228,14 @@ public class ResourceStoreImpl
 		RdfHttpEntityFile result = new RdfHttpEntityFileImpl(res, finalRelPath);
 		
 		return result;
+	}
+
+
+	@Override
+	public void updateInfo(Path path, Consumer<? super Resource> callback) {
+		Resource r = pathAnnotator.getRecord(path);
+		callback.accept(r);
+		pathAnnotator.setRecord(path, r);
 	}
 
 }

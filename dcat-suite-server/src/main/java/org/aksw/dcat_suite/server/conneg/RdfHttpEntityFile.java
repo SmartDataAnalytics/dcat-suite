@@ -1,6 +1,7 @@
 package org.aksw.dcat_suite.server.conneg;
 
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 import org.apache.jena.rdf.model.Resource;
 
@@ -18,6 +19,9 @@ public interface RdfHttpEntityFile
 		return result;
 	}
 	
-	Resource getInfo();
 	RdfHttpResourceFile getResource();
+
+	Resource getCombinedInfo();
+
+	void updateInfo(Consumer<? super Resource> consumer);
 }

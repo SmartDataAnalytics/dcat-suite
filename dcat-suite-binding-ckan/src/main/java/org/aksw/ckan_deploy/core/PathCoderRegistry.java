@@ -3,16 +3,16 @@ package org.aksw.ckan_deploy.core;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class PathEncoderRegistry {
-	protected static PathEncoderRegistry INSTANCE = null;
+public class PathCoderRegistry {
+	protected static PathCoderRegistry INSTANCE = null;
 
 	protected Map<String, PathCoder> coders = new LinkedHashMap<>();
 	
-	public static PathEncoderRegistry get() {
+	public static PathCoderRegistry get() {
 		if(INSTANCE == null) {
-			INSTANCE = new PathEncoderRegistry();
+			INSTANCE = new PathCoderRegistry();
 
-			INSTANCE.coders.put("bzip", new PathCoderLbZip());
+			INSTANCE.coders.put("bzip2", new PathCoderLbZip());
 			INSTANCE.coders.put("gzip", new PathCoderGzip());
 		}
 		

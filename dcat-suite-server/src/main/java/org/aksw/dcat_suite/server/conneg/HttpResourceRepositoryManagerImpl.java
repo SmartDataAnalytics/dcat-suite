@@ -1,10 +1,12 @@
 package org.aksw.dcat_suite.server.conneg;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,8 +16,10 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
+import org.aksw.dcat_suite.algebra.Op;
+import org.aksw.dcat_suite.algebra.Planner;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -29,15 +33,19 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.sys.JenaSystem;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
 
 import avro.shaded.com.google.common.collect.Maps;
+import jnr.posix.util.ProcessMaker.Redirect;
 
 public class HttpResourceRepositoryManagerImpl {
 	//protected ResourceStoreImpl store;
@@ -53,6 +61,14 @@ public class HttpResourceRepositoryManagerImpl {
 //		this.uriToRelPath = CatalogResolverFilesystem::resolvePath;
 	}
 
+	public static HttpResourceRepositoryManagerImpl create(Path absBasePath) {
+		HttpResourceRepositoryManagerImpl result = new HttpResourceRepositoryManagerImpl();
+		result.setDownloadStore(new ResourceStoreImpl(absBasePath.resolve("downloads")));
+		result.setCacheStore(new ResourceStoreImpl(absBasePath.resolve("cache")));
+
+		return result;
+	}
+	
 	public Collection<ResourceStore> getResourceStores() {
 		return Arrays.asList(downloadStore, cacheStore);
 	}
@@ -105,6 +121,18 @@ public class HttpResourceRepositoryManagerImpl {
 		return result;
 	}
 
+	public RdfHttpEntityFile get(String url, String contentType, List<String> encodings) throws IOException {
+		BasicHttpRequest r = new BasicHttpRequest("GET", url);
+		r.setHeader(HttpHeaders.ACCEPT, contentType);
+		String encoding = Stream.concat(encodings.stream(), Stream.of("identity;q=0"))
+				.collect(Collectors.joining(","));
+		
+		r.setHeader(HttpHeaders.ACCEPT_ENCODING, encoding);
+
+		RdfHttpEntityFile result = get(r, HttpResourceRepositoryManagerImpl::resolveRequest);
+		return result;
+	}
+	
 	public RdfHttpEntityFile get(HttpRequest request, Function<HttpRequest, Entry<HttpRequest, HttpResponse>> executor) throws IOException {
 		Header[] headers = request.getAllHeaders();		
 		
@@ -135,7 +163,7 @@ public class HttpResourceRepositoryManagerImpl {
 		// Score entities
 		Map<RdfHttpEntityFile, Float> entityToScore = new HashMap<>();
 		for(RdfHttpEntityFile entity : entities) {
-			RdfEntityInfo info = entity.getInfo().as(RdfEntityInfo.class);
+			RdfEntityInfo info = entity.getCombinedInfo().as(RdfEntityInfo.class);
 			MediaType mt = MediaType.parse(info.getContentType());
 			
 			for(MediaType range : supportedMediaTypes) {
@@ -156,7 +184,6 @@ public class HttpResourceRepositoryManagerImpl {
 		//result = null;
 		if(result == null) {
 			RdfHttpResourceFile res = downloadStore.getResource(uri);
-			
 			Entry<HttpRequest, HttpResponse> response = executor.apply(request);
 			
 			result = saveResponse(res, response.getKey(), response.getValue());
@@ -197,11 +224,37 @@ public class HttpResourceRepositoryManagerImpl {
 		//Path targetPath = res.getPath().resolve("data");
 		Path targetPath = rdfEntity.getAbsolutePath();
 
-		// HACK - this assumes the target path refers to a file
+		// HACK - this assumes the target path refers to a file (and not a directory)!
 		Files.createDirectories(targetPath.getParent());
 		
 		Path tmp = FileUtils.allocateTmpFile(targetPath);
 		Files.copy(entity.getContent(), tmp, StandardCopyOption.REPLACE_EXISTING);
+
+		// Compute hash
+		ByteSource bs = com.google.common.io.Files.asByteSource(tmp.toFile());
+		
+		HashCode hashCode;
+		try {
+			hashCode = bs.hash(Hashing.sha256());
+			String str = hashCode.toString();
+			
+			try {
+				Files.createFile(targetPath);
+			} catch (FileAlreadyExistsException e) {
+				// Ignored
+			}
+			rdfEntity.updateInfo(info -> {
+				HashInfo hi = info.getModel().createResource().as(HashInfo.class);
+				
+				hi.setAlgorithm("sha256").setChecksum(str);
+				Collection<HashInfo> hashes = info.as(RdfEntityInfo.class).getHashes();
+				hashes.add(hi);				
+			});
+			
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+		
 		Files.move(tmp, targetPath, StandardCopyOption.ATOMIC_MOVE);
 		
 		//RdfFileEntity result = new RdfFileEntityImpl(finalPath, meta);
@@ -260,21 +313,53 @@ public class HttpResourceRepositoryManagerImpl {
 	
 	public static void main(String[] args) throws IOException {
 		JenaSystem.init();
+
+		TurtleNoBaseTest.initTurtleWithoutBaseUri();
+
 		JenaPluginUtils.registerResourceClass(RdfEntityInfo.class, RdfEntityInfoDefault.class);
 		JenaPluginUtils.registerResourceClasses(RdfGav.class);
+		JenaPluginUtils.registerResourceClasses(HashInfo.class);
+
 
 		
+		JenaPluginUtils.scan(Op.class);
+
 		Path root = Paths.get("/home/raven/.dcat/test3");
 		Files.createDirectories(root);
-		ResourceStoreImpl rm = new ResourceStoreImpl(root);
+
+		HttpResourceRepositoryManagerImpl manager = create(root);
+
+		ResourceStore store = manager.getDownloadStore();
 		
+//		String url = "/home/raven/.dcat/test3/genders_en.ttl.bz2";
 		String url = "http://downloads.dbpedia.org/2016-10/core-i18n/en/genders_en.ttl.bz2";
+//		String url = "/home/raven/Projects/limbo/git/train_3-dataset/target/metadata-catalog/catalog.all.ttl";
+//		Model m = RDFDataMgr.loadModel(url);
+//		try(RDFConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(m))) {
+//			for(int i = 0; i < 10; ++i) {
+//				try(QueryExecution qe = conn.query("SELECT * { ?s ?p ?o BIND(RAND() AS ?sortKey) } ORDER BY ?sortKey LIMIT 1")) {
+//					System.out.println(ResultSetFormatter.asText(qe.execSelect()));
+//				}
+//			}
+//		}
+		
+		RdfHttpEntityFile entity = manager.get(url, "application/turtle", Arrays.asList("bzip2"));
+		
+		//RdfHttpResourceFile res = store.getResource(url);
+		//RdfHttpEntityFile entity = res.getEntities().iterator().next();
+		
+		Op op = Planner.createPlan(entity, "application/rdf+xml", Arrays.asList("bzip2"));
+		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
+		
+		
+		
+		if(true) {
+			return;
+		}
+		
 //		RdfFileResource res = rm.get("http://downloads.dbpedia.org/2016-10/core-i18n/en/genders_en.ttl.bz2");
 		
 		
-		HttpResourceRepositoryManagerImpl manager = new HttpResourceRepositoryManagerImpl();
-		manager.setDownloadStore(new ResourceStoreImpl(root.resolve("downloads")));
-		manager.setCacheStore(new ResourceStoreImpl(root.resolve("cache")));
 
 		BasicHttpRequest r = new BasicHttpRequest("GET", url);
 		r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);

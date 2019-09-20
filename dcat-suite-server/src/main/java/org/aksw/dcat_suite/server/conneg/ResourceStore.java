@@ -2,6 +2,7 @@ package org.aksw.dcat_suite.server.conneg;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import org.apache.jena.rdf.model.Resource;
 
@@ -32,7 +33,8 @@ public interface ResourceStore {
 	 * @return
 	 */
 	Resource getInfo(Path path, String layer);
-	
+
+	void updateInfo(Path path, Consumer<? super Resource> info);
 	
 	default Resource getInfo(Path path) {
 		Resource result = getInfo(path, null);

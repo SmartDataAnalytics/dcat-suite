@@ -1,4 +1,7 @@
-package org.aksw.jena_sparql_api.data_client.algebra;
+package org.aksw.dcat_suite.algebra;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.aksw.jena_sparql_api.mapper.annotation.IriNs;
 import org.aksw.jena_sparql_api.mapper.annotation.PolymorphicOnly;
@@ -9,5 +12,9 @@ public interface Op1
 	@IriNs("eg")
 	@PolymorphicOnly
 	Op getSubOp();
-	Op1 setSubOp(Op op);		
+	Op1 setSubOp(Op subOp);
+
+	default List<Op> getSubOps() {
+		return Collections.singletonList(getSubOp());
+	}
 }

@@ -42,4 +42,8 @@ public interface RdfEntityInfoDefault
 	@IriNs("eg")
 	@Override
 	Set<String> getLanguageTags();
+	
+	@IriNs("eg")
+	@Override
+	Set<HashInfo> getHashes();	
 }
