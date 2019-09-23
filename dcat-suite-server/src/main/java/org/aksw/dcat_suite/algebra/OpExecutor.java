@@ -6,30 +6,64 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.core.PathCoder;
 import org.aksw.ckan_deploy.core.PathCoderRegistry;
-import org.aksw.dcat_suite.server.conneg.HashSpace;
-import org.aksw.dcat_suite.server.conneg.HashSpaceImpl;
+import org.aksw.dcat_suite.server.conneg.HttpResourceRepositoryFromFileSystem;
+import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
+import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
+import org.aksw.dcat_suite.server.conneg.RdfHttpResourceFile;
+import org.aksw.dcat_suite.server.conneg.ResourceStore;
+import org.apache.http.entity.ContentType;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 
+import com.google.common.base.Splitter;
+
 import io.reactivex.Single;
 
 public class OpExecutor
 	implements OpVisitor<Path>
 {
-	protected HashSpace hashSpace;
-	protected OpVisitor<String> hasher;
+	// The repo reference here is only used for reading
+	protected HttpResourceRepositoryFromFileSystem repository;
+	
+	// The repo may also have the hashStore configured
+	protected ResourceStore hashStore;
 
-	public OpExecutor() {
-		this.hasher = new Hasher(Collections.emptyMap());
-		hashSpace = new HashSpaceImpl(Paths.get("/home/raven/.dcat/test3/hashspace"));
+	protected OpVisitor<String> hasher;
+	
+	public static String hashForOpPath(OpPath op, HttpResourceRepositoryFromFileSystem repository) {
+		String str = op.getName();
+		Path path = Paths.get(str);
+		RdfHttpEntityFile entity = repository.getEntityForPath(path);
+		String result = ResourceStore.readHash(entity, "sha256");
+
+		return result;
+	}
+
+	public OpExecutor(HttpResourceRepositoryFromFileSystem repository, ResourceStore hashStore) {
+		super();
+		this.repository = repository;
+		this.hashStore = hashStore;
+		this.hasher = HasherBase.create(op -> OpExecutor.hashForOpPath(op, repository));
+	}
+	
+	public static Path execute(Op op, HttpResourceRepositoryFromFileSystem repository, ResourceStore hashStore) {
+		OpExecutor executor = new OpExecutor(repository, hashStore);
+		Path result = op.accept(executor);
+		return result;
+	}
+	
+	public Op optimizeInPlace(Op op) {
+		Op result = OpUtils.optimize(op, hasher, hashStore);
+		return result;
 	}
 //	
 //	public Path cacheLookup(Op op, Function<Op, > ) {
@@ -58,9 +92,23 @@ public class OpExecutor
 		return tgtPath;
 	}
 	
-	public Path getTargetPath(Op op) {
+	public Path getTargetPath(Op op) {		
 		String hash = op.accept(hasher);
-		Path result = hashSpace.get(hash);
+		
+		List<String> parts = Splitter
+				.fixedLength(8)
+				.splitToList(hash);
+		
+		String id = parts.stream()
+				.collect(Collectors.joining("/"));
+
+		RdfHttpResourceFile res = hashStore.getResource(id);
+		RdfHttpEntityFile entity = res.allocate(ModelFactory.createDefaultModel().createResource().as(RdfEntityInfo.class)
+				.setContentType(ContentType.APPLICATION_OCTET_STREAM.toString()));
+
+
+		Path result = entity.getAbsolutePath();
+		//Path result = hashStore.getResource()
 		
 		return result;
 	}
@@ -80,11 +128,16 @@ public class OpExecutor
 	}
 
 	@Override
-	public Path visit(OpVar op) {
-		String hash = op.getName();
+	public Path visit(OpPath op) {
+		String str = op.getName();
+		Path path = Paths.get(str);
+		//RdfHttpEntityFile entity = repository.getEntityForPath(path);
+		//String hash = ResourceStore.readHash(entity, hashName);
+		
+		//String hash = op.getName();
 		//hashSpace.get(hash)
 		
-		return null;
+		return path;
 	}
 	
 	@Override

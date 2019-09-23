@@ -2,11 +2,32 @@ package org.aksw.dcat_suite.server.conneg;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.apache.jena.rdf.model.Resource;
 
-public interface ResourceStore {	
+public interface ResourceStore {
+	
+	public static String readHash(RdfHttpEntityFile entity, String hashName) {
+		RdfEntityInfo info = entity.getCombinedInfo().as(RdfEntityInfo.class);
+		HashInfo hashInfo = info.getHash(hashName);
+		String result = Optional.ofNullable(hashInfo)
+				.map(HashInfo::getChecksum)
+				.orElse(null);
+
+		return result;
+	}
+	
+	/**
+	 * Bridge between paths and entities
+	 * 
+	 * @param absEntityPath Absolute path to an entity.
+	 * @return
+	 */
+	RdfHttpEntityFile getEntityForPath(Path absEntityPath);
+
+	
 	RdfHttpResourceFile getResource(String uri);	
 	RdfHttpEntityFile allocateEntity(String uri, Resource description);
 

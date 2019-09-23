@@ -1,14 +1,28 @@
 package org.aksw.dcat_suite.algebra;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
-import org.aksw.dcat_suite.server.conneg.HashSpace;
+import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
+import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
+import org.aksw.dcat_suite.server.conneg.RdfHttpResourceFile;
+import org.aksw.dcat_suite.server.conneg.ResourceStore;
+import org.apache.http.entity.ContentType;
+import org.apache.jena.rdf.model.ModelFactory;
 
 import com.google.common.collect.Streams;
 import com.google.common.graph.Traverser;
 
 public class OpUtils {
+	
+	public static Collection<Op> peekingSubOps(Op op) {
+		Collection<Op> result = op.getSubOps();
+		System.out.println("SubOps for " + op.getClass() + " "+ op + " are " + result);
+		return result;
+	}
+	
 	public static int getNumOps(Op op) {
 		
 		// TODO We may want to exclude counting leaf nodes
@@ -19,7 +33,8 @@ public class OpUtils {
 		 * Get the number of operations in the expression.
 		 * Can be used as a poor-mans cost estimate
 		 */
-		int result = (int)Streams.stream(Traverser.forTree(Op::getSubOps)
+//		int result = (int)Streams.stream(Traverser.forTree(Op::getSubOps)
+		int result = (int)Streams.stream(Traverser.forTree(OpUtils::peekingSubOps)
 			.depthFirstPreOrder(op))
 			.count();
 		
@@ -27,26 +42,35 @@ public class OpUtils {
 	}
 	
 	
-	public Op optimize(Op op, OpVisitor<String> hasher, HashSpace hashSpace) {
+	public static Op optimize(Op op, OpVisitor<String> hasher, ResourceStore hashSpace) {
 		String hash = op.accept(hasher);
 		
-		Path path = hashSpace.get(hash);
+		RdfHttpResourceFile res = hashSpace.getResource(hash);
+		RdfHttpEntityFile entity = res.allocate(ModelFactory.createDefaultModel().createResource().as(RdfEntityInfo.class)
+				.setContentType(ContentType.APPLICATION_OCTET_STREAM.toString()));
+		
+		Path path = entity.getAbsolutePath();
+		// TODO Check if it exists and
+		boolean exists = Files.exists(path);
 		Op result;
-		if(path != null) {
+		if(exists) {
 			// In-place change the description of the op into a static reference
 			// TODO This does not clear children of the op - so it leaves clutter
 			// behind in the model which is not very aesthetic - then again, it is harmless
 			op.removeProperties();			
-			OpValue opValue = op.as(OpValue.class);
-			opValue.setValue(path.toString());
+			OpPath opValue = op.as(OpPath.class);
+			opValue.setName(path.toString());
+			
+			result = opValue;
 		} else {
 			List<Op> children = op.getSubOps();
 			for(Op child : children) {
-				optimize(op, hasher, hashSpace);
+				optimize(child, hasher, hashSpace);
 			}
+			result = op;
 		}
 		
-		return op;
+		return result;
 	}
 	
 	

@@ -10,6 +10,8 @@ import org.aksw.dcat_suite.server.conneg.HashInfo;
 import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
 import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
 
+import io.reactivex.Single;
+
 
 
 //
@@ -21,6 +23,7 @@ import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
 //}
 
 public class Planner {
+	
 	
 	/**
 	 * Provide a plan that converts the given source file entity to a file in the target
@@ -45,25 +48,23 @@ public class Planner {
 		
 //		HashInfo hashInfo = info.as(HashInfo.class);
 		HashInfo hashInfo = info.getHash("sha256");
-		String checksum = Optional.ofNullable(hashInfo).map(HashInfo::getChecksum).orElse(null);
-		
-		if(checksum == null) {
-			throw new RuntimeException("Need content hash for planning");
-		}
+		String checksum = Optional.ofNullable(hashInfo)
+				.map(HashInfo::getChecksum)
+				.orElseThrow(() -> new RuntimeException("Need content hash for planning"));		
 		
 		// The var name is a reference to the source file
 		String srcRef = source.getAbsolutePath().toString();
 		Map<String, String> varToHash = Collections.singletonMap(srcRef, checksum);
-		Op op = OpVar.create(srcRef);
+		Op op = OpPath.create(srcRef);
 
 		List<String> srcEncodings = info.getContentEncodings();//getValues(source.getContentEncoding(), HttpHeaders.CONTENT_ENCODING); 
 		
-		boolean requiresConversion = !srcContentType.equals(tgtContentType);
+		boolean requiresContentConversion = !srcContentType.equals(tgtContentType);
 		
 		// Find out how many encodings are the same from the start of the lists
 		// This is only valid if there is no content type conversion involved
 		int offset = 0;
-		if(!requiresConversion) {
+		if(!requiresContentConversion) {
 			int min = Math.min(srcEncodings.size(), tgtEncodings.size());
 			for(int i = 0; i < min; ++i) {
 				if(srcEncodings.get(i) == tgtEncodings.get(i)) {
@@ -80,7 +81,7 @@ public class Planner {
 			op = OpCode.create(op, srcEncoding, true);
 		}
 
-		if(requiresConversion) {
+		if(requiresContentConversion) {
 			op = OpConvert.create(op, srcContentType, tgtContentType);
 		}
 

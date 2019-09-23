@@ -3,27 +3,37 @@ package org.aksw.dcat_suite.algebra;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 
-class Hasher
+public abstract class HasherBase
 	implements OpVisitor<String>
 {
-	protected Map<String, String> varToHash;
+	//protected Function<String, String> varToHash;
+//	protected Map<String, String> varToHash;
+//
+//	public Hasher(Map<String, String> varToHash) {
+//		super();
+//		this.varToHash = varToHash;
+//	}
+//	
+//	public static Hasher create(Map<String, String> varToHash) {
+//		return new Hasher(varToHash);
+//	}
 
-	public Hasher(Map<String, String> varToHash) {
-		super();
-		this.varToHash = varToHash;
-	}
-	
-	public static Hasher create(Map<String, String> varToHash) {
-		return new Hasher(varToHash);
-	}
+//	public Hasher(Function<String, String> varToHash) {
+//		super();
+//		this.varToHash = varToHash;
+//	}
+
+//	public static Hasher create(Function<String, String> varToHash) {
+//		return new Hasher(varToHash);
+//	}
 
 	@Override
 	public String visit(OpCode op) {
@@ -42,12 +52,12 @@ class Hasher
 		return result;		
 	}
 
-	@Override
-	public String visit(OpVar op) {
-		String varName = op.getName();
-		String result = Objects.requireNonNull(varToHash.get(varName));
-		return result;
-	}
+//	@Override
+//	public String visit(OpPath op) {
+//		String varName = op.getName();
+//		String result = Objects.requireNonNull(varToHash.apply(varName));
+//		return result;
+//	}
 
 	@Override
 	public String visit(OpValue op) {
@@ -69,5 +79,16 @@ class Hasher
 		}
 		String result = hashCode.toString();
 		return result;
+	}
+	
+	
+	public static OpVisitor<String> create(Function<OpPath, String> opPathToHash) {
+		return new HasherBase() {
+			@Override
+			public String visit(OpPath op) {
+				String result = opPathToHash.apply(op);
+				return result;
+			}
+		};
 	}
 }

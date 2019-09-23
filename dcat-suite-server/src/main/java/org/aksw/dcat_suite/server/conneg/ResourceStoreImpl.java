@@ -121,7 +121,7 @@ public class ResourceStoreImpl
 		return result;
 	}
 	
-	public RdfHttpEntityFile pathToEntity(Path absEntityPath) {
+	public RdfHttpEntityFile getEntityForPath(Path absEntityPath) {
 		String fileName = absEntityPath.getFileName().toString();
 		
 		Path parent = absEntityPath.getParent();
@@ -172,7 +172,7 @@ public class ResourceStoreImpl
 					? Collections.<Path>emptyList().stream()
 					: Files.list(contentFolder))
 						.filter(file -> pathAnnotator.isAnnotationFor(file).isEmpty())
-						.map(this::pathToEntity)
+						.map(this::getEntityForPath)
 						.collect(Collectors.toList());			
 		} catch(Exception e) {
 			throw new RuntimeException(e);

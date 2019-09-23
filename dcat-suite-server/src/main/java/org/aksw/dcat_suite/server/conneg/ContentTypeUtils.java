@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.beam.repackaged.beam_sdks_java_core.com.google.common.collect.Iterables;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
@@ -31,6 +32,8 @@ public class ContentTypeUtils {
 			}
 		}
 	
+		ctExtensions.putPrimary(ContentType.APPLICATION_OCTET_STREAM.toString(), "bin");
+		
 		// TODO We need a registry for coders similar to RDFLanguages
 		codingExtensions.putPrimary("gzip", "gz");
 		codingExtensions.putPrimary("bzip2", "bz2");

@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,6 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.dcat_suite.algebra.Op;
+import org.aksw.dcat_suite.algebra.OpExecutor;
+import org.aksw.dcat_suite.algebra.OpPath;
+import org.aksw.dcat_suite.algebra.OpUtils;
 import org.aksw.dcat_suite.algebra.Planner;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.apache.http.Header;
@@ -45,9 +47,10 @@ import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
 
 import avro.shaded.com.google.common.collect.Maps;
-import jnr.posix.util.ProcessMaker.Redirect;
 
-public class HttpResourceRepositoryManagerImpl {
+public class HttpResourceRepositoryManagerImpl
+	implements HttpResourceRepositoryFromFileSystem
+{
 	//protected ResourceStoreImpl store;
 	
 	protected ResourceStore downloadStore;
@@ -65,9 +68,12 @@ public class HttpResourceRepositoryManagerImpl {
 		HttpResourceRepositoryManagerImpl result = new HttpResourceRepositoryManagerImpl();
 		result.setDownloadStore(new ResourceStoreImpl(absBasePath.resolve("downloads")));
 		result.setCacheStore(new ResourceStoreImpl(absBasePath.resolve("cache")));
-
+		
+		result.setHashStore(new ResourceStoreImpl(absBasePath.resolve("hash")));
+		
 		return result;
 	}
+	
 	
 	public Collection<ResourceStore> getResourceStores() {
 		return Arrays.asList(downloadStore, cacheStore);
@@ -81,18 +87,21 @@ public class HttpResourceRepositoryManagerImpl {
 		this.downloadStore = downloadStore;
 	}
 
-
-
 	public ResourceStore getCacheStore() {
 		return cacheStore;
 	}
 
-
-
 	public void setCacheStore(ResourceStore cacheStore) {
 		this.cacheStore = cacheStore;
 	}
+	
+	public ResourceStore getHashStore() {
+		return hashStore;
+	}
 
+	public void setHashStore(ResourceStore hashStore) {
+		this.hashStore = hashStore;
+	}
 
 
 	public ResourceStore getStoreByPath(Path path) {
@@ -107,6 +116,18 @@ public class HttpResourceRepositoryManagerImpl {
 	public Resource getInfo(Path path) {
 		Resource result = Optional.ofNullable(getStoreByPath(path)).map(store -> store.getInfo(path))
 				.orElse(null);
+		return result;
+	}
+	
+	// Assumes that there is at most 1 repository associated with a given path
+	public RdfHttpEntityFile getEntityForPath(Path path) {
+		Collection<ResourceStore> stores = getResourceStores();
+		
+		RdfHttpEntityFile result = stores.stream()
+				.map(store -> store.getEntityForPath(path))
+				.findFirst()
+				.orElse(null);
+
 		return result;
 	}
 	
@@ -330,6 +351,8 @@ public class HttpResourceRepositoryManagerImpl {
 		HttpResourceRepositoryManagerImpl manager = create(root);
 
 		ResourceStore store = manager.getDownloadStore();
+		ResourceStore hashStore = manager.getHashStore();
+		
 		
 //		String url = "/home/raven/.dcat/test3/genders_en.ttl.bz2";
 		String url = "http://downloads.dbpedia.org/2016-10/core-i18n/en/genders_en.ttl.bz2";
@@ -350,7 +373,20 @@ public class HttpResourceRepositoryManagerImpl {
 		
 		Op op = Planner.createPlan(entity, "application/rdf+xml", Arrays.asList("bzip2"));
 		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
+		System.out.println("Number of ops before optimization: " + OpUtils.getNumOps(op));
 		
+		OpExecutor executor = new OpExecutor(manager, hashStore);
+
+		//ModelFactory.createDefaultModel()		
+		
+		op = executor.optimizeInPlace(op);
+		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
+		System.out.println("Number of ops after optimization: " + OpUtils.getNumOps(op));
+
+		
+		op.accept(executor);
+		
+		//Planner.execute(op);
 		
 		
 		if(true) {
