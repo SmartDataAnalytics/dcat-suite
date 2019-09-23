@@ -6,9 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.core.PathCoder;
 import org.aksw.ckan_deploy.core.PathCoderRegistry;
@@ -23,14 +21,16 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
-
-import com.google.common.base.Splitter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.reactivex.Single;
 
 public class OpExecutor
 	implements OpVisitor<Path>
 {
+	private static final Logger logger = LoggerFactory.getLogger(OpExecutor.class);
+	
 	// The repo reference here is only used for reading
 	protected HttpResourceRepositoryFromFileSystem repository;
 	
@@ -43,8 +43,10 @@ public class OpExecutor
 		String str = op.getName();
 		Path path = Paths.get(str);
 		RdfHttpEntityFile entity = repository.getEntityForPath(path);
-		String result = ResourceStore.readHash(entity, "sha256");
-
+		String pathHash = ResourceStore.readHash(entity, "sha256");
+		
+		String result = HasherBase.computeHash("path", pathHash);
+		
 		return result;
 	}
 
@@ -82,12 +84,25 @@ public class OpExecutor
 		PathCoder coder = PathCoderRegistry.get().getCoder(coderName);
 
 		Objects.requireNonNull(coder, "No coder for " + coderName);		
-		Path srcPath = op.accept(this);
+		Op subOp = op.getSubOp();
+		Path srcPath = subOp.accept(this);
 		
 		Path tgtPath = getTargetPath(op);
 		
-		coder.encode(srcPath, tgtPath)
-			.blockingGet();
+		try {
+			Files.createDirectories(tgtPath.getParent());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		boolean isDecode = Boolean.TRUE.equals(op.isDecode());
+		logger.info("Writing " + tgtPath + " via " + coderName + " " + (isDecode ? "decoding" : "encoding") + " of " + srcPath);
+		
+		Single<Integer> task = isDecode
+			? coder.decode(srcPath, tgtPath)
+			: coder.encode(srcPath, tgtPath);
+		
+		task.blockingGet();
 		
 		return tgtPath;
 	}
@@ -95,14 +110,7 @@ public class OpExecutor
 	public Path getTargetPath(Op op) {		
 		String hash = op.accept(hasher);
 		
-		List<String> parts = Splitter
-				.fixedLength(8)
-				.splitToList(hash);
-		
-		String id = parts.stream()
-				.collect(Collectors.joining("/"));
-
-		RdfHttpResourceFile res = hashStore.getResource(id);
+		RdfHttpResourceFile res = hashStore.getResource(hash);
 		RdfHttpEntityFile entity = res.allocate(ModelFactory.createDefaultModel().createResource().as(RdfEntityInfo.class)
 				.setContentType(ContentType.APPLICATION_OCTET_STREAM.toString()));
 
@@ -115,13 +123,16 @@ public class OpExecutor
 
 	@Override
 	public Path visit(OpConvert op) {
+		Op subOp = op.getSubOp();
 		
-		Path srcPath = op.accept(this);
+		Path srcPath = subOp.accept(this);
 		Path tgtPath = getTargetPath(op);
 		
 		String srcContentType = op.getSourceContentType();
 		String tgtContentType = op.getTargetContentType();
 		
+		logger.info("Writing " + tgtPath + " ("+ tgtContentType + ") from " + srcPath + "(" + srcContentType + ")");
+
 		convert(srcPath, tgtPath, srcContentType, tgtContentType);
 		
 		return tgtPath;
@@ -149,6 +160,13 @@ public class OpExecutor
 
 	
 	public static Single<Integer> convert(Path srcPath, Path tgtPath, String srcContentType, String tgtContentType) {
+		
+		try {
+			Files.createDirectories(tgtPath.getParent());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 		
 		Model m = ModelFactory.createDefaultModel();
 		

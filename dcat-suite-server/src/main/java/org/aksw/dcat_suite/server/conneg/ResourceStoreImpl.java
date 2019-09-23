@@ -85,10 +85,14 @@ public class ResourceStoreImpl
 	protected Function<String, Path> uriToRelPath;
 		
 	public ResourceStoreImpl(Path basePath) {
+		this(basePath, CatalogResolverFilesystem::resolvePath);
+	}
+
+	public ResourceStoreImpl(Path basePath, Function<String, Path> uriToRelPath) {
 		super();
 		this.basePath = basePath;
-		this.uriToRelPath = CatalogResolverFilesystem::resolvePath;
-		
+		this.uriToRelPath = uriToRelPath;
+
 		this.pathAnnotator = new PathAnnotatorRdfImpl();
 		this.resourceSource = new ResourceSourceFileImpl();
 	}

@@ -1,17 +1,29 @@
 package org.aksw.dcat_suite.server.conneg;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.beam.repackaged.beam_sdks_java_core.com.google.common.collect.Iterables;
+import org.aksw.commons.collections.collectors.CollectorUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
+import org.apache.http.message.BasicHeader;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.math.DoubleMath;
+import com.google.common.net.MediaType;
+
 
 public class ContentTypeUtils {
 
@@ -19,6 +31,117 @@ public class ContentTypeUtils {
 	protected static MapPair<String, String> ctExtensions = new MapPair<>();
 	protected static MapPair<String, String> codingExtensions = new MapPair<>();
 
+	
+	public static Set<MediaType> compatibleContentTypes(MediaType range, Collection<MediaType> candidates) {
+		Set<MediaType> result = candidates.stream()
+			.filter(range::is)
+			.collect(Collectors.toSet());
+		
+		return result;
+	}
+	
+	
+	public static String entryToHeaderValue(Entry<String, Float> e) {
+		Float weight = e.getValue();
+		
+		boolean isOne = weight == null || DoubleMath.fuzzyEquals(1.0, weight, 0.001);
+		String result = e.getKey() + (isOne ? "" : ";q=" + weight);
+		return result;
+	}
+	
+	public static int classifyLang(Lang lang) {
+		int result = RDFLanguages.isTriples(lang) ? 3
+				: RDFLanguages.isQuads(lang) ? 4
+				: -1;
+
+		return result;
+	}
+	
+	/**
+	 * Expands the accept header of a request with respect to registered languages
+	 * 
+	 * 
+	 * 
+	 * For each range r in the accept header
+	 *   get all langs l and qvalues that that correspond to r
+	 *   for each lang l get the set of content types
+	 *     assign each content type the minimum qvalue 
+	 * 
+	 * 
+	 * 
+	 * @param headers
+	 * @return
+	 */
+	public static Header[] expandAccept(Header[] headers) {
+		
+		Map<MediaType, Float> ranges = HttpHeaderUtils
+				.getOrderedValues(headers, HttpHeaders.ACCEPT).entrySet().stream()
+				.collect(CollectorUtils.toLinkedHashMap(e -> MediaType.parse(e.getKey()), Entry::getValue));
+
+		
+		//protected Map<String, String> ctToLang
+		
+		Map<MediaType, Float> expansions = new LinkedHashMap<>();
+
+		List<MediaType> supportedMediaTypes = HttpHeaderUtils.supportedMediaTypes();
+		//Collection<Lang> langs = RDFLanguages.getRegisteredLanguages();
+
+		
+		
+		for(Entry<MediaType, Float> rangeEntry : ranges.entrySet()) {
+			MediaType range = rangeEntry.getKey();
+			Float weight = rangeEntry.getValue();
+			
+			Collection<MediaType> compatibles = compatibleContentTypes(range, supportedMediaTypes);
+			for(MediaType mediaType : compatibles) {
+//				if(mediaType.is(range)) {
+				// get the lang for the media type
+				Lang lang = RDFLanguages.nameToLang(mediaType.toString());
+				if(lang != null) {
+					
+					int langClass = classifyLang(lang);
+
+					List<Lang> expansionLangs = RDFLanguages.getRegisteredLanguages().stream()
+						.filter(l -> classifyLang(l)  == langClass)
+						.collect(Collectors.toList());
+					
+					
+					// Get the media types not covered by any other range
+					Collection<MediaType> langCts = expansionLangs.stream()
+							.flatMap(l -> HttpHeaderUtils.langToMediaTypes(l).stream())
+							.collect(Collectors.toList());
+					
+					// The set of extended cts are those that are not covered by any other range in the headers
+					Collection<MediaType> newCts = langCts.stream()
+							.filter(mt -> ranges.keySet().stream().noneMatch(r -> mt.is(r)))
+							.collect(Collectors.toList());
+
+					for(MediaType newCt : newCts) {
+						expansions.put(newCt, weight);
+					}
+				}
+			}
+		}
+
+		Map<MediaType, Float> sortedExp = expansions.entrySet().stream()
+				.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
+				.collect(CollectorUtils.toLinkedHashMap(Entry::getKey, Entry::getValue));
+		
+		String expansionStr = sortedExp.entrySet().stream()
+				.map(e -> Maps.immutableEntry(e.getKey().toString(), e.getValue()))
+				.map(ContentTypeUtils::entryToHeaderValue)
+				.collect(Collectors.joining(","));
+
+		Header[] tmp = new Header[headers.length + 1];
+		
+		System.arraycopy(headers, 0, tmp, 0, headers.length);
+		tmp[headers.length] = new BasicHeader(HttpHeaders.ACCEPT, expansionStr);
+		
+		Header[] result = HttpHeaderUtils.mergeHeaders(tmp, HttpHeaders.ACCEPT);
+
+		return result;		
+	}
+	
 	static {
 		for(Lang lang : RDFLanguages.getRegisteredLanguages()) {
 			String contentType = lang.getContentType().getContentType();

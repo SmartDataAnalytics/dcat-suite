@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
 import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
@@ -33,12 +34,23 @@ public class OpUtils {
 		 * Get the number of operations in the expression.
 		 * Can be used as a poor-mans cost estimate
 		 */
-//		int result = (int)Streams.stream(Traverser.forTree(Op::getSubOps)
-		int result = (int)Streams.stream(Traverser.forTree(OpUtils::peekingSubOps)
+//		int result = (int)Streams.stream(Traverser.forTree(OpUtils::peekingSubOps)
+		int result = (int)Streams.stream(Traverser.forTree(Op::getSubOps)
 			.depthFirstPreOrder(op))
 			.count();
 		
 		return result;
+	}
+	
+	public static void clearSubTree(Op rootOp) {
+		List<Op> ops = Streams.stream(Traverser.forTree(Op::getSubOps)
+				.depthFirstPostOrder(rootOp))
+				.collect(Collectors.toList());
+		
+		for(Op op : ops) {
+			// TODO Handle lists
+			op.removeProperties();
+		}		
 	}
 	
 	
@@ -57,7 +69,8 @@ public class OpUtils {
 			// In-place change the description of the op into a static reference
 			// TODO This does not clear children of the op - so it leaves clutter
 			// behind in the model which is not very aesthetic - then again, it is harmless
-			op.removeProperties();			
+			//op.removeProperties();
+			OpUtils.clearSubTree(op);
 			OpPath opValue = op.as(OpPath.class);
 			opValue.setName(path.toString());
 			

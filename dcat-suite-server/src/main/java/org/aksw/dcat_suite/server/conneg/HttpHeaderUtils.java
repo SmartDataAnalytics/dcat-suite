@@ -1,15 +1,16 @@
 package org.aksw.dcat_suite.server.conneg;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.commons.collections.collectors.CollectorUtils;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
@@ -22,7 +23,42 @@ import org.apache.jena.riot.RDFLanguages;
 
 import com.google.common.net.MediaType;
 
+import avro.shaded.com.google.common.collect.Maps;
+
 public class HttpHeaderUtils {
+	
+	public static Header[] mergeHeaders(Header[] headers, String name) {
+		List<Header> affectedHeaders = streamHeaders(headers, name)
+				.collect(Collectors.toList());
+				
+		List<HeaderElement> parts = getElements(affectedHeaders.toArray(new Header[] {}), name)
+				.collect(Collectors.toList());
+
+		String mergedStr = parts.stream()
+				.map(Objects::toString)
+				.collect(Collectors.joining(","));
+		
+		Header[] result = new Header[headers.length - (affectedHeaders.isEmpty() ? 0 : affectedHeaders.size() - 1)];
+		
+		boolean isHeaderEmitted = false;
+		for(int i = 0, j = 0; i < headers.length; ++i) {
+			Header h = headers[i];
+			String headerName = h.getName();
+			
+			if(headerName.equalsIgnoreCase(name)) {
+				if(!isHeaderEmitted) {
+					result[j++] = new BasicHeader(headerName, mergedStr);
+					isHeaderEmitted = true;
+				}
+				// else skip
+			} else {
+				result[j++] = headers[i];
+			}
+		}
+		
+		return result;
+	}
+	
 	public static float qValueOf(HeaderElement h) {
 		float result = Optional.ofNullable(h.getParameterByName("q"))
 						.map(NameValuePair::getValue)
@@ -35,6 +71,13 @@ public class HttpHeaderUtils {
 		Stream<Header> result = headers == null ? Stream.empty() :
 			Arrays.asList(headers).stream();
 		
+		return result;
+	}
+
+	public static Stream<Header> streamHeaders(Header[] headers, String name) {
+		Stream<Header> result = streamHeaders(headers)
+				.filter(h -> h.getName().equalsIgnoreCase(name));
+
 		return result;
 	}
 
@@ -54,9 +97,18 @@ public class HttpHeaderUtils {
 		return result;
 	}
 
+	/**
+	 * TODO Ensure the result is stable; the javadoc for .sorted does not seem to guarantee this
+	 * 
+	 * @param headers
+	 * @param name
+	 * @return A linked hash map with items inserted in the order of their q value
+	 */
 	public static Map<String, Float> getOrderedValues(Header[] headers, String name) {
 		Map<String, Float> result = getElements(headers, name)
-			.collect(Collectors.toMap(e -> e.getName(), e -> qValueOf(e)));
+			.map(e -> Maps.immutableEntry(e.getName(), qValueOf(e)))
+			.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
+			.collect(CollectorUtils.toLinkedHashMap(Entry::getKey, Entry::getValue));
 		return result;
 	}
 	
@@ -120,16 +172,23 @@ public class HttpHeaderUtils {
 		return supportedMediaTypes(RDFLanguages.getRegisteredLanguages());
 	}
 	
+	public static List<MediaType> langToMediaTypes(Lang lang) {
+		List<MediaType> result = Stream.concat(
+				Stream.of(lang.getContentType().getContentType()),
+				lang.getAltContentTypes().stream())
+				.map(MediaType::parse)
+				.collect(Collectors.toList());
+		
+		return result;
+	}
+	
 	public static List<MediaType> supportedMediaTypes(Collection<Lang> langs) {
 		List<MediaType> types = langs.stream()
 				// Models can surely be served using based languages
 				// TODO but what about quad based formats? I guess its fine to serve a quad based dataset
 				// with only a default graph
 				//.filter(RDFLanguages::isTriples)
-				.flatMap(lang -> Stream.concat(
-						Stream.of(lang.getContentType().getContentType()),
-						lang.getAltContentTypes().stream()))
-				.map(MediaType::parse)
+				.flatMap(lang -> langToMediaTypes(lang).stream())
 				.collect(Collectors.toList());
 		return types;
 	}

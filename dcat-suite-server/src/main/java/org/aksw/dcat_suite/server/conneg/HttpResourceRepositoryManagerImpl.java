@@ -17,9 +17,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.ckan_deploy.core.PathCoderRegistry;
 import org.aksw.dcat_suite.algebra.Op;
 import org.aksw.dcat_suite.algebra.OpExecutor;
-import org.aksw.dcat_suite.algebra.OpPath;
 import org.aksw.dcat_suite.algebra.OpUtils;
 import org.aksw.dcat_suite.algebra.Planner;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -41,6 +42,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.sys.JenaSystem;
 
+import com.google.common.base.Splitter;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
@@ -64,12 +66,24 @@ public class HttpResourceRepositoryManagerImpl
 //		this.uriToRelPath = CatalogResolverFilesystem::resolvePath;
 	}
 
+	public static Path hashToRelPath(String hash) {
+		List<String> parts = Splitter
+				.fixedLength(8)
+				.splitToList(hash);
+		
+		String id = parts.stream()
+				.collect(Collectors.joining("/"));
+
+		Path result = Paths.get(id);
+		return result;
+	}
+	
 	public static HttpResourceRepositoryManagerImpl create(Path absBasePath) {
 		HttpResourceRepositoryManagerImpl result = new HttpResourceRepositoryManagerImpl();
 		result.setDownloadStore(new ResourceStoreImpl(absBasePath.resolve("downloads")));
 		result.setCacheStore(new ResourceStoreImpl(absBasePath.resolve("cache")));
 		
-		result.setHashStore(new ResourceStoreImpl(absBasePath.resolve("hash")));
+		result.setHashStore(new ResourceStoreImpl(absBasePath.resolve("hash"), HttpResourceRepositoryManagerImpl::hashToRelPath));
 		
 		return result;
 	}
@@ -154,7 +168,39 @@ public class HttpResourceRepositoryManagerImpl
 		return result;
 	}
 	
-	public RdfHttpEntityFile get(HttpRequest request, Function<HttpRequest, Entry<HttpRequest, HttpResponse>> executor) throws IOException {
+	
+	public String bestEncoding(Collection<String> encodings) {
+		PathCoderRegistry registry = PathCoderRegistry.get();
+		String result = encodings.stream()
+			.filter(enc -> registry.getCoder(enc) != null)
+			.findFirst()
+			.orElse(null);
+
+		return result;
+	}
+
+	public MediaType bestContentType(Collection<MediaType> contentTypes) {
+		List<MediaType> supportedMediaTypes = HttpHeaderUtils.supportedMediaTypes();
+		
+		MediaType result = contentTypes.stream()
+			.flatMap(range -> supportedMediaTypes.stream()
+					.filter(supportedMt -> supportedMt.is(range)))
+			.findFirst()
+			.orElse(null);
+
+		return result;
+	}
+
+	/**
+	 * Lookup an entity
+	 * 
+	 * 
+	 * @param request
+	 * @param httpRequester
+	 * @return
+	 * @throws IOException
+	 */
+	public RdfHttpEntityFile get(HttpRequest request, Function<HttpRequest, Entry<HttpRequest, HttpResponse>> httpRequester) throws IOException {
 		Header[] headers = request.getAllHeaders();		
 		
 		String uri = request.getRequestLine().getUri();
@@ -195,7 +241,7 @@ public class HttpResourceRepositoryManagerImpl
 		}
 		
 		// Pick entity with the best score
-		RdfHttpEntityFile result = entityToScore.entrySet().stream()
+		RdfHttpEntityFile entity = entityToScore.entrySet().stream()
 			.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
 			.findFirst()
 			.map(Entry::getKey)
@@ -203,14 +249,41 @@ public class HttpResourceRepositoryManagerImpl
 		
 		
 		//result = null;
-		if(result == null) {
+		if(entity == null) {
 			RdfHttpResourceFile res = downloadStore.getResource(uri);
-			Entry<HttpRequest, HttpResponse> response = executor.apply(request);
+			Entry<HttpRequest, HttpResponse> response = httpRequester.apply(request);
 			
-			result = saveResponse(res, response.getKey(), response.getValue());
+			entity = saveResponse(res, response.getKey(), response.getValue());			
 		}
+		
 
-		return result;
+		// Convert the entity to the request
+		String bestEncoding = bestEncoding(encodings.keySet());
+		MediaType _bestContentType = bestContentType(mediaTypeRanges.keySet());
+
+		if(bestEncoding == null || _bestContentType == null) {
+			throw new RuntimeException("Could not find target content type / encoding: " + _bestContentType + " / " + bestEncoding);
+		}
+		
+		String bestContentType = _bestContentType.toString();
+		Op op = Planner.createPlan(entity, bestContentType, Arrays.asList(bestEncoding));
+		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
+		System.out.println("Number of ops before optimization: " + OpUtils.getNumOps(op));
+		
+		OpExecutor opExecutor = new OpExecutor(this, hashStore);
+
+		//ModelFactory.createDefaultModel()		
+		
+		op = opExecutor.optimizeInPlace(op);
+		System.out.println("Number of ops after optimization: " + OpUtils.getNumOps(op));
+		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
+
+		
+		Path tgt = op.accept(opExecutor);
+
+		
+
+		return entity;
 	}
 
 	
@@ -341,7 +414,14 @@ public class HttpResourceRepositoryManagerImpl
 		JenaPluginUtils.registerResourceClasses(RdfGav.class);
 		JenaPluginUtils.registerResourceClasses(HashInfo.class);
 
-
+		Header[] expansionTest = new Header[] { new BasicHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2 + ";q=0.3")};
+//		Header[] expansionTest = new Header[] { new BasicHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2 + ",text/plain;q=0.5")};
+		expansionTest = ContentTypeUtils.expandAccept(expansionTest);
+		System.out.println("Expanded: " + Arrays.asList(expansionTest));
+		
+//		if(true) {
+//			return;
+//		}
 		
 		JenaPluginUtils.scan(Op.class);
 
@@ -370,22 +450,7 @@ public class HttpResourceRepositoryManagerImpl
 		
 		//RdfHttpResourceFile res = store.getResource(url);
 		//RdfHttpEntityFile entity = res.getEntities().iterator().next();
-		
-		Op op = Planner.createPlan(entity, "application/rdf+xml", Arrays.asList("bzip2"));
-		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
-		System.out.println("Number of ops before optimization: " + OpUtils.getNumOps(op));
-		
-		OpExecutor executor = new OpExecutor(manager, hashStore);
-
-		//ModelFactory.createDefaultModel()		
-		
-		op = executor.optimizeInPlace(op);
-		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
-		System.out.println("Number of ops after optimization: " + OpUtils.getNumOps(op));
-
-		
-		op.accept(executor);
-		
+				
 		//Planner.execute(op);
 		
 		
