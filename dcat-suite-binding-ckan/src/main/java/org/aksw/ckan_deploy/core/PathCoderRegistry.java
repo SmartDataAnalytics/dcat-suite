@@ -1,7 +1,9 @@
 package org.aksw.ckan_deploy.core;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class PathCoderRegistry {
 	protected static PathCoderRegistry INSTANCE = null;
@@ -22,5 +24,9 @@ public class PathCoderRegistry {
 	
 	public PathCoder getCoder(String name) {
 		return coders.get(name);
+	}
+	
+	public Set<String> getCoderNames() {
+		return Collections.unmodifiableSet(coders.keySet());
 	}
 }

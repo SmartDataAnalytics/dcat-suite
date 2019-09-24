@@ -6,9 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +38,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
@@ -43,6 +46,8 @@ import org.apache.jena.riot.WebContent;
 import org.apache.jena.sys.JenaSystem;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
@@ -191,8 +196,165 @@ public class HttpResourceRepositoryManagerImpl
 		return result;
 	}
 
+	public static final String IDENTITY_ENCODING = "identity";
+	
+	static class Plan {
+		protected Op op;
+		protected RdfEntityInfo info;
+		
+		public Plan(Op op, RdfEntityInfo info) {
+			super();
+			this.op = op;
+			this.info = info;
+		}
+
+		public Op getOp() {
+			return op;
+		}
+
+		public RdfEntityInfo getInfo() {
+			return info;
+		}		
+	}
+	
+	public Plan findBestPlanToServeRequest(HttpRequest request,
+			Collection<RdfHttpEntityFile> entities,
+			OpExecutor opExecutor) throws IOException {
+		Header[] headers = request.getAllHeaders();		
+
+		List<MediaType> supportedContentTypes = HttpHeaderUtils.supportedMediaTypes();
+		Collection<String> supportedEncodings = new ArrayList<>(Arrays.asList(IDENTITY_ENCODING));
+		supportedEncodings.addAll(PathCoderRegistry.get().getCoderNames());
+		
+		
+		// Get the requested content types in order of preference
+		Map<MediaType, Float> requestedContentTypeRanges = HttpHeaderUtils.getOrderedValues(headers, HttpHeaders.ACCEPT).entrySet().stream()
+				.collect(Collectors.toMap(e -> MediaType.parse(e.getKey()), Entry::getValue));
+		
+		// Get the requested encodings in order of preference	
+		Map<String, Float> requestedEncodings = HttpHeaderUtils.getOrderedValues(headers, HttpHeaders.ACCEPT_ENCODING);
+
+		if(!requestedEncodings.containsKey(IDENTITY_ENCODING)) {
+			requestedEncodings.put(IDENTITY_ENCODING, 1f);
+		}
+		
+		
+		// Filter the supported media types by the requested ones
+		// The supported media type must match a range in the headers whose score is greater than 0
+		Map<MediaType, Float> candidateTargetContentTypes = requestedContentTypeRanges.entrySet().stream()
+				.filter(rangeEntry -> rangeEntry.getValue() > 0)
+				.flatMap(rangeEntry -> supportedContentTypes.stream()
+						.filter(supported -> supported.is(rangeEntry.getKey()))
+						.map(supported -> Maps.immutableEntry(supported, rangeEntry.getValue())))
+				.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+		
+		Map<String, Float> candidateEncodings = requestedEncodings.entrySet().stream()
+				.filter(entry -> entry.getValue() > 0)
+				.flatMap(entry -> supportedEncodings.stream()
+						.filter(supported -> supported.equalsIgnoreCase(entry.getKey()))
+						.map(supported -> Maps.immutableEntry(supported, entry.getValue())))
+				.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+
+
+		// TODO Abstract the cartesian product so we can extend to any number of dimensions
+		//Table<RdfHttpEntityFile, Op, Float> entityToPlanToScore = HashBasedTable.create();
+		Multimap<RdfHttpEntityFile, Entry<Plan, Float>> entityToPlan = HashMultimap.create();
+
+		for(RdfHttpEntityFile entity : entities) {
+			RdfEntityInfo info = entity.getCombinedInfo().as(RdfEntityInfo.class);
+			//MediaType mt = MediaType.parse(info.getContentType());
+			
+			for(Entry<MediaType, Float> e : candidateTargetContentTypes.entrySet()) {
+				String tgtContentType = e.getKey().toString();
+				Float tgtContentTypeScore = e.getValue();
+
+				for(Entry<String, Float> f : candidateEncodings.entrySet()) {
+					String tgtEncoding = f.getKey();
+					Float tgtEncodingScore = f.getValue();
+					
+					List<String> tgtEncodings = tgtEncoding.equalsIgnoreCase(IDENTITY_ENCODING)
+							? Collections.emptyList()
+							: Arrays.asList(tgtEncoding);
+					
+					Op op = Planner.createPlan(entity, tgtContentType, tgtEncodings);
+					if(op != null) {
+						op = opExecutor.optimizeInPlace(op);
+						
+						
+						int numOps = OpUtils.getNumOps(op);
+
+						RdfEntityInfo meta = ModelFactory.createDefaultModel().createResource()
+								.as(RdfEntityInfo.class)
+								.setContentType(tgtContentType)
+								.setContentEncodings(tgtEncodings);
+						
+						Plan plan = new Plan(op, meta);
+						
+						Entry<Plan, Float> planAndScore = Maps.immutableEntry(plan, (float)numOps);
+					
+						entityToPlan.put(entity, planAndScore);
+					}
+				}
+			}
+		}
+
+		Entry<RdfHttpEntityFile, Entry<Plan, Float>> entry = entityToPlan.entries().stream()
+				.sorted((a, b) -> a.getValue().getValue().compareTo(b.getValue().getValue()))
+				.findFirst()
+				.orElse(null);
+
+		Plan result = entry == null ? null : entry.getValue().getKey();
+			
+		return result;
+
+		//Map<Path, Float> candidateToScore = new HashMap<>();
+		
+		
+		// TODO Find best candidate among the file entities
+	
+//		
+//		// Pick entity with the best score
+//		RdfHttpEntityFile entity = entityToScore.entrySet().stream()
+//			.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
+//			.findFirst()
+//			.map(Entry::getKey)
+//			.orElse(null);
+
+	}
+	
+	
+	public static HttpRequest expandHttpRequest(HttpRequest request) {
+		HttpUriRequest result =
+				RequestBuilder
+				.copy(request)
+				.build();
+
+		Header[] origHeaders = result.getAllHeaders();
+		Header[] newHeaders = ContentTypeUtils.expandAccept(origHeaders);
+		
+		// TODO Add encoding
+		
+		result.setHeaders(newHeaders);
+				
+		return result;
+	}
+
 	/**
 	 * Lookup an entity
+	 * 
+	 * First, this method checks if the request can be served from the locally cached entities:
+	 * It attempts to create a plan that transforms the available entities into a requested one.
+	 * If this fails, this method examines the cached resource vary headers for whether fetching a remote entity
+	 * can help to serve the request. If there is no cached resource,
+	 * a request to the remote server is made with expanded headers.
+	 * 
+	 * If this leads to a new entity being generated, then the process of planning is repeated with it.
+	 * 
+	 * 
+	 * TODO I thought there was a way to enumerate in the HTTP headers for which values exists for Vary
+	 * By default Vary only says that a request with a different value for the given header name may yield a different representation
 	 * 
 	 * 
 	 * @param request
@@ -200,92 +362,151 @@ public class HttpResourceRepositoryManagerImpl
 	 * @return
 	 * @throws IOException
 	 */
-	public RdfHttpEntityFile get(HttpRequest request, Function<HttpRequest, Entry<HttpRequest, HttpResponse>> httpRequester) throws IOException {
-		Header[] headers = request.getAllHeaders();		
-		
+	public RdfHttpEntityFile get(HttpRequest request, Function<HttpRequest, Entry<HttpRequest, HttpResponse>> httpRequester) throws IOException {		
+		// Expand the request: Add compatible accept headers and encodings
+
 		String uri = request.getRequestLine().getUri();
 
+		
 		//RdfHttpResourceFile res = store.get(uri);
 		
 		
 		Collection<RdfHttpEntityFile> entities = getEntities(uri);
 
-		// Get the requested content types in order of preference	
-		Map<MediaType, Float> mediaTypeRanges = HttpHeaderUtils.getOrderedValues(headers, HttpHeaders.ACCEPT).entrySet().stream()
-				.collect(Collectors.toMap(e -> MediaType.parse(e.getKey()), Entry::getValue));
-
-
-		List<MediaType> supportedMediaTypes = HttpHeaderUtils.supportedMediaTypes();
-		
-		// Get the requested encodings in order of preference	
-		Map<String, Float> encodings = HttpHeaderUtils.getOrderedValues(headers, HttpHeaders.ACCEPT_ENCODING);
-
-		
-		//Map<Path, Float> candidateToScore = new HashMap<>();
-		
-		
-		// TODO Find best candidate among the file entities
-	
-		
-		// Score entities
-		Map<RdfHttpEntityFile, Float> entityToScore = new HashMap<>();
-		for(RdfHttpEntityFile entity : entities) {
-			RdfEntityInfo info = entity.getCombinedInfo().as(RdfEntityInfo.class);
-			MediaType mt = MediaType.parse(info.getContentType());
-			
-			for(MediaType range : supportedMediaTypes) {
-				if(mt.is(range)) {
-					entityToScore.put(entity, 1.0f);
-				}
-			}
-		}
-		
-		// Pick entity with the best score
-		RdfHttpEntityFile entity = entityToScore.entrySet().stream()
-			.sorted((a, b) -> a.getValue().compareTo(b.getValue()))
-			.findFirst()
-			.map(Entry::getKey)
-			.orElse(null);
-		
-		
-		//result = null;
-		if(entity == null) {
-			RdfHttpResourceFile res = downloadStore.getResource(uri);
-			Entry<HttpRequest, HttpResponse> response = httpRequester.apply(request);
-			
-			entity = saveResponse(res, response.getKey(), response.getValue());			
-		}
-		
-
-		// Convert the entity to the request
-		String bestEncoding = bestEncoding(encodings.keySet());
-		MediaType _bestContentType = bestContentType(mediaTypeRanges.keySet());
-
-		if(bestEncoding == null || _bestContentType == null) {
-			throw new RuntimeException("Could not find target content type / encoding: " + _bestContentType + " / " + bestEncoding);
-		}
-		
-		String bestContentType = _bestContentType.toString();
-		Op op = Planner.createPlan(entity, bestContentType, Arrays.asList(bestEncoding));
-		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
-		System.out.println("Number of ops before optimization: " + OpUtils.getNumOps(op));
-		
 		OpExecutor opExecutor = new OpExecutor(this, hashStore);
 
-		//ModelFactory.createDefaultModel()		
+		Plan plan = findBestPlanToServeRequest(request, entities, opExecutor);
 		
-		op = opExecutor.optimizeInPlace(op);
-		System.out.println("Number of ops after optimization: " + OpUtils.getNumOps(op));
+		//result = null;
+		if(plan == null) {
+			RdfHttpResourceFile res = downloadStore.getResource(uri);
+			HttpRequest newRequest = expandHttpRequest(request);
+			Entry<HttpRequest, HttpResponse> response = httpRequester.apply(newRequest);
+
+			
+			RdfHttpEntityFile entity = saveResponse(res, response.getKey(), response.getValue());
+			
+			
+			// Validation step; the entity should match the 
+			plan = findBestPlanToServeRequest(request, Collections.singleton(entity), opExecutor);
+		}
+		
+
+//		// Convert the entity to the request
+//		String bestEncoding = bestEncoding(encodings.keySet());
+//		MediaType _bestContentType = bestContentType(mediaTypeRanges.keySet());
+//
+//		if(bestEncoding == null || _bestContentType == null) {
+//			throw new RuntimeException("Could not find target content type / encoding: " + _bestContentType + " / " + bestEncoding);
+//		}
+//
+//		String bestContentType = _bestContentType.toString();
+//		Op op = Planner.createPlan(entity, bestContentType, Arrays.asList(bestEncoding));
+//		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
+//		System.out.println("Number of ops before optimization: " + OpUtils.getNumOps(op));
+//		
+//		OpExecutor opExecutor = new OpExecutor(this, hashStore);
+//
+//		//ModelFactory.createDefaultModel()		
+//		
+//		op = opExecutor.optimizeInPlace(op);
+//		System.out.println("Number of ops after optimization: " + OpUtils.getNumOps(op));
+
+		Op op = plan.getOp();
 		RDFDataMgr.write(System.out, op.getModel(), RDFFormat.TURTLE_PRETTY);
 
 		
 		Path tgt = op.accept(opExecutor);
 
+		RdfHttpEntityFile entity;
 		
+		Path hashPath = hashStore.getAbsolutePath();
+		// If the path points to the hash store, copy the result to the resources' cache
+		if(tgt.startsWith(hashPath)) {
+			if(!Files.isSymbolicLink(tgt)) {
+			
+				RdfEntityInfo meta = plan.getInfo();
+	
+				entity = cacheStore.allocateEntity(uri, meta);
+				Path tgtPath = entity.getAbsolutePath();
+	
+				forceCreateDirectories(tgtPath.getParent());
+	
+				Files.move(tgt, tgtPath, StandardCopyOption.ATOMIC_MOVE);
+				Path relTgtPath = tgt.relativize(tgtPath);
+				
+				Files.createSymbolicLink(tgt, relTgtPath);
+	
+				entity = cacheStore.getEntityForPath(tgtPath);
+				
+				computeHashForEntity(entity, null);
+			} else {
+				tgt = Files.readSymbolicLink(tgt);
+				entity = getEntityForPath(tgt);
+			}
 
+		} else {
+			entity = getEntityForPath(tgt);
+		}
+		
+		
+		
 		return entity;
 	}
 
+	
+	public static void forceCreateFile(Path path) {
+		try {
+			Files.createFile(path);
+		} catch (FileAlreadyExistsException e) {
+			// Ignored
+		} catch(IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static void forceCreateDirectories(Path path) {
+		try {
+			Files.createDirectories(path);
+		} catch (FileAlreadyExistsException e) {
+			// Ignored
+		} catch(IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
+	public static void computeHashForEntity(RdfHttpEntityFile rdfEntity, Path tmp) {
+		Path targetPath = rdfEntity.getAbsolutePath();
+
+		if(tmp == null) {
+			tmp = targetPath;
+		}
+		
+		
+		// Compute hash
+		ByteSource bs = com.google.common.io.Files.asByteSource(tmp.toFile());
+		
+		HashCode hashCode;
+		try {
+			hashCode = bs.hash(Hashing.sha256());
+			String str = hashCode.toString();
+			
+			forceCreateFile(targetPath);
+
+			rdfEntity.updateInfo(info -> {
+				HashInfo hi = info.getModel().createResource().as(HashInfo.class);
+				
+				hi.setAlgorithm("sha256").setChecksum(str);
+				Collection<HashInfo> hashes = info.as(RdfEntityInfo.class).getHashes();
+				hashes.add(hi);				
+			});
+			
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+
+	}
 	
 	/**
 	 * Derives the suffix which to append to the base path from the entity's headers.
@@ -324,30 +545,7 @@ public class HttpResourceRepositoryManagerImpl
 		Path tmp = FileUtils.allocateTmpFile(targetPath);
 		Files.copy(entity.getContent(), tmp, StandardCopyOption.REPLACE_EXISTING);
 
-		// Compute hash
-		ByteSource bs = com.google.common.io.Files.asByteSource(tmp.toFile());
-		
-		HashCode hashCode;
-		try {
-			hashCode = bs.hash(Hashing.sha256());
-			String str = hashCode.toString();
-			
-			try {
-				Files.createFile(targetPath);
-			} catch (FileAlreadyExistsException e) {
-				// Ignored
-			}
-			rdfEntity.updateInfo(info -> {
-				HashInfo hi = info.getModel().createResource().as(HashInfo.class);
-				
-				hi.setAlgorithm("sha256").setChecksum(str);
-				Collection<HashInfo> hashes = info.as(RdfEntityInfo.class).getHashes();
-				hashes.add(hi);				
-			});
-			
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
+		computeHashForEntity(rdfEntity, tmp);
 		
 		Files.move(tmp, targetPath, StandardCopyOption.ATOMIC_MOVE);
 		
@@ -446,7 +644,8 @@ public class HttpResourceRepositoryManagerImpl
 //			}
 //		}
 		
-		RdfHttpEntityFile entity = manager.get(url, "application/turtle", Arrays.asList("bzip2"));
+		RdfHttpEntityFile entity = manager.get(url, WebContent.contentTypeRDFXML, Arrays.asList("bzip2"));
+		//RdfHttpEntityFile entity = manager.get(url, WebContent.contentTypeTurtle, Arrays.asList("gzip"));
 		
 		//RdfHttpResourceFile res = store.getResource(url);
 		//RdfHttpEntityFile entity = res.getEntities().iterator().next();

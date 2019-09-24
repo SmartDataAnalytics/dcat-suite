@@ -204,9 +204,13 @@ public class ResourceStoreImpl
 
 	@Override
 	public RdfHttpEntityFile allocateEntity(String uri, Resource description) {
-		Path relPath = uriToRelPath.apply(uri);
+//		Path relPath = uriToRelPath.apply(uri);
+//		path = path.resolve(CONTENT);
+
+		RdfHttpResourceFile res = getResource(uri);
+		Path resPath = res.getAbsolutePath();
 		
-		RdfHttpEntityFile result = allocateEntity(relPath, description);
+		RdfHttpEntityFile result = allocateEntity(resPath, description);
 		return result;
 	}
 
@@ -222,7 +226,7 @@ public class ResourceStoreImpl
 		RdfEntityInfo info = _info.as(RdfEntityInfo.class);
 
 		String suffix = ContentTypeUtils.toFileExtension(info);
-		pathToResource(baseRelPath);
+		//pathToResource(baseRelPath);
 		Path finalRelPath = Paths.get("data" + suffix); 
 
 		

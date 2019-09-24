@@ -144,14 +144,17 @@ public class ContentTypeUtils {
 	
 	static {
 		for(Lang lang : RDFLanguages.getRegisteredLanguages()) {
-			String contentType = lang.getContentType().getContentType();
-			String primaryFileExtension = Iterables.getFirst(lang.getFileExtensions(), null);
-			if(primaryFileExtension != null) {
-				ctExtensions.getPrimary().put(contentType, primaryFileExtension);
-			}
-			
-			for(String fileExtension : lang.getFileExtensions()) {
-				ctExtensions.getAlternatives().put(fileExtension, contentType);
+			Collection<String> contentTypes = HttpHeaderUtils.langToContentTypes(lang);
+			for(String contentType : contentTypes) {
+//				String contentType = lang.getContentType().getContentType();
+				String primaryFileExtension = Iterables.getFirst(lang.getFileExtensions(), null);
+				if(primaryFileExtension != null) {
+					ctExtensions.getPrimary().put(contentType, primaryFileExtension);
+				}
+				
+				for(String fileExtension : lang.getFileExtensions()) {
+					ctExtensions.getAlternatives().put(fileExtension, contentType);
+				}
 			}
 		}
 	
@@ -175,7 +178,7 @@ public class ContentTypeUtils {
 	public static String toFileExtensionCt(Header[] headers) {
 		String ct = HttpHeaderUtils.getValue(headers, HttpHeaders.CONTENT_TYPE);
 		String result = ctExtensions.getPrimary().get(ct);
-		Objects.requireNonNull(result, "Could not find file extension for content type: " + ct);
+		Objects.requireNonNull(result, "Could not find file extension for content type: " + ct + " ; got: " + ctExtensions.getPrimary());
 		result = "." + result;
 		return result;		
 	}

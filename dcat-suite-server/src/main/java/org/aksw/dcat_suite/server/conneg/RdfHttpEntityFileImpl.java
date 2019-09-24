@@ -41,5 +41,9 @@ public class RdfHttpEntityFileImpl
 		ResourceStore store = getResource().getResourceStore();
 		store.updateInfo(getAbsolutePath(), consumer);
 	}
-		
+
+	@Override
+	public String toString() {
+		return relPath + " via " + getAbsolutePath();
+	}	
 }

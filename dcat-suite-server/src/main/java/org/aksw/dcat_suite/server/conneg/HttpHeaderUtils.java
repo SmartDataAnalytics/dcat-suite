@@ -172,10 +172,18 @@ public class HttpHeaderUtils {
 		return supportedMediaTypes(RDFLanguages.getRegisteredLanguages());
 	}
 	
-	public static List<MediaType> langToMediaTypes(Lang lang) {
-		List<MediaType> result = Stream.concat(
+	public static List<String> langToContentTypes(Lang lang) {
+		List<String> result = Stream.concat(
 				Stream.of(lang.getContentType().getContentType()),
 				lang.getAltContentTypes().stream())
+				.collect(Collectors.toList());
+		
+		return result;
+	}
+
+	
+	public static List<MediaType> langToMediaTypes(Lang lang) {
+		List<MediaType> result = langToContentTypes(lang).stream()
 				.map(MediaType::parse)
 				.collect(Collectors.toList());
 		
