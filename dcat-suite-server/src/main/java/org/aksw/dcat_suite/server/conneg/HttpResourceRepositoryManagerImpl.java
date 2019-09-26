@@ -47,13 +47,12 @@ import org.apache.jena.sys.JenaSystem;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
-
-import avro.shaded.com.google.common.collect.Maps;
 
 public class HttpResourceRepositoryManagerImpl
 	implements HttpResourceRepositoryFromFileSystem

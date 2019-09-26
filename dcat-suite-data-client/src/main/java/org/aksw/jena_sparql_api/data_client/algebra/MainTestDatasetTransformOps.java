@@ -19,8 +19,8 @@ public class MainTestDatasetTransformOps {
 		
 		OpUpdateRequest b = m.createResource()
 				.as(OpUpdateRequest.class)
-				.setSubOp(a)
-				.addUpdateRequest("DELETE { ?s a ?o } WHERE { ?s a ?o }");
+				.addUpdateRequest("DELETE { ?s a ?o } WHERE { ?s a ?o }")
+				.setSubOp(a);
 		
 		
 		RDFDataMgr.write(System.out, m, RDFFormat.TURTLE_PRETTY);

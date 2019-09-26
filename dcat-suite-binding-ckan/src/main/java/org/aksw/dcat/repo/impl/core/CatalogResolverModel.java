@@ -12,12 +12,12 @@ import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.AnonId;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCAT;
 
-import avro.shaded.com.google.common.collect.Maps;
+import com.google.common.collect.Maps;
+
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 

@@ -17,6 +17,9 @@ public interface OpUpdateRequest
 //	Op getSubOp();
 //	OpUpdateRequest setSubOp(Op op);
 	
+	@Override
+	OpUpdateRequest setSubOp(Op op);		
+
 	
 	@IriNs("eg")
 	List<String> getUpdateRequests();

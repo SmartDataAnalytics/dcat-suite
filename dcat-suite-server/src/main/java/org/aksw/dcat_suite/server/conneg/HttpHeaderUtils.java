@@ -21,9 +21,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 
+import com.google.common.collect.Maps;
 import com.google.common.net.MediaType;
-
-import avro.shaded.com.google.common.collect.Maps;
 
 public class HttpHeaderUtils {
 	

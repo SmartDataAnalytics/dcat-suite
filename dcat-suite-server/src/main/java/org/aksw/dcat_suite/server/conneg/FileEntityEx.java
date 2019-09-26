@@ -10,11 +10,11 @@ import java.nio.file.Path;
  *
  */
 public class FileEntityEx
-	extends RdfFileEntityImpl<RdfEntityInfo>
+	extends RdfFileEntityImpl
 //	extends FileEntity
 {
 	public FileEntityEx(Path path, RdfEntityInfo info) {
-		super(null, path, RdfEntityInfo.class, info);
+		super(null, path, info);
 	}
 
 	
