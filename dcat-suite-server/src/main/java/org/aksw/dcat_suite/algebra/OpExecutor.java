@@ -10,11 +10,11 @@ import java.util.Objects;
 
 import org.aksw.ckan_deploy.core.PathCoder;
 import org.aksw.ckan_deploy.core.PathCoderRegistry;
-import org.aksw.dcat_suite.server.conneg.HttpResourceRepositoryFromFileSystem;
-import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
-import org.aksw.dcat_suite.server.conneg.RdfHttpResourceFile;
-import org.aksw.dcat_suite.server.conneg.ResourceStore;
+import org.aksw.dcat_suite.server.conneg.torename.HttpResourceRepositoryFromFileSystem;
+import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
+import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
+import org.aksw.dcat_suite.server.conneg.torename.RdfHttpResourceFile;
+import org.aksw.dcat_suite.server.conneg.torename.ResourceStore;
 import org.apache.http.entity.ContentType;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -43,6 +43,11 @@ public class OpExecutor
 		String str = op.getName();
 		Path path = Paths.get(str);
 		RdfHttpEntityFile entity = repository.getEntityForPath(path);
+
+		if(entity == null) {
+			throw new RuntimeException("Null entity; Should not happen");
+		}
+		
 		String pathHash = ResourceStore.readHash(entity, "sha256");
 		
 		String result = HasherBase.computeHash("path", pathHash);

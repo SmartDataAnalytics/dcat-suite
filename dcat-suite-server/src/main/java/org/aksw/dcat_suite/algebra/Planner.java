@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.aksw.dcat_suite.server.conneg.HashInfo;
-import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
+import org.aksw.dcat_suite.server.conneg.torename.HashInfo;
+import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
+import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
 
 import io.reactivex.Single;
 

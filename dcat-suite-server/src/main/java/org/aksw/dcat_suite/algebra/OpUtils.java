@@ -6,10 +6,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aksw.dcat_suite.server.conneg.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.RdfHttpEntityFile;
-import org.aksw.dcat_suite.server.conneg.RdfHttpResourceFile;
-import org.aksw.dcat_suite.server.conneg.ResourceStore;
+import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
+import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
+import org.aksw.dcat_suite.server.conneg.torename.RdfHttpResourceFile;
+import org.aksw.dcat_suite.server.conneg.torename.ResourceStore;
 import org.apache.http.entity.ContentType;
 import org.apache.jena.rdf.model.ModelFactory;
 

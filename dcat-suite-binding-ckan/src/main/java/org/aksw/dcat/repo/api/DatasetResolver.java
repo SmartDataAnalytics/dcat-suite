@@ -1,9 +1,12 @@
 package org.aksw.dcat.repo.api;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Statement;
 
 import io.reactivex.Flowable;
 
@@ -27,7 +30,7 @@ public interface DatasetResolver {
 	
 	default Flowable<DistributionResolver> resolveDistributions() {
 		DcatDataset dcatDataset = getDataset();
-				
+		//List<RDFNode> list = dcatDataset.listProperties().mapWith(Statement::getObject).toList();
 		Collection<? extends DcatDistribution> distributions = dcatDataset.getDistributions();
 		
 		Flowable<DistributionResolver> result = Flowable.fromIterable(distributions)
