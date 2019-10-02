@@ -15,10 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
-import org.aksw.dcat_suite.server.conneg.torename.HttpResourceRepositoryFromFileSystem;
-import org.aksw.dcat_suite.server.conneg.torename.HttpResourceRepositoryManagerImpl;
+import org.aksw.dcat_suite.server.conneg.torename.HttpResourceRepositoryFromFileSystemImpl;
 import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
 import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
+import org.aksw.jena_sparql_api.http.repository.api.HttpResourceRepositoryFromFileSystem;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -125,7 +125,7 @@ public class ControllerLookup {
 					request.addHeader(k, v);
 				}
 				
-				RdfHttpEntityFile entity = datasetRepository.get(request, HttpResourceRepositoryManagerImpl::resolveRequest);
+				RdfHttpEntityFile entity = datasetRepository.get(request, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
 				
 				if(entity == null) {
 					throw new RuntimeException("Should not happen");

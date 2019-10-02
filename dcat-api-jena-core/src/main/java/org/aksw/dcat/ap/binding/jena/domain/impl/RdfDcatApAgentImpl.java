@@ -29,10 +29,10 @@ public class RdfDcatApAgentImpl
 	}
 
 	
-	@Override
-	public SingleValuedAccessor<String> entityUri() {
-		return create(this, TMP.key, NodeMappers.from(String.class));
-	}
+//	@Override
+//	public SingleValuedAccessor<String> entityUri() {
+//		return create(this, TMP.key, NodeMappers.from(String.class));
+//	}
 
 	@Override
 	public SingleValuedAccessor<String> name() {

@@ -1,6 +1,6 @@
 package org.aksw.dcat_suite.server.conneg.torename;
 
-import org.aksw.dcat.ap.domain.api.Spdx;
+import org.aksw.dcat.jena.ap.vocab.Spdx;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.apache.jena.rdf.model.Resource;

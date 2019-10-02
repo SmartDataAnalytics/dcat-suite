@@ -79,7 +79,7 @@ public class CkanUtils {
 	}
 	
 	public static void setValues(DcatApAgent v) {
-		v.setEntityUri("http://example.org/resource/Foo");
+		//v.setEntityUri("http://example.org/resource/Foo");
 		v.setName("Foo Inc.");
 		v.setHomepage("http://foobar");
 		v.setMbox("mailto:foo@bar.baz");

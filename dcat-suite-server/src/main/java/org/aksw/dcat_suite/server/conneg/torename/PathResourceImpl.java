@@ -2,6 +2,7 @@ package org.aksw.dcat_suite.server.conneg.torename;
 
 import java.nio.file.Path;
 
+import org.aksw.jena_sparql_api.utils.turtle.TurtleNoBaseTest;
 import org.apache.http.Header;
 
 public class PathResourceImpl {

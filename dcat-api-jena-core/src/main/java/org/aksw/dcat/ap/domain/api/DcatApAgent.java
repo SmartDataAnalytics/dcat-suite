@@ -9,7 +9,7 @@ package org.aksw.dcat.ap.domain.api;
  *
  */
 public interface DcatApAgent
-	extends ResourceLike
+//	extends ResourceLike
 {
 	String getName();
 	void setName(String name);

@@ -9,7 +9,7 @@ import org.aksw.dcat.jena.domain.api.DcatDatasetCore;
 public interface DcatApDatasetCore
 	extends DcatDatasetCore
 {
-	/** Factory method for distributions - does not add them */
+	/** Factory method for distributions - does not add them to the dataset */
 	DcatApDistributionCore createDistribution();
 		
 

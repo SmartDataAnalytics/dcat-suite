@@ -10,7 +10,7 @@ import org.aksw.dcat.ap.domain.api.DcatApAgent;
  *
  */
 public interface DcatApAgentAccessor
-	extends ResourceLikeAccessor, DcatApAgent
+	extends DcatApAgent
 {
 	SingleValuedAccessor<String> name();
 	SingleValuedAccessor<String> mbox();

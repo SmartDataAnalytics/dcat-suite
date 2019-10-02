@@ -3,6 +3,7 @@ package org.aksw.dcat_suite.server.conneg.torename;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import org.aksw.jena_sparql_api.http.repository.api.PathAnnotatorRdf;
 import org.apache.jena.rdf.model.Resource;
 
 public class RdfFileEntityImpl

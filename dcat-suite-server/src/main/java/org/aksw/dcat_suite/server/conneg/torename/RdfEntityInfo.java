@@ -3,6 +3,7 @@ package org.aksw.dcat_suite.server.conneg.torename;
 import java.util.Collection;
 import java.util.List;
 
+import org.aksw.jena_sparql_api.http.repository.api.EntityInfoCore;
 import org.apache.jena.rdf.model.Resource;
 
 public interface RdfEntityInfo

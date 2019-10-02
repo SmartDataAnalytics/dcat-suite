@@ -19,12 +19,10 @@ public class RdfDcatApResourceImpl
 	public RdfDcatApResourceImpl(Node node, EnhGraph graph) {
 		super(node, graph);
 	}
-
 	
 	public static <T> SingleValuedAccessor<T> create(Resource s, Property p, NodeMapper<T> nodeMapper) {
 		return new SingleValuedAccessorFromCollection<>(new SetFromMappedPropertyValues<>(s, p, nodeMapper));
 	}
-
 	
 	public static <T> SingleValuedAccessor<Set<T>> createSet(Resource s, Property p, NodeMapper<T> nodeMapper) {
 		Set<T> set = new SetFromMappedPropertyValues<>(s, p, nodeMapper);
@@ -34,5 +32,4 @@ public class RdfDcatApResourceImpl
 		
 		return result;
 	}
-
 }

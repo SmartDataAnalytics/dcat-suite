@@ -20,10 +20,10 @@ public class DcatApAgentFromPropertySource
 		this.model = model;
 	}
 
-	@Override
-	public SingleValuedAccessor<String> entityUri() {
-		return model.getProperty(prefix + "uri", String.class);
-	}
+//	@Override
+//	public SingleValuedAccessor<String> entityUri() {
+//		return model.getProperty(prefix + "uri", String.class);
+//	}
 
 	@Override
 	public SingleValuedAccessor<String> name() {
