@@ -1,6 +1,6 @@
 package org.aksw.dcat.server.config;
 
-import org.aksw.dcat_suite.server.conneg.torename.HttpMessageConverterModel;
+import org.aksw.dcat_suite.server.conneg.HttpMessageConverterModel;
 import org.apache.jena.rdf.model.Model;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;

@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.aksw.dcat_suite.server.conneg.torename.HashInfo;
-import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
+import org.aksw.dcat.ap.domain.api.Checksum;
 import org.aksw.jena_sparql_api.conjure.entity.algebra.Op;
 import org.aksw.jena_sparql_api.conjure.entity.algebra.OpCode;
 import org.aksw.jena_sparql_api.conjure.entity.algebra.OpConvert;
 import org.aksw.jena_sparql_api.conjure.entity.algebra.OpPath;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 
 import io.reactivex.Single;
 
@@ -51,9 +51,9 @@ public class Planner {
 		String srcContentType = info.getContentType();
 		
 //		HashInfo hashInfo = info.as(HashInfo.class);
-		HashInfo hashInfo = info.getHash("sha256");
+		Checksum hashInfo = info.getHash("sha256");
 		String checksum = Optional.ofNullable(hashInfo)
-				.map(HashInfo::getChecksum)
+				.map(Checksum::getChecksum)
 				.orElseThrow(() -> new RuntimeException("Need content hash for planning"));		
 		
 		// The var name is a reference to the source file

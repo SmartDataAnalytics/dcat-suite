@@ -12,13 +12,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
-import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.torename.RdfFileResourceImpl;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFileImpl;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpResourceFile;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.api.PathAnnotatorRdf;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpResourceFile;
 import org.aksw.jena_sparql_api.http.repository.api.ResourceStore;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -129,7 +127,7 @@ public class ResourceStoreImpl
 	
 	public RdfHttpResourceFile get(String uri) {
 		Path fullPath = fullPath(uri);
-		RdfFileResourceImpl result = new RdfFileResourceImpl(this, fullPath);
+		RdfHttpResourceFileImpl result = new RdfHttpResourceFileImpl(this, fullPath);
 		return result;
 	}
 	
@@ -148,7 +146,7 @@ public class ResourceStoreImpl
 				
 				Path entityRelFolder = parent.relativize(absEntityPath);
 				//Path resFolder = parent.getParent();
-				RdfFileResourceImpl res = new RdfFileResourceImpl(this, resRelFolder);
+				RdfHttpResourceFileImpl res = new RdfHttpResourceFileImpl(this, resRelFolder);
 				result = new RdfHttpEntityFileImpl(res, entityRelFolder);	
 			} else {
 				result = null;
@@ -173,7 +171,7 @@ public class ResourceStoreImpl
 		
 		path = path.resolve(CONTENT);
 		
-		RdfHttpResourceFile result = new RdfFileResourceImpl(this, path);
+		RdfHttpResourceFile result = new RdfHttpResourceFileImpl(this, path);
 		return result;
 	}
 	
@@ -229,7 +227,7 @@ public class ResourceStoreImpl
 
 	public RdfHttpResourceFile pathToResource(Path baseRelPath) {
 		// TODO Validate the path
-		RdfHttpResourceFile result = new RdfFileResourceImpl(this, baseRelPath);
+		RdfHttpResourceFile result = new RdfHttpResourceFileImpl(this, baseRelPath);
 
 		return result;
 	}

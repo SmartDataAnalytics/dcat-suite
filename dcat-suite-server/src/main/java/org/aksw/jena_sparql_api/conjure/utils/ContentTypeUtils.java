@@ -11,9 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.collections.collectors.CollectorUtils;
-import org.aksw.dcat_suite.server.conneg.torename.HttpHeaderUtils;
-import org.aksw.dcat_suite.server.conneg.torename.MapPair;
-import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;

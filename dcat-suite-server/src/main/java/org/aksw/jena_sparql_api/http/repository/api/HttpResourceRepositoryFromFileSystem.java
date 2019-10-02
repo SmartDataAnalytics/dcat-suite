@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 

@@ -5,19 +5,17 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.aksw.dcat_suite.server.conneg.torename.HashInfo;
-import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpResourceFile;
+import org.aksw.dcat.ap.domain.api.Checksum;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.apache.jena.rdf.model.Resource;
 
 public interface ResourceStore {
 	
 	public static String readHash(RdfHttpEntityFile entity, String hashName) {
 		RdfEntityInfo info = entity.getCombinedInfo().as(RdfEntityInfo.class);
-		HashInfo hashInfo = info.getHash(hashName);
+		Checksum hashInfo = info.getHash(hashName);
 		String result = Optional.ofNullable(hashInfo)
-				.map(HashInfo::getChecksum)
+				.map(Checksum::getChecksum)
 				.orElse(null);
 
 		return result;

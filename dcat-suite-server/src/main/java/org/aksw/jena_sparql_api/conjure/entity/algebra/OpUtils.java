@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aksw.dcat_suite.server.conneg.torename.RdfEntityInfo;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpEntityFile;
-import org.aksw.dcat_suite.server.conneg.torename.RdfHttpResourceFile;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpResourceFile;
 import org.aksw.jena_sparql_api.http.repository.api.ResourceStore;
 import org.apache.http.entity.ContentType;
 import org.apache.jena.rdf.model.ModelFactory;
