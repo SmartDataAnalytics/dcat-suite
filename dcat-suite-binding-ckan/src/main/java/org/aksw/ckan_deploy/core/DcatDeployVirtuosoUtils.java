@@ -21,6 +21,7 @@ import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.DatasetResolver;
+import org.aksw.jena_sparql_api.conjure.entity.utils.PathCoder;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
 import org.apache.jena.graph.Triple;
