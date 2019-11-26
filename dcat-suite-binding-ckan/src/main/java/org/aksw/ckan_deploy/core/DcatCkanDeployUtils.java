@@ -244,7 +244,19 @@ public class DcatCkanDeployUtils {
 							filename);
 
 					tmp.setOthers(remoteCkanResource.getOthers());
-					remoteCkanResource = ckanClient.updateResource(tmp);
+					int maxRetries = 5;
+					for(int i = 0; i < maxRetries; ++i) {
+						try {
+							remoteCkanResource = ckanClient.updateResource(tmp);
+							break;
+						} catch(Exception e) {
+							if(i + 1 < maxRetries) {
+								logger.warn("Failed to update resource, retrying " + (i + 1) + "/" + maxRetries);
+							} else {
+								logger.error("Giving up on updating a resource after " + maxRetries, e);
+							}
+						}
+					}
 //					remoteCkanResource.setUrl(tmp.getUrl());
 //					remoteCkanResource.setUrlType(tmp.getUrlType());
 

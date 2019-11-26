@@ -99,8 +99,8 @@ public class MainCliDcatSuite {
 	@Parameters(separators = "=", commandDescription = "Retrieve DCAT descriptions from CKAN")
 	public static class CommandImportCkan {
 
-		@Parameter(names="--host", description="The URL of the CKAN instance", required=true)
-		protected String host;
+		@Parameter(names="--url", description="The URL of the CKAN instance", required=true)
+		protected String ckanUrl = "http://localhost/ckan";
 
 		@Parameter(names="--apikey", description="Your API key for the CKAN instance")
 		protected String apikey;
@@ -124,8 +124,8 @@ public class MainCliDcatSuite {
 		@Parameter(description = "The DCAT file which to deploy", required = true)
 		protected String file;
 
-		@Parameter(names = "--host", description = "The URL of the CKAN instance")
-		protected String host;
+		@Parameter(names = "--url", description = "The URL of the CKAN instance")
+		protected String ckanUrl = "http://localhost/ckan";
 
 		@Parameter(names = "--apikey", description = "Your API key for the CKAN instance")
 		protected String apikey;
@@ -144,7 +144,7 @@ public class MainCliDcatSuite {
 		@Parameter(names = { "--ds" ,"--dataset"} , description = "Datasets which to deploy (iri, identifier or title)")
 		protected List<String> datasets = new ArrayList<>();
 
-		@Parameter(names = "--port", description = "The URL of the CKAN instance")
+		@Parameter(names = "--port", description = "Virtuoso's ODBC port")
 		protected int port = 1111;
 
 		@Parameter(names = "--host", description = "Hostname")
@@ -248,7 +248,7 @@ public class MainCliDcatSuite {
 			String deployCmd = deploySubCommands.getParsedCommand();
 			switch(deployCmd) {
 			case "ckan": {
-				CkanClient ckanClient = new CkanClient(cmDeployCkan.host, cmDeployCkan.apikey);
+				CkanClient ckanClient = new CkanClient(cmDeployCkan.ckanUrl, cmDeployCkan.apikey);
 				//showCkanDatasets(ckanClient);
 				//if(false) {
 				processDeploy(ckanClient, cmDeployCkan.file, cmDeployCkan.noupload);
@@ -270,7 +270,7 @@ public class MainCliDcatSuite {
 			String importCmd = importSubCommands.getParsedCommand();
 			switch(importCmd) {
 			case "ckan": {
-				CkanClient ckanClient = new CkanClient(cmImportCkan.host, cmImportCkan.apikey);
+				CkanClient ckanClient = new CkanClient(cmImportCkan.ckanUrl, cmImportCkan.apikey);
 
 				List<String> datasets;
 				

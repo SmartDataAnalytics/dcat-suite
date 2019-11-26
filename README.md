@@ -11,7 +11,7 @@ One could say, DCAT is to datasets what the pom is to Java software projects.
 *Answer:* _2_
 
 ```bash
-dcat import ckan --host=http://ckan.qrowd.aksw.org --dataset=org-linkedgeodata-osm-bremen-2018-04-04 > /tmp/dcat.nt
+dcat import ckan --url=http://ckan.qrowd.aksw.org --dataset=org-linkedgeodata-osm-bremen-2018-04-04 > /tmp/dcat.nt
 dcat deploy virtuoso --allowed=/writeable/dir/readable/by/virtuoso /tmp/dcat.nt
 ```
 
@@ -29,7 +29,7 @@ dcat show http://downloads.dbpedia.org/2016-10/core-i18n/en/2016-10_dataid_en.tt
 
 *Answer:* _Like this:_
 ```bash
-dcat deploy ckan --host=http://ckan.example.org --apikey=my-ckan-api-key dcat.nt
+dcat deploy ckan --url=http://ckan.example.org --apikey=my-ckan-api-key dcat.nt
 ```
 
 
@@ -86,7 +86,7 @@ dcat show my-dcat.nt
 * Deploy datasets based on a DCAT description to CKAN
 
 ```bash
-dcat deploy ckan --apikey=yourApiKey --host=yourCkanUrl my-dcat.nt
+dcat deploy ckan --apikey=yourApiKey --url=yourCkanUrl my-dcat.nt
 ```
 
 This will create a copy of the input DCAT file under `target/ckan/deploy-dcat.nt` file with the `dcat:accessURL` replaced by the CKAN resources. If you host this file anywhere on the Web, it will give you working download links - neat!
@@ -94,7 +94,7 @@ This will create a copy of the input DCAT file under `target/ckan/deploy-dcat.nt
 * Deploy a self-describing dataset (see below) to CKAN
 
 ```bash
-dcat deploy ckan --apikey=yourApiKey --host=yourCkanUrl mySelfDescribingDataset.nq
+dcat deploy ckan --apikey=yourApiKey --url=yourCkanUrl mySelfDescribingDataset.nq
 ```
 
 * Expand the graphs of a self-describing dataset to individual files based on its contained DCAT description
@@ -103,7 +103,7 @@ dcat expand mySelfDescribingDataset.nq
 
 # Now you can also deploy the expanded form:
 cd target/dcat/mySelfDescribingDataset
-dcat deploy ckan dcat.nt --host=yourCkanUrl --apikey=yourSecretKey
+dcat deploy ckan dcat.nt --url=yourCkanUrl --apikey=yourSecretKey
 ```
 
 
@@ -147,7 +147,7 @@ git clone https://github.com/QROWD/QROWD-RDF-Data-Integration.git qrowd-rdf-data
 cd qrowd-rdf-data-integration/datasets/1046-1051
 
 sparql-integrate workloads.sparql process.sparql emit.sparql > dataset.nq
-dcat deploy ckan --host=yourCkanInstance --apikey=yourApiKey dataset.nq
+dcat deploy ckan --url=yourCkanInstance --apikey=yourApiKey dataset.nq
 ```
 
 The dataset entry on our CKAN: http://ckan.qrowd.aksw.org/dataset/trento-railway-time-tables
@@ -166,7 +166,7 @@ dcat meta my-datasests.dcat.nt > meta.dcat.nt
 
 * Upload rdf file via SPARQL Update
 ```
-dcat deploy sparql --user=dba --pass=dba --host=http://example.org/sparql dcat.nt
+dcat deploy sparql --user=dba --pass=dba --url=http://example.org/sparql dcat.nt
 ```
 
 
