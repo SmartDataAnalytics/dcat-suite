@@ -26,6 +26,9 @@ public class CatalogResolverMulti
 		this.resolvers = resolvers;
 	}
 	
+//	public addResolver(CatalogResolver resolver) {
+//		this.resolvers.add(resolver);
+//	}
 	
 	public Collection<CatalogResolver> getResolvers() {
 		return resolvers;

@@ -1,12 +1,12 @@
 package org.aksw.dcat.server.controller;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,14 +15,17 @@ import javax.servlet.http.HttpServletRequest;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
+import org.aksw.jena_sparql_api.conjure.utils.HttpHeaderUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.api.HttpResourceRepositoryFromFileSystem;
 import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.apache.http.Header;
+import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicHttpRequest;
 import org.glassfish.jersey.internal.guava.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +61,25 @@ public class ControllerLookup {
 					.map(v -> Maps.immutableEntry(e.getKey(), v)));
 		return result;
 	}
-	
+
+	public static HttpUriRequest createRequest(String id, Header[] apacheHeaders) {
+		HttpUriRequest request = RequestBuilder
+				.get(id)
+				.build();
+		
+		request.setHeaders(apacheHeaders);
+//		
+//		//List<Entry<String, String>> tmp = flattenHeaders(springHeaders).collect(Collectors.toList());
+//		List<Entry<String, String>> tmp = HttpHeaderUtils.toEntries(apacheHeaders).collect(Collectors.toList());
+//		for(Entry<String, String> e : tmp) {
+//			String k = e.getKey();
+//			String v = e.getValue();
+//			request.addHeader(k, v);
+//		}
+
+		return request;
+	}
+
 	public static Header[] springToApache(HttpHeaders springHeaders) {
 		List<Header> apacheHeaders = new ArrayList<>();
 		for(Entry<String, List<String>> e : springHeaders.entrySet()) {
@@ -97,13 +118,19 @@ public class ControllerLookup {
 	}
 		
 	
-	public Object processRequest(String id, HttpHeaders springHeaders) throws Exception {
-		logger.info("Got request for " + id);
+	public static RdfHttpEntityFile resolveEntity(
+			CatalogResolver catalogResolver,
+			HttpResourceRepositoryFromFileSystem datasetRepository,
+			HttpRequest r
+			//String id,
+			//Header[] apacheHeaders
+			) {
+		String id = r.getRequestLine().getUri();
+		Header[] apacheHeaders = r.getAllHeaders();
 		
-		ResponseEntity<?> result;
+		RdfHttpEntityFile result = null;
 
-		DatasetResolver datasetResolver = catalogResolver.resolveDataset(id)
-				.blockingGet();
+		DatasetResolver datasetResolver = catalogResolver.resolveDataset(id).blockingGet();
 		
 		List<DistributionResolver> dists = datasetResolver.resolveDistributions().toList().blockingGet();
 		
@@ -114,22 +141,45 @@ public class ControllerLookup {
 			if(downloadUrl != null) {
 				//Header[] apacheHeaders = springToApache(springHeaders);
 				
-				HttpUriRequest request = RequestBuilder
-						.get(downloadUrl)
-						.build();
+				HttpUriRequest request = createRequest(downloadUrl, apacheHeaders);
+
+
+//				HttpUriRequest request = RequestBuilder
+//						.get(downloadUrl)
+//						.build();
+//				//List<Entry<String, String>> tmp = flattenHeaders(springHeaders).collect(Collectors.toList());
+//				List<Entry<String, String>> tmp = HttpHeaderUtils.toEntries(apacheHeaders).collect(Collectors.toList());
+//				for(Entry<String, String> e : tmp) {
+//					String k = e.getKey();
+//					String v = e.getValue();
+//					request.addHeader(k, v);
+//				}
 				
-				List<Entry<String, String>> tmp = flattenHeaders(springHeaders).collect(Collectors.toList());
-				for(Entry<String, String> e : tmp) {
-					String k = e.getKey();
-					String v = e.getValue();
-					request.addHeader(k, v);
+
+				try {
+					result = datasetRepository.get(request, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
+				} catch (IOException e1) {
+					throw new RuntimeException(e1);
 				}
-				
-				RdfHttpEntityFile entity = datasetRepository.get(request, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
-				
-				if(entity == null) {
-					throw new RuntimeException("Should not happen");
-				}
+//				
+//				if(entity == null) {
+//					throw new RuntimeException("Should not happen");
+//				}
+			}
+		}
+		
+		return result; 
+	}
+
+	public Object processRequest(String id, HttpHeaders springHeaders) throws Exception {
+		logger.info("Got request for " + id);
+		
+		ResponseEntity<?> result;
+		HttpUriRequest request = createRequest(id, springToApache(springHeaders));
+		
+		RdfHttpEntityFile entity = resolveEntity(catalogResolver, datasetRepository, request);
+		if(entity != null) {
+
 				
 //https://stackoverflow.com/questions/20333394/return-a-stream-with-spring-mvcs-responseentity
 //				InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
@@ -150,9 +200,9 @@ public class ControllerLookup {
 					.headers(responseHeaders)
 					.body(new InputStreamResource(Files.newInputStream(path, StandardOpenOption.READ)));
 				
-			} else {
-				throw new RuntimeException("Dataset has no suitablbe distribution; dataset id=" + id);
-			}
+//			} else {
+//				throw new RuntimeException("Dataset has no suitablbe distribution; dataset id=" + id);
+//			}
 		} else {
 			throw new RuntimeException("No dataset found for id=" + id);			
 		}

@@ -24,8 +24,16 @@ import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
+import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
 import org.aksw.dcat.repo.impl.model.CatalogResolverModel;
+import org.aksw.dcat.server.controller.ControllerLookup;
+import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
+import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.http.HttpRequest;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -43,6 +51,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Streams;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
@@ -62,6 +71,31 @@ public class MainCliDcatSuite {
 	public static class CommandMain {
 		@Parameter(description = "Non option args")
 		protected List<String> nonOptionArgs;
+
+		@Parameter(names = "--help", help = true)
+		protected boolean help = false;
+	}
+
+	@Parameters(separators = "=", commandDescription = "Show data")
+	public static class CommandData {
+		@Parameter(description = "Non option args")
+		protected List<String> nonOptionArgs;
+
+//		// ArtifactID - can refer to any dataset, distribution, download
+//		protected String artifactId;
+		@Parameter(names={"-c", "--catalog"}, description = "Catalog reference")
+		protected List<String> catalogs = Collections.emptyList();
+		
+		// Note: format is more generic than content-type as csv or rdf.gzip are valid formats
+		// So a format is any string from which content type and encoding can be inferred
+		@Parameter(names={"-f", "--format"}, description = "Preferred format / content type")
+		protected String contentType = "text/turtle";
+		
+		@Parameter(names={"-e", "--encoding"}, description = "Preferred encoding(s)")
+		protected List<String> encodings = Collections.emptyList();
+
+		@Parameter(names={"-l", "--link"}, description = "Instead of returning the content directly, return a file url in the cache")
+		protected boolean link = false;
 
 		@Parameter(names = "--help", help = true)
 		protected boolean help = false;
@@ -193,6 +227,7 @@ public class MainCliDcatSuite {
 
 		
 		CommandMain cm = new CommandMain();
+		CommandData cmData = new CommandData();		
 		CommandShow cmShow = new CommandShow();
 		CommandExpand cmExpand = new CommandExpand();
 		CommandDeploy cmDeploy = new CommandDeploy();		
@@ -203,6 +238,7 @@ public class MainCliDcatSuite {
 		// CommandCommit commit = new CommandCommit();
 		JCommander jc = JCommander.newBuilder()
 				.addObject(cm)
+				.addCommand("data", cmData)
 				.addCommand("show", cmShow)
 				.addCommand("expand", cmExpand)
 				.addCommand("deploy", cmDeploy)
@@ -235,6 +271,28 @@ public class MainCliDcatSuite {
         // TODO Change this to a plugin system - for now I hack this in statically
 		String cmd = jc.getParsedCommand();
 		switch (cmd) {
+		case "data": {
+			List<String> noas = cmData.nonOptionArgs;
+			if(noas.size() != 1) {
+				throw new RuntimeException("Only one non-option argument expected for the artifact id");
+			}
+			String artifactId = noas.get(0);
+
+			List<CatalogResolver> catalogResolvers = new ArrayList<>();
+			for(String catalog : cmData.catalogs) {
+				Model model = RDFDataMgr.loadModel(catalog);
+				
+				logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
+				
+				catalogResolvers.add(new CatalogResolverModel(model));
+			}
+			
+			CatalogResolverMulti effectiveCatalogResolver = new CatalogResolverMulti(catalogResolvers);
+			
+			
+			showData(effectiveCatalogResolver, artifactId, cmData.contentType, cmData.encodings, cmData.link);
+			break;
+		}
 		case "show": {
 			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(cmShow.file);
 			RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
@@ -442,6 +500,40 @@ public class MainCliDcatSuite {
 			//conn.rollback();
 		}
 	}
+	
+	
+	public static void showData(CatalogResolver catalogResolver, String artifactId, String formatOrContentType, List<String> encodings, boolean link) throws IOException {
+
+		// Try to parse the format
+		RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileExtension("." + formatOrContentType);
+		if(info != null) {
+			if(info.getContentType() != null) {
+				formatOrContentType = info.getContentType();
+			}
+			
+			if(!CollectionUtils.isEmpty(info.getContentEncodings())) {
+				encodings = info.getContentEncodings();
+			}
+		}
+		
+		HttpRequest request = HttpResourceRepositoryFromFileSystemImpl.createRequest(artifactId, formatOrContentType, encodings);
+		HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl.createDefault();
+		RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
+
+		if(entity == null) {
+			throw new RuntimeException("Could not obtain an HTTP entity from given arguments");
+		}
+
+		//RdfHttpEntityFile entity = HttpResourceRepositoryFromFileSystemImpl.get(repo, artifactId, contentType, encodings);
+		Path path = entity.getAbsolutePath();
+		
+		if(link) {
+			System.out.println(path);
+		} else {
+			Files.copy(path, System.out);
+		}
+	}
+
 
 	public static Path processExpand(String dcatSource) throws IOException {
 		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);

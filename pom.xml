@@ -56,7 +56,7 @@
 	</developers>
 
 	<properties>
-		<jena.version>3.12.0</jena.version>
+		<jena.version>3.13.1</jena.version>
 		<jena-sparql-api.subversion>2-SNAPSHOT</jena-sparql-api.subversion>
 
 		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
@@ -76,6 +76,12 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>org.aksw.dcat-suite</groupId>
+				<artifactId>dcat-suite-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.apache.jena</groupId>

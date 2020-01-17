@@ -17,6 +17,11 @@
 	<dependencies>
 
 		<dependency>
+			<groupId>org.aksw.dcat-suite</groupId>
+			<artifactId>dcat-suite-server</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.hobbit</groupId>
 			<artifactId>virtjdbc4</artifactId>
 			<!-- <scope>runtime</scope> -->
