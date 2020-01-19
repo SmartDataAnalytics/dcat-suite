@@ -1,0 +1,6 @@
+SELECT ?s
+{
+  ?s ?p ?o
+  FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)
+  FILTER(REGEX(STR(?s), <env:ARG>, "i") || REGEX(STR(?o), <env:ARG>, "i"))
+}

@@ -1,0 +1,15 @@
+CONSTRUCT {
+ ?s a ?t
+}
+#SELECT ?s ?t
+{
+    {
+      ?s dcat:distribution ?o
+      BIND(dcat:Dataset AS ?t)
+    }
+  UNION
+    {
+      ?s dcat:downloadURL ?o
+      BIND(dcat:Distribution AS ?t)
+    }
+}

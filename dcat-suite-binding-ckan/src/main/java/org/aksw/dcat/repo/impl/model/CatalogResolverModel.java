@@ -23,6 +23,8 @@ import com.google.common.collect.Maps;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 
+// Use catalog resolver Sparql instead
+@Deprecated
 public class CatalogResolverModel
 	implements CatalogResolver
 {
