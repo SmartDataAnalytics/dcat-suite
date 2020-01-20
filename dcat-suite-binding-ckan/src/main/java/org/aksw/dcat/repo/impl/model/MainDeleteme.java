@@ -20,14 +20,13 @@ import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
 import org.aksw.jena_sparql_api.utils.CountInfo;
 import org.aksw.jena_sparql_api.utils.NodeUtils;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
-import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.lang.arq.ParseException;
 import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.vocabulary.RDF;
 
 public class MainDeleteme {
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
@@ -80,13 +79,6 @@ public class MainDeleteme {
 		//PartitionedQuery1 pq = PartitionedQuery1.from(view, Vars.s);
 		//Resolver resolver = Resolvers.from(pq);
 //			FILTER(?s = <http://www.wikidata.org/prop/P299>)
-		String queryStr = "SELECT ?s ?o { ?s a <http://www.w3.org/2002/07/owl#ObjectProperty> ; <http://www.w3.org/2000/01/rdf-schema#label> ?o . FILTER(?s = <http://www.wikidata.org/prop/P299>)}";
-			
-		Query example1 = VirtualPartitionedQuery.rewrite(
-				views,
-				QueryFactory.create(queryStr));
-		System.out.println("Example 1\n" + example1);
-
 		
 		
 		fq.baseConcept(baseConcept);
@@ -104,7 +96,8 @@ public class MainDeleteme {
 //		fq.focus().constraints().regex(pattern).activate();
 		
 		long maxItems = 100l;
-		CountInfo countInfo = fq.focus().availableValues().count(maxItems, 10000l)
+		CountInfo countInfo = fq.focus().availableValues()
+			.count(maxItems, 10000l)
 			.timeout(10, TimeUnit.SECONDS)
 			.blockingGet();
 
@@ -122,10 +115,11 @@ public class MainDeleteme {
 
 		Console console = System.console();
 		
-		Node pick = null;
+		RDFNode pick = null;
 		if(!abort) {
 //			System.out.println("Matches:");
 			List<RDFNode> list = fq.focus().availableValues()
+					.add(RDF.type)
 					.exec()
 					.timeout(10, TimeUnit.SECONDS)
 					.toList().blockingGet();
@@ -146,16 +140,17 @@ public class MainDeleteme {
 						throw new RuntimeException("Not implemented");
 					}
 					int idx = Integer.parseInt(line);
-					pick = list.get(idx).asNode();
+					pick = list.get(idx);
 				} else {
 					// System.out.println("non-interactive mode");
 				}
 				
 			} else {
-				pick = list.iterator().next().asNode();
+				pick = list.iterator().next();
 			}
 		}
 		
+		System.out.println("Pick: " + pick);
 
 		// TODO Combine the resources with their classification
 		
