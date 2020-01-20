@@ -32,6 +32,7 @@ import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
 import org.aksw.dcat.repo.impl.core.DistributionResolverImpl;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
@@ -69,6 +70,11 @@ public class CatalogResolverFilesystem
 	
 	protected transient Path hashSpaceFolder;
 
+	@Override
+	public Flowable<Resource> search(String pattern) {
+		throw new RuntimeException("not implemented");
+	}
+	
 	//protected CatalogResolver delegate;
 	
 	public static CatalogResolverFilesystem createDefault() {

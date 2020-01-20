@@ -26,6 +26,7 @@ import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
 import org.aksw.dcat.repo.impl.model.CatalogResolverModel;
+import org.aksw.dcat.repo.impl.model.MainDeleteme;
 import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
@@ -35,8 +36,11 @@ import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromF
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
@@ -51,7 +55,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Streams;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
@@ -75,6 +78,21 @@ public class MainCliDcatSuite {
 		@Parameter(names = "--help", help = true)
 		protected boolean help = false;
 	}
+	
+	@Parameters(separators = "=", commandDescription = "Search DCAT catalogs")
+	public static class CommandSearch {
+		@Parameter(description = "Search pattern (regex)")
+		protected List<String> nonOptionArgs;
+
+//		// ArtifactID - can refer to any dataset, distribution, download
+//		protected String artifactId;
+		@Parameter(names={"-c", "--catalog"}, description = "Catalog reference")
+		protected List<String> catalogs = Collections.emptyList();
+
+		@Parameter(names = "--help", help = true)
+		protected boolean help = false;
+	}
+
 
 	@Parameters(separators = "=", commandDescription = "Show data")
 	public static class CommandData {
@@ -227,6 +245,7 @@ public class MainCliDcatSuite {
 
 		
 		CommandMain cm = new CommandMain();
+		CommandSearch cmSearch = new CommandSearch();	
 		CommandData cmData = new CommandData();		
 		CommandShow cmShow = new CommandShow();
 		CommandExpand cmExpand = new CommandExpand();
@@ -238,6 +257,7 @@ public class MainCliDcatSuite {
 		// CommandCommit commit = new CommandCommit();
 		JCommander jc = JCommander.newBuilder()
 				.addObject(cm)
+				.addCommand("search", cmSearch)
 				.addCommand("data", cmData)
 				.addCommand("show", cmShow)
 				.addCommand("expand", cmExpand)
@@ -271,6 +291,30 @@ public class MainCliDcatSuite {
         // TODO Change this to a plugin system - for now I hack this in statically
 		String cmd = jc.getParsedCommand();
 		switch (cmd) {
+		case "search": {
+			List<String> noas = cmSearch.nonOptionArgs;
+			if(noas.size() != 1) {
+				throw new RuntimeException("Only one non-option argument expected for the artifact id");
+			}
+			String pattern = noas.get(0);
+
+			List<CatalogResolver> catalogResolvers = new ArrayList<>();
+			for(String catalog : cmSearch.catalogs) {
+				Model model = RDFDataMgr.loadModel(catalog);
+				
+				logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
+				
+				RDFConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
+				catalogResolvers.add(MainDeleteme.createCatalogResolver(conn));
+				//catalogResolvers.add(new CatalogResolverModel(model));
+			}
+			
+			CatalogResolverMulti effectiveCatalogResolver = new CatalogResolverMulti(catalogResolvers);
+			
+			
+			search(effectiveCatalogResolver, pattern);
+			break;
+		}
 		case "data": {
 			List<String> noas = cmData.nonOptionArgs;
 			if(noas.size() != 1) {
@@ -498,6 +542,14 @@ public class MainCliDcatSuite {
 		} catch(Exception e) {
 			throw new RuntimeException(e);
 			//conn.rollback();
+		}
+	}
+	
+	public static void search(CatalogResolver catalogResolver, String pattern) throws IOException {
+		//MainDeleteme.createCatalogResolver();
+		List<Resource> matches = catalogResolver.search(pattern).toList().blockingGet();
+		for(Resource match : matches) {
+			RDFDataMgr.write(System.out, match.getModel(), RDFFormat.TURTLE_PRETTY);
 		}
 	}
 	

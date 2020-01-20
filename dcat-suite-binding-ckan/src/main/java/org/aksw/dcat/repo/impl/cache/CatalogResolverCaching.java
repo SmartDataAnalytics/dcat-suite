@@ -10,6 +10,7 @@ import org.aksw.dcat.repo.api.DistributionResolver;
 import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
 import org.aksw.dcat.repo.impl.core.DistributionResolverImpl;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverCacheCapable;
+import org.apache.jena.rdf.model.Resource;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
@@ -26,6 +27,11 @@ public class CatalogResolverCaching
 		this.backend = backend;
 	}
 
+	@Override
+	public Flowable<Resource> search(String pattern) {
+		return backend.search(pattern);
+	}
+	
 	@Override
 	public Maybe<DatasetResolver> resolveDataset(String datasetId) {
 		return cache.resolveDataset(datasetId).switchIfEmpty(

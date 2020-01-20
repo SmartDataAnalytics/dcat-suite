@@ -8,6 +8,7 @@ import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
+import org.apache.jena.rdf.model.Resource;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
@@ -26,6 +27,12 @@ public class CatalogResolverMulti
 		this.resolvers = resolvers;
 	}
 	
+	@Override
+	public Flowable<Resource> search(String pattern) {
+		return Flowable.fromIterable(resolvers)
+			.flatMap(r -> r.search(pattern));
+	}
+
 //	public addResolver(CatalogResolver resolver) {
 //		this.resolvers.add(resolver);
 //	}

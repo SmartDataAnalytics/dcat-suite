@@ -3,6 +3,7 @@ package org.aksw.dcat.repo.api;
 import java.net.URL;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.apache.jena.rdf.model.Resource;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
@@ -22,6 +23,8 @@ import io.reactivex.Maybe;
  *
  */
 public interface CatalogResolver {
+	Flowable<Resource> search(String pattern);
+	
 	Maybe<DatasetResolver> resolveDataset(String datasetId);
 	Flowable<DistributionResolver> resolveDistribution(String distributionId);
 	Maybe<URL> resolveDownload(String downloadUri) throws Exception;

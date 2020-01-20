@@ -33,6 +33,12 @@ public class CatalogResolverModel
 	public CatalogResolverModel(Model model) {
 		this.model = model;
 	}
+
+	@Override
+	public Flowable<Resource> search(String pattern) {
+		throw new RuntimeException("not implemented");
+	}
+
 	
 	@Override
 	public Maybe<DatasetResolver> resolveDataset(String datasetId) {

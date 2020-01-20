@@ -1,0 +1,50 @@
+SELECT DISTINCT  ?v_1 ?v_1_path_1
+WHERE
+  { {   { BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?p)
+            { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?v_2
+              FILTER ( ! EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> } )
+              BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?o)
+            }
+          UNION
+            { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?v_2
+              FILTER ( ! EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> } )
+              BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?o)
+            }
+        }
+      UNION
+        { ?v_1  ?p  ?o }
+      {   { BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?inj_1)
+              { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?v_2
+                FILTER ( ! EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> } )
+                BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?inj_2)
+              }
+            UNION
+              { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?v_2
+                FILTER ( ! EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> } )
+                BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?inj_2)
+              }
+          }
+        UNION
+          { ?v_1  ?inj_1  ?inj_2 }
+        FILTER ( ( ?inj_1 = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ) && ( ?inj_2 = <http://www.w3.org/ns/dcat#Dataset> ) )
+      }
+      {   { BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?inj_3)
+              { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?v_2
+                FILTER ( ! EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> } )
+                BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?v_1_path_1)
+              }
+            UNION
+              { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?v_2
+                FILTER ( ! EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> } )
+                BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?v_1_path_1)
+              }
+          }
+        UNION
+          { ?v_1  ?inj_3  ?v_1_path_1 }
+        FILTER ( ?inj_3 = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> )
+      }
+    }
+    FILTER ( regex(str(?v_1), "org.limbo.*", "i") || regex(str(?o), "org.limbo.*", "i") )
+    FILTER ( ( ?p = <http://www.w3.org/ns/dcat#distribution> ) || ( ?p = <http://www.w3.org/ns/dcat#downloadURL> ) )
+  } ORDER BY ?v1
+

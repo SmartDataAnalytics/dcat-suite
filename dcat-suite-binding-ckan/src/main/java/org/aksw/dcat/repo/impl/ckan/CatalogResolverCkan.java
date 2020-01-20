@@ -11,6 +11,7 @@ import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.slf4j.Logger;
@@ -41,6 +42,11 @@ public class CatalogResolverCkan
 //		this.prefix = prefix;
 //	}
 	
+	@Override
+	public Flowable<Resource> search(String pattern) {
+		throw new RuntimeException("Not supported yet");
+	}
+
 	@Override
 	public Maybe<DatasetResolver> resolveDataset(String datasetId) {
 		return Maybe.fromCallable(() -> {
