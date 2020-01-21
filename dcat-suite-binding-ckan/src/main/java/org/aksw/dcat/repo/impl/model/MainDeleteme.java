@@ -58,7 +58,7 @@ public class MainDeleteme {
 				.getConnection();
 		
 		Function<String, Query> patternToQuery = loadTemplate("/home/raven/Projects/Eclipse/dcat-suite-parent/queries/match-by-regex.sparql", "ARG");		
-		Function<String, Query> idToQuery = loadTemplate("/home/raven/Projects/Eclipse/dcat-suite-parent/queries/match-by-regex.sparql", "ARG");
+		Function<String, Query> idToQuery = loadTemplate("/home/raven/Projects/Eclipse/dcat-suite-parent/queries/match-exact.sparql", "ARG");
 
 		CatalogResolver result = new CatalogResolverSparql(conn, idToQuery, patternToQuery);
 		return result;
@@ -75,7 +75,8 @@ public class MainDeleteme {
 
 		CatalogResolver catResolver = createCatalogResolver(conn);
 		//String pattern = "org.limbo.*";
-		String pattern = "org.limbo-bahn-1.0.0";
+		//String pattern = "org.limbo-bahn-1.0.0";
+		String pattern = "train_2";
 
 		
 		// Load sparql template for matching resources by keyword

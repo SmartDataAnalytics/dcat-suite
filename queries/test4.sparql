@@ -1,0 +1,117 @@
+SELECT DISTINCT  ?v_1 ?v_1_path_1
+WHERE
+  {   { {   {   { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?i0_v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> }
+                  BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?o)
+                }
+              UNION
+                { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?i0_v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> }
+                  BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?o)
+                }
+              UNION
+                { ?i0_x  <http://www.w3.org/ns/dcat#downloadURL>  ?v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#DownloadURL> }
+                  BIND(<http://www.w3.org/ns/dcat#DownloadURL> AS ?o)
+                }
+              BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?p)
+            }
+          UNION
+            { ?v_1  ?p  ?o }
+          FILTER ( ( ?p = <http://www.w3.org/ns/dcat#distribution> ) || ( ?p = <http://www.w3.org/ns/dcat#downloadURL> ) )
+          FILTER isIRI(?v_1)
+          OPTIONAL
+            { {   {   { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?i1_v_1
+                        FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> }
+                        BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?id)
+                      }
+                    UNION
+                      { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?i1_v_1
+                        FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> }
+                        BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?id)
+                      }
+                    UNION
+                      { ?i1_x  <http://www.w3.org/ns/dcat#downloadURL>  ?v_1
+                        FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#DownloadURL> }
+                        BIND(<http://www.w3.org/ns/dcat#DownloadURL> AS ?id)
+                      }
+                    BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?inj_1)
+                  }
+                UNION
+                  { ?v_1  ?inj_1  ?id }
+                FILTER ( ?inj_1 = <http://purl.org/dc/terms/identifier> )
+              }
+            }
+        }
+        FILTER ( regex(str(?v_1), "train_2-dataset.*", "i") || regex(str(?id), "train_2-dataset.*", "i") )
+      }
+    UNION
+      { {   {   { ?x  <http://www.w3.org/ns/dcat#distribution>  ?i2_v_1
+                  FILTER NOT EXISTS { ?x  a                     <http://www.w3.org/ns/dcat#Dataset> }
+                  BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?v_1)
+                }
+              UNION
+                { ?x  <http://www.w3.org/ns/dcat#downloadURL>  ?i2_v_1
+                  FILTER NOT EXISTS { ?x  a                     <http://www.w3.org/ns/dcat#Distribution> }
+                  BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?v_1)
+                }
+              UNION
+                { ?i2_x  <http://www.w3.org/ns/dcat#downloadURL>  ?x
+                  FILTER NOT EXISTS { ?x  a                     <http://www.w3.org/ns/dcat#DownloadURL> }
+                  BIND(<http://www.w3.org/ns/dcat#DownloadURL> AS ?v_1)
+                }
+              BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?inj_2)
+            }
+          UNION
+            { ?x  ?inj_2  ?v_1 }
+          FILTER ( ?inj_2 = <http://www.w3.org/ns/dcat#downloadURL> )
+        }
+        FILTER regex(str(?v_1), "train_2-dataset.*", "i")
+        FILTER isIRI(?v_1)
+      }
+    { { {   {   { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?i3_v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> }
+                  BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?v_2)
+                }
+              UNION
+                { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?i3_v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> }
+                  BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?v_2)
+                }
+              UNION
+                { ?i3_x  <http://www.w3.org/ns/dcat#downloadURL>  ?v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#DownloadURL> }
+                  BIND(<http://www.w3.org/ns/dcat#DownloadURL> AS ?v_2)
+                }
+              BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?inj_3)
+            }
+          UNION
+            { ?v_1  ?inj_3  ?v_2 }
+          FILTER ( ?inj_3 = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> )
+        }
+        {   {   { ?v_1  <http://www.w3.org/ns/dcat#distribution>  ?i4_v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Dataset> }
+                  BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?v_1_path_1)
+                }
+              UNION
+                { ?v_1  <http://www.w3.org/ns/dcat#downloadURL>  ?i4_v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#Distribution> }
+                  BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?v_1_path_1)
+                }
+              UNION
+                { ?i4_x  <http://www.w3.org/ns/dcat#downloadURL>  ?v_1
+                  FILTER NOT EXISTS { ?v_1  a                     <http://www.w3.org/ns/dcat#DownloadURL> }
+                  BIND(<http://www.w3.org/ns/dcat#DownloadURL> AS ?v_1_path_1)
+                }
+              BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?inj_4)
+            }
+          UNION
+            { ?v_1  ?inj_4  ?v_1_path_1 }
+          FILTER ( ?inj_4 = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> )
+        }
+      }
+      FILTER isIRI(?v_1)
+      FILTER ( ( ( ?v_2 = <http://www.w3.org/ns/dcat#DownloadURL> ) || ( ?v_2 = <http://www.w3.org/ns/dcat#Distribution> ) ) || ( ?v_2 = <http://www.w3.org/ns/dcat#Dataset> ) )
+    }
+  }
+ORDER BY ASC(?v_1)

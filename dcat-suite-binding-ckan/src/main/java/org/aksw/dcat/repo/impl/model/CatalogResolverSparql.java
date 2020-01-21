@@ -67,6 +67,7 @@ public class CatalogResolverSparql
 		this.patternToQuery = patternToQuery;
 	}
 	
+	
 	public Flowable<Resource> resolveAny(
 			String pattern,
 			Function<String, Query> patternToQuery,
@@ -82,7 +83,7 @@ public class CatalogResolverSparql
 		UnaryRelation baseConcept = RelationUtils.fromQuery(instanceQuery).toUnaryRelation();
 		fq.baseConcept(baseConcept);
 
-		List<RDFNode> validTypes = Arrays.asList(DCAT.Dataset, DCAT.Distribution);
+		List<RDFNode> validTypes = Arrays.asList(DCAT.Dataset, DCAT.Distribution, DCATX.DownloadURL);
 		
 		ConstraintFacade<? extends FacetNode> constraints = fq.focus().fwd(RDF.type).one().constraints();
 		if(type != null) {
@@ -118,6 +119,7 @@ public class CatalogResolverSparql
 	
 	@Override
 	public Maybe<DatasetResolver> resolveDataset(String datasetId) {
+		// TODO Fetch data according to some shape associated with datasets
 		return resolveAny(datasetId, idToQuery, DCAT.Dataset)
 			.firstElement()
 			.map(e -> new DatasetResolverImpl(this, e.as(DcatDataset.class)));

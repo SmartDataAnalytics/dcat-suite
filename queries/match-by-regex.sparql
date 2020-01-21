@@ -1,7 +1,18 @@
 PREFIX dcat: <http://www.w3.org/ns/dcat#>
 SELECT ?s
 {
-  ?s ?p ?o
-  FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)
-  FILTER(REGEX(STR(?s), <env:ARG>, "i") || REGEX(STR(?o), <env:ARG>, "i"))
+    {
+      ?s ?p ?o
+      FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)
+      OPTIONAL {
+        ?s dcterms:identifier ?id
+      }
+      FILTER(REGEX(STR(?s), <env:ARG>, "i") || REGEX(STR(?id), <env:ARG>, "i"))
+   }
+  UNION
+    {
+      ?x dcat:downloadURL ?s
+      FILTER(REGEX(STR(?s), <env:ARG>, "i"))
+    }
 }
+

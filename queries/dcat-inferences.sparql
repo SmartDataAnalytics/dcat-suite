@@ -6,13 +6,19 @@ CONSTRUCT {
 {
     {
       ?s dcat:distribution ?o
-      FILTER(!EXISTS { ?s a dcat:Dataset })
+      FILTER(NOT EXISTS { ?s a dcat:Dataset })
       BIND(dcat:Dataset AS ?t)
     }
   UNION
     {
       ?s dcat:downloadURL ?o
-      FILTER(!EXISTS { ?s a dcat:Distribution })
+      FILTER(NOT EXISTS { ?s a dcat:Distribution })
       BIND(dcat:Distribution AS ?t)
+    }
+  UNION
+    {
+      ?x dcat:downloadURL ?s
+      FILTER(NOT EXISTS { ?s a dcat:DownloadURL })
+      BIND(dcat:DownloadURL AS ?t)
     }
 }
