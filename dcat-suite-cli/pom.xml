@@ -16,6 +16,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-conjure</artifactId>
+		</dependency>
+	
+		<dependency>
 			<groupId>org.aksw.dcat-suite</groupId>
 			<artifactId>dcat-suite-server</artifactId>
 		</dependency>

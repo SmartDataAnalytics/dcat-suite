@@ -1,9 +1,15 @@
 package org.aksw.dcat.repo.impl.core;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.aksw.dcat.ckan.config.model.DcatResolverCkan;
 import org.aksw.dcat.ckan.config.model.DcatResolverConfig;
@@ -12,15 +18,35 @@ import org.aksw.dcat.repo.impl.cache.CatalogResolverCaching;
 import org.aksw.dcat.repo.impl.ckan.CatalogResolverCkan;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
+import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
+import org.aksw.facete.v3.experimental.VirtualPartitionedQuery;
+import org.aksw.facete.v3.impl.RDFConnectionBuilder;
+import org.aksw.jena_sparql_api.concepts.RelationUtils;
+import org.aksw.jena_sparql_api.concepts.TernaryRelation;
+import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
+import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPods;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRef;
+import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
+import org.aksw.jena_sparql_api.utils.NodeUtils;
+import org.aksw.jena_sparql_api.utils.QueryUtils;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.lang.arq.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eu.trentorise.opendata.commons.internal.org.apache.commons.lang3.SystemUtils;
 import eu.trentorise.opendata.jackan.CkanClient;
 
 public class CatalogResolverUtils {
-	public static CatalogResolver createCatalogResolverDefault() {
+	private static final Logger logger = LoggerFactory.getLogger(CatalogResolverUtils.class);
+	
+	public static CatalogResolver createCatalogResolverDefault() throws IOException, ParseException {
 		Path dcatPath = Paths.get(SystemUtils.USER_HOME).resolve(".dcat");
 		CatalogResolver result = createCatalogResolverDefault(dcatPath);
 		return result;
@@ -34,14 +60,59 @@ public class CatalogResolverUtils {
 		return result;
 	}
 	
+	public static Function<String, Query> loadTemplate(String fileOrURI, String templateArgName) throws FileNotFoundException, IOException, ParseException {
+		Query templateQuery = RDFDataMgrEx.loadQuery(fileOrURI);
+
+		Function<String, Query> result = value -> {
+			Map<String, String> map = Collections.singletonMap(templateArgName, value);
+			Query r = QueryUtils.applyNodeTransform(templateQuery, x -> NodeUtils.substWithLookup(x, map::get));
+			return r;
+		};
+		return result;
+	};
+
+	
+	public static CatalogResolver createCatalogResolver(RDFConnection _conn) throws FileNotFoundException, IOException, ParseException {
+		Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
+		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
+		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
+
+		List<TernaryRelation> views = new ArrayList<>();
+		
+		views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
+		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
+		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
+
+		views.add(RelationUtils.SPO);
+		//views.add(Ternar);
+
+
+		RDFConnection conn = RDFConnectionBuilder.from(_conn)
+				.addQueryTransform(q -> VirtualPartitionedQuery.rewrite(views, q))
+				.getConnection();
+		
+		Function<String, Query> patternToQuery = loadTemplate("match-by-regex.sparql", "ARG");		
+		Function<String, Query> idToQuery = loadTemplate("match-exact.sparql", "ARG");
+
+		CatalogResolver result = new CatalogResolverSparql(conn, idToQuery, patternToQuery);
+		return result;
+
+	}
+
 	/**
 	 * 
 	 * dcatPath is e.g. ~/.dcat
 	 * 
 	 * @param dcatPath
 	 * @return
+	 * @throws IOException 
+	 * @throws ParseException 
 	 */
-	public static CatalogResolver createCatalogResolverDefault(Path dcatPath) {
+	public static CatalogResolver createCatalogResolverDefault(Path dcatPath) throws IOException, ParseException {
+		
+//		HttpResourceRepositoryFromFileSystemImpl repo = HttpResourceRepositoryFromFileSystemImpl.createDefault();
+
+		
 		//Model configModel = ModelFactory.createDefaultModel();
 		String configUrl = dcatPath.resolve("settings.ttl").toUri().toString();
 		Model configModel = RDFDataMgr.loadModel(configUrl);
@@ -53,23 +124,46 @@ public class CatalogResolverUtils {
 		CatalogResolverMulti coreResolver = new CatalogResolverMulti();
 		
 		for(DcatResolverConfig config : configs) {
-			Collection<DcatResolverCkan> resolvers = config.resolvers(DcatResolverCkan.class);
-			for(DcatResolverCkan ckanResolverSpec : resolvers) {
-				System.out.println("Got: " + ckanResolverSpec.getApiKey());	
-				System.out.println("Got: " + ckanResolverSpec.getUrl());
+			Collection<Resource> resolvers = config.resolvers(Resource.class);
+			for(Resource resolverSpec : resolvers) {
 				
-				
-				String ckanApiUrl = ckanResolverSpec.getUrl();
-				String ckanApiKey = ckanResolverSpec.getApiKey();
-				
-//				CkanClient ckanClient = new CkanClient("http://ckan.qrowd.aksw.org", "25b91078-fbc6-4b3a-93c5-acfce414bbeb");
-				CkanClient ckanClient = new CkanClient(ckanApiUrl, ckanApiKey);
-				CatalogResolver ckanResolver = new CatalogResolverCkan(ckanClient);
-				coreResolver.getResolvers().add(ckanResolver);
+				// Try to map as a DataRef
+				DataRef dataRef = JenaPluginUtils.polymorphicCast(resolverSpec, DataRef.class);
+				if(dataRef != null) {
+					RdfDataPod dataPod = DataPods.fromDataRef(dataRef);
+					
+					logger.info("Loaded catalog: " + dataPod + " from " + dataRef);
+					
+					RDFConnection conn = dataPod.openConnection();
+					CatalogResolver resolver = createCatalogResolver(conn);
+					coreResolver.getResolvers().add(resolver);
+					
+//					DataPodFactory dataPodFactory = new DataPodFactoryImpl(opExecutor);
+//					DataPods.fromSparqlEndpoint(dataRef)
+				} else {
+					
+					// TODO Improve this - we simply assume a ckan resolver here which is not
+					// necessarily what we get
+					
+					DcatResolverCkan ckanResolverSpec = resolverSpec.as(DcatResolverCkan.class);
+					
+//					System.out.println("Got: " + ckanResolverSpec.getApiKey());	
+//					System.out.println("Got: " + ckanResolverSpec.getUrl());
+					
+					
+					String ckanApiUrl = ckanResolverSpec.getUrl();
+					String ckanApiKey = ckanResolverSpec.getApiKey();
+					
+	//				CkanClient ckanClient = new CkanClient("http://ckan.qrowd.aksw.org", "25b91078-fbc6-4b3a-93c5-acfce414bbeb");
+					CkanClient ckanClient = new CkanClient(ckanApiUrl, ckanApiKey);
+					CatalogResolver ckanResolver = new CatalogResolverCkan(ckanClient);
+					coreResolver.getResolvers().add(ckanResolver);
+				}
 			}			
 		}
 		
-		
+		logger.info("Registered " + coreResolver.getResolvers().size() + " dcat resolvers");
+
 			
 		
 		//String id = "http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/fb3fed1f-cc9a-4232-a876-b185d8e002c8/download/osm-bremen-2018-04-04-ways-amenity.sorted.nt.bz2";

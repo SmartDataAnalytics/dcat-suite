@@ -27,6 +27,14 @@ public class CatalogResolverCaching
 		this.backend = backend;
 	}
 
+	public CatalogResolverCacheCapable getCache() {
+		return cache;
+	}
+
+	public CatalogResolver getBackend() {
+		return backend;
+	}
+
 	@Override
 	public Flowable<Resource> search(String pattern) {
 		return backend.search(pattern);

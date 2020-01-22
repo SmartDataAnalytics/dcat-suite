@@ -1,0 +1,9 @@
+CONSTRUCT {
+#  ?s a dcat:LatestVersion
+# Using a property other than rdf:type is better for faceted search
+  ?s dcat:isLatestVersion true
+} {
+  ?s ?p ?o
+  FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)
+  FILTER(NOT EXISTS { ?s owl:priorVersion ?x })
+}

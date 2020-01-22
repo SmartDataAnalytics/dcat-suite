@@ -23,10 +23,12 @@ import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
+import org.aksw.dcat.repo.impl.cache.CatalogResolverCaching;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
 import org.aksw.dcat.repo.impl.model.CatalogResolverModel;
-import org.aksw.dcat.repo.impl.model.MainDeleteme;
+import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
+import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
@@ -37,15 +39,18 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
+import org.apache.jena.sparql.lang.arq.ParseException;
 import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,6 +246,30 @@ public class MainCliDcatSuite {
 
 	}
 	
+	public static CatalogResolver createEffectiveCatalogResolver(List<String> catalogs) throws IOException, ParseException {
+
+		List<CatalogResolver> catalogResolvers = new ArrayList<>();
+
+		CatalogResolver defaultResolver = CatalogResolverUtils.createCatalogResolverDefault();
+		catalogResolvers.add(defaultResolver);
+		//catalogResolvers.addAll((defaultResolver));
+		
+		for(String catalog : catalogs) {
+			Model model = RDFDataMgr.loadModel(catalog);
+			
+			logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
+			
+			RDFConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
+			catalogResolvers.add(CatalogResolverUtils.createCatalogResolver(conn));
+			//catalogResolvers.add(new CatalogResolverModel(model));
+		}
+		
+		CatalogResolver result = CatalogResolverMulti.wrapIfNeeded(catalogResolvers);
+
+		return result;
+	}
+	
+	
 	public static void main(String[] args) throws Exception {
 
 		
@@ -298,21 +327,8 @@ public class MainCliDcatSuite {
 			}
 			String pattern = noas.get(0);
 
-			List<CatalogResolver> catalogResolvers = new ArrayList<>();
-			for(String catalog : cmSearch.catalogs) {
-				Model model = RDFDataMgr.loadModel(catalog);
-				
-				logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
-				
-				RDFConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
-				catalogResolvers.add(MainDeleteme.createCatalogResolver(conn));
-				//catalogResolvers.add(new CatalogResolverModel(model));
-			}
-			
-			CatalogResolverMulti effectiveCatalogResolver = new CatalogResolverMulti(catalogResolvers);
-			
-			
-			search(effectiveCatalogResolver, pattern);
+			CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);			
+			searchDcat(effectiveCatalogResolver, pattern);
 			break;
 		}
 		case "data": {
@@ -322,18 +338,7 @@ public class MainCliDcatSuite {
 			}
 			String artifactId = noas.get(0);
 
-			List<CatalogResolver> catalogResolvers = new ArrayList<>();
-			for(String catalog : cmData.catalogs) {
-				Model model = RDFDataMgr.loadModel(catalog);
-				
-				logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
-				
-				catalogResolvers.add(new CatalogResolverModel(model));
-			}
-			
-			CatalogResolverMulti effectiveCatalogResolver = new CatalogResolverMulti(catalogResolvers);
-			
-			
+			CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);						
 			showData(effectiveCatalogResolver, artifactId, cmData.contentType, cmData.encodings, cmData.link);
 			break;
 		}
@@ -544,13 +549,61 @@ public class MainCliDcatSuite {
 			//conn.rollback();
 		}
 	}
-	
-	public static void search(CatalogResolver catalogResolver, String pattern) throws IOException {
-		//MainDeleteme.createCatalogResolver();
-		List<Resource> matches = catalogResolver.search(pattern).toList().blockingGet();
-		for(Resource match : matches) {
-			RDFDataMgr.write(System.out, match.getModel(), RDFFormat.TURTLE_PRETTY);
+
+	public static void searchDcat(Collection<SearchResult> acc, CatalogResolver catalogResolver, String pattern) throws IOException {
+		if(catalogResolver instanceof CatalogResolverCaching) {
+			
+		} else if(catalogResolver instanceof CatalogResolverMulti) {
+			Collection<CatalogResolver> subResolvers = ((CatalogResolverMulti)catalogResolver).getResolvers();
+			for(CatalogResolver subResolver : subResolvers) {
+				searchDcat(acc, subResolver, pattern);
+			}
+		} else if(catalogResolver instanceof CatalogResolverSparql) {
+			CatalogResolverSparql crs = (CatalogResolverSparql)catalogResolver;
+			SparqlQueryConnection conn = crs.getConnection();
+			
+			Query patternQuery = crs.getPatternToQuery().apply(pattern);
+			List<SearchResult> matches = CatalogResolverSparql.searchDcat(conn, patternQuery);
+			logger.info(matches.size() + " matches from sparql-based resolver " + catalogResolver);
+			acc.addAll(matches);
+			
+		} else {
+			List<Resource> matches = catalogResolver.search(pattern).toList().blockingGet();
+			logger.info(matches.size() + " matches from generic resolver " + catalogResolver);
+			acc.addAll(matches.stream().map(x -> x.as(SearchResult.class)).collect(Collectors.toList()));
 		}
+	}
+	
+	public static List<CatalogResolver> unnestResolvers(List<CatalogResolver> acc, CatalogResolver resolver) {
+		if(resolver instanceof CatalogResolverCaching) {
+			CatalogResolver subResolver = ((CatalogResolverCaching)resolver).getBackend();
+			unnestResolvers(acc, subResolver);
+		} else if(resolver instanceof CatalogResolverMulti) {
+			Collection<CatalogResolver> subResolvers = ((CatalogResolverMulti)resolver).getResolvers();
+			for(CatalogResolver subResolver : subResolvers) {
+				unnestResolvers(acc, subResolver);
+			}
+		} else {
+			acc.add(resolver);
+		}
+		return acc;
+	}
+	
+	public static void searchDcat(CatalogResolver catalogResolver, String pattern) throws IOException {
+		List<CatalogResolver> catalogs = unnestResolvers(new ArrayList<>(), catalogResolver);
+		logger.info("Searching " + catalogs.size() + " catalogs for '" + pattern + "'");
+		List<SearchResult> items = new ArrayList<SearchResult>();
+		for(int i = 0; i < catalogs.size(); ++i) {
+			CatalogResolver catalog = catalogs.get(i);
+			try {
+				searchDcat(items, catalog, pattern);
+			} catch(Exception e) {
+				logger.info("Lookup failed for resolver " + catalog);
+			}
+		}
+
+		Collections.sort(items, SearchResult::defaultCompare);
+		MainDeleteme.print(items);
 	}
 	
 	
@@ -568,12 +621,16 @@ public class MainCliDcatSuite {
 			}
 		}
 		
+		catalogResolver.resolveDataset(artifactId).blockingGet();
+		catalogResolver.resolveDistribution(artifactId).toList().blockingGet();
+		//catalogResolver.resolveDataset(artifactId).blockingGet();
+		
 		HttpRequest request = HttpResourceRepositoryFromFileSystemImpl.createRequest(artifactId, formatOrContentType, encodings);
 		HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl.createDefault();
 		RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
 
 		if(entity == null) {
-			throw new RuntimeException("Could not obtain an HTTP entity from given arguments");
+			throw new RuntimeException("Could not obtain an HTTP entity from given arguments " + artifactId + " " + formatOrContentType + " " + encodings);
 		}
 
 		//RdfHttpEntityFile entity = HttpResourceRepositoryFromFileSystemImpl.get(repo, artifactId, contentType, encodings);

@@ -27,6 +27,14 @@ public class CatalogResolverMulti
 		this.resolvers = resolvers;
 	}
 	
+	public static CatalogResolver wrapIfNeeded(Collection<CatalogResolver> resolvers) {
+		CatalogResolver result = resolvers.size() == 1
+				? resolvers.iterator().next()
+				: new CatalogResolverMulti(resolvers);
+				
+		return result;
+	}
+	
 	@Override
 	public Flowable<Resource> search(String pattern) {
 		return Flowable.fromIterable(resolvers)
