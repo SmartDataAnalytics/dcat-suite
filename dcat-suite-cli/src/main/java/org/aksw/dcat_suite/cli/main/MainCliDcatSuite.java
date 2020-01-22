@@ -60,6 +60,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
@@ -602,7 +603,7 @@ public class MainCliDcatSuite {
 			}
 		}
 
-		Collections.sort(items, SearchResult::defaultCompare);
+		Collections.sort(items, Ordering.from(SearchResult::defaultCompare).reversed());
 		MainDeleteme.print(items);
 	}
 	

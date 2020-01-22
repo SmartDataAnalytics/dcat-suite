@@ -135,7 +135,9 @@ public class CatalogResolverSparql
 //		fq.focus().fwd(DCTerms.identifier).one().constraints().regex(pattern).activate();
 //		fq.focus().fwd(DCAT.downloadURL).one().constraints().regex(pattern).activate();
 //		fq.focus().constraints().regex(pattern).activate();
-		
+
+		fq.focus().fwd(RDF.type).one().constraints().eq(DCAT.Dataset).activate();
+
 		long maxItems = 100l;
 		CountInfo countInfo = fq.focus().availableValues()
 			.count(maxItems, 10000l)

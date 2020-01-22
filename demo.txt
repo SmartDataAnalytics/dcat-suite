@@ -1,0 +1,26 @@
+# Use the dcat client to search the configured catalogs
+dcat search train_2
+
+# Retrieve data (either using dcterm:identifier or the uri of the dcat dataset)
+dcat data org.limbo:train_2:0.2
+dcat data https://metadata.limbo-project.org/dataset-org.limbo-train_2-0.2
+
+# Retrieve prior version
+dcat data org.limbo:train_2:0.1
+
+# Request the data in a different format and encoding
+dcat data --format rdf --link org.limbo:train_2:0.2
+dcat data --format rdf.bz2 org.limbo:train_2:0.2 | bzip2 -d
+
+# Show dcat catalog system configuration
+less ~/.dcat/settings.ttl
+
+# View the configured catalog
+less /home/raven/Projects/limbo/git/metadata-catalog/catalog.all.ttl
+
+# Browse the catalog in the faceted browser
+facete3 /home/raven/Projects/limbo/git/metadata-catalog/catalog.all.ttl
+
+# This also works for remote SPARQL endpoints
+facete3 https://databus.dbpedia.org/repo/sparql
+
