@@ -1,53 +1,42 @@
 package org.aksw.dcat_suite.cli.main;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Console;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
-import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
-import org.aksw.dcat.repo.impl.model.DCATX;
 import org.aksw.dcat.repo.impl.model.SearchResult;
-import org.aksw.facete.v3.api.FacetedQuery;
 import org.aksw.facete.v3.experimental.VirtualPartitionedQuery;
-import org.aksw.facete.v3.impl.FacetedQueryBuilder;
 import org.aksw.facete.v3.impl.RDFConnectionBuilder;
-import org.aksw.jena_sparql_api.concepts.Concept;
+import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
+import org.aksw.jena_sparql_api.algebra.utils.FixpointIteration;
+import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.TernaryRelation;
-import org.aksw.jena_sparql_api.concepts.UnaryRelation;
-import org.aksw.jena_sparql_api.conjure.datapod.api.DataPodFactory;
-import org.aksw.jena_sparql_api.data_query.api.DataQuery;
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
+import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
+import org.aksw.jena_sparql_api.conjure.fluent.ConjureContext;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
-import org.aksw.jena_sparql_api.utils.CountInfo;
-import org.aksw.jena_sparql_api.utils.NodeUtils;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.optimize.Rewrite;
 import org.apache.jena.sparql.lang.arq.ParseException;
 import org.apache.jena.sys.JenaSystem;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
-
-import com.github.jsonldjava.shaded.com.google.common.collect.Ordering;
 
 public class MainDeleteme {
 
@@ -129,8 +118,55 @@ public class MainDeleteme {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException, ParseException {
+	
+	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
+		JenaSystem.init();
+		Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
+		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
+		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
+
+		List<TernaryRelation> views = new ArrayList<>();
+		
+		views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
+		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
+		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
+
+		//views.add(RelationUtils.SPO);
+
+		Query userQuery = QueryFactory.create("SELECT * { ?s <http://foo.bar/baz> ?o }");
+//		Query userQuery = QueryFactory.create("SELECT * { ?s ?p ?o }");
+
+		Query rawRewrite = VirtualPartitionedQuery.rewrite(views, userQuery);
+		
+		Rewrite coreRewriter = AlgebraUtils.createDefaultRewriter();
+//		Function<Op, Op> rewriter = op -> FixpointIteration.apply(100, op, coreRewriter::rewrite);
+		Function<Op, Op> rewriter = op -> coreRewriter.rewrite(op);
+		
+		Query finalRewrite = QueryUtils.rewrite(rawRewrite, rewriter::apply);
+		
+		System.out.println("User Query:");
+		System.out.println(userQuery);
+		System.out.println();
+		System.out.println("Rewrite");
+		System.out.println(finalRewrite);
+
+		
+	}
+	public static void main3(String[] args) throws IOException, ParseException {
 		CatalogResolverUtils.createCatalogResolverDefault();
+		
+		
+		ConjureContext ctx = new ConjureContext();
+		Model xmodel = ctx.getModel();
+		xmodel.setNsPrefix("rpif", DefaultPrefixes.prefixes.getNsPrefixURI("rpif"));
+
+		ConjureBuilder cj = new ConjureBuilderImpl(ctx);
+		cj.union(
+			cj.fromDataRef(null).construct("CONSTRUCT WHERE { tp1 }"),
+			cj.fromDataRef(null).construct("CONSTRUCT WHERE { tp2 }"),
+			cj.fromDataRef(null).construct("CONSTRUCT WHERE { tp3 }")
+		);
+		
 	}
 	
 	public static void main2(String[] args) throws FileNotFoundException, IOException, ParseException {

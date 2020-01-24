@@ -138,15 +138,22 @@ public class CatalogResolverSparql
 
 		fq.focus().fwd(RDF.type).one().constraints().eq(DCAT.Dataset).activate();
 
+		boolean doCounting = true;
+		long count = -1;
 		long maxItems = 100l;
-		CountInfo countInfo = fq.focus().availableValues()
-			.count(maxItems, 10000l)
-			.timeout(10, TimeUnit.SECONDS)
-			.blockingGet();
+		CountInfo countInfo = null;
+		if(doCounting) {
+			countInfo = fq.focus().availableValues()
+				.count(maxItems, 10000l)
+				.timeout(10, TimeUnit.SECONDS)
+				.blockingGet();
+			count = countInfo.getCount();
+		}
 
 		boolean abort = false;
-		long count = countInfo.getCount();
-		if(count == 0) {
+		if(count == -1) {
+			// Nothing to do
+		} else if(count == 0) {
 			System.err.println("No matches");
 			abort = true;
 		} else if(count >= maxItems) {
@@ -155,7 +162,6 @@ public class CatalogResolverSparql
 				abort = true;
 			}
 		}
-
 		
 		DataQuery<RDFNode> dataQuery = fq.focus().availableValues()
 				.add(RDF.type)
