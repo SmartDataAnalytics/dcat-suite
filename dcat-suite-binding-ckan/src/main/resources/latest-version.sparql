@@ -1,9 +1,19 @@
 CONSTRUCT {
-#  ?s a dcat:LatestVersion
-# Using a property other than rdf:type is better for faceted search
-  ?s dcat:isLatestVersion true
+
+  ?s dcat:versionTag "latest"
+
+  # The tp below breaks with virtuoso as it returns the boolean as an int,
+  # causing a type cast exception Integer->Boolean *shrug*
+  # ?s dcat:isLatestVersion true
+
+  #  ?s a dcat:LatestVersion
+  # Using a property other than rdf:type is better for faceted search
 } {
-  ?s ?p ?o
-  FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)
-  FILTER(NOT EXISTS { ?s owl:priorVersion ?x })
+    { SELECT DISTINCT ?s { ?s dcat:distribution [] } }
+  UNION  
+    { SELECT DISTINCT ?s { ?s dcat:downloadURL [] } }
+  FILTER(NOT EXISTS { ?s owl:priorVersion [] })
+  
+  # ?s ?p ?o
+  #FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)
 }

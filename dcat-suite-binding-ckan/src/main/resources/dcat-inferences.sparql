@@ -5,20 +5,27 @@ CONSTRUCT {
 #SELECT ?s ?t
 {
     {
-      ?s dcat:distribution ?o
-      FILTER(NOT EXISTS { ?s a dcat:Dataset })
+      # In some cases of modeling, datasets may have hundreds of distributions
+      # In an attempt to mitigate performance issues, we try distinct here
+      { SELECT DISTINCT ?s {
+        ?s dcat:distribution ?o
+        FILTER(NOT EXISTS { ?s a dcat:Dataset })
+      } }
       BIND(dcat:Dataset AS ?t)
     }
   UNION
     {
-      ?s dcat:downloadURL ?o
-      FILTER(NOT EXISTS { ?s a dcat:Distribution })
+      { SELECT DISTINCT ?s {
+        ?s dcat:downloadURL ?o
+        FILTER(NOT EXISTS { ?s a dcat:Distribution })
+      } }
       BIND(dcat:Distribution AS ?t)
     }
-  UNION
-    {
-      ?x dcat:downloadURL ?s
-      FILTER(NOT EXISTS { ?s a dcat:DownloadURL })
-      BIND(dcat:DownloadURL AS ?t)
-    }
+
+#  UNION
+#    {
+#      ?x dcat:downloadURL ?s
+#      FILTER(NOT EXISTS { ?s a dcat:DownloadURL })
+#      BIND(dcat:DownloadURL AS ?t)
+#    }
 }

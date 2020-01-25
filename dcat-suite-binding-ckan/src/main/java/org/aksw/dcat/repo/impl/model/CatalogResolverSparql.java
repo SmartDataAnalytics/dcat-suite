@@ -138,7 +138,7 @@ public class CatalogResolverSparql
 
 		fq.focus().fwd(RDF.type).one().constraints().eq(DCAT.Dataset).activate();
 
-		boolean doCounting = true;
+		boolean doCounting = false;
 		long count = -1;
 		long maxItems = 100l;
 		CountInfo countInfo = null;
@@ -166,7 +166,7 @@ public class CatalogResolverSparql
 		DataQuery<RDFNode> dataQuery = fq.focus().availableValues()
 				.add(RDF.type)
 				//.add(DCATX.relatedDataset)
-				.add(DCATX.isLatestVersion)
+				.add(DCATX.versionTag)
 				.addOptional(DCTerms.identifier)
 				.filter(Concept.create("FILTER(isIRI(?s))", "s"));
 		

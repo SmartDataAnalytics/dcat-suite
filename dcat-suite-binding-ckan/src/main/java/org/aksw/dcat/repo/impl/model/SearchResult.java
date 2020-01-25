@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
+import org.apache.jena.ext.com.google.common.base.Objects;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.VOID;
 
 import com.google.common.collect.ComparisonChain;
 
@@ -19,8 +19,12 @@ public interface SearchResult
 	@Iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 	Collection<Resource> getTypes();
 	
-	@Iri(DCATX.Strs.isLatestVersion)
-	Boolean isLatestVersion();
+// Boolean flag breaks with virtuoso - as a workaround we use a string
+//	@Iri(DCATX.Strs.isLatestVersion)
+//	Boolean isLatestVersion();
+
+	@Iri(DCATX.Strs.versionTag)
+	String getVersionTag();
 
 	@Iri(DCATX.Strs.relatedDataset)
 	Resource getRelatedDataset();
@@ -28,6 +32,10 @@ public interface SearchResult
 	@Iri("http://purl.org/dc/terms/identifier")
 	String getIdentifier();
 	
+	default boolean isLatestVersion() {
+		String versionTag = getVersionTag();
+		return Objects.equal(versionTag, "latest");
+	}
 	
 	
 	public static int getMinIndex(Collection<?> items, List<?> order) {

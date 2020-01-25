@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,6 @@ import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.facete.v3.experimental.VirtualPartitionedQuery;
 import org.aksw.facete.v3.impl.RDFConnectionBuilder;
 import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
-import org.aksw.jena_sparql_api.algebra.utils.FixpointIteration;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.TernaryRelation;
@@ -24,15 +24,18 @@ import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureContext;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
+import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
+import org.aksw.jena_sparql_api.utils.PrefixUtils;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.impl.Util;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.optimize.Rewrite;
 import org.apache.jena.sparql.lang.arq.ParseException;
@@ -46,14 +49,27 @@ public class MainDeleteme {
 		}
 	}
 	
+	public static String fmtIri(String iri, PrefixMapping prefixMapping) {
+		Entry<String, String> prefixToIri = PrefixUtils.findLongestPrefix(prefixMapping, iri);
+		String result = prefixToIri != null 
+			? prefixToIri.getKey() + ":" + iri.substring(prefixToIri.getValue().length())
+			: iri.substring(Util.splitNamespaceXML(iri));
+			
+		return result;
+	}
+	
 	public static void print(SearchResult item) {
 		String id = item.getIdentifier();
 		if(id == null) {
 			id = item.getURI();
 		}
 		
+		PrefixMapping pm = DefaultPrefixes.prefixes;
+		
 		String types = item.getTypes().stream()
-				.map(r -> r.getLocalName())
+				.filter(RDFNode::isURIResource)
+//				.map(r -> r.getLocalName())
+				.map(r -> fmtIri(r.getURI(), pm))
 				.sorted()
 				.collect(Collectors.joining(", "));
 		
@@ -131,10 +147,22 @@ public class MainDeleteme {
 		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
 		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
 
-		//views.add(RelationUtils.SPO);
+		views.add(RelationUtils.SPO);
 
-		Query userQuery = QueryFactory.create("SELECT * { ?s <http://foo.bar/baz> ?o }");
-//		Query userQuery = QueryFactory.create("SELECT * { ?s ?p ?o }");
+		SparqlQueryParserImpl parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
+		
+//		Query userQuery = parser.apply(
+//				"SELECT ?s {\n" + 
+//				"  ?s a dcat:Dataset\n" + 
+//				"  OPTIONAL { ?s dct:identifier ?id}\n" + 
+//				"  FILTER(regex(str(?s), 'pattern') || regex(str(?id), 'pattern'))\n" + 
+//				"}");
+		
+//		QueryUtils.optimizePrefixes(userQuery);
+		
+//		Query userQuery = QueryFactory.create("SELECT * { ?s <http://foo.bar/baz> ?o }");
+		Query userQuery = parser.apply("SELECT * { ?s a ?t . FILTER(?t = dcat:Dataset) }");
+		QueryUtils.optimizePrefixes(userQuery);
 
 		Query rawRewrite = VirtualPartitionedQuery.rewrite(views, userQuery);
 		
@@ -147,7 +175,7 @@ public class MainDeleteme {
 		System.out.println("User Query:");
 		System.out.println(userQuery);
 		System.out.println();
-		System.out.println("Rewrite");
+		System.out.println("Final Rewrite");
 		System.out.println(finalRewrite);
 
 		
