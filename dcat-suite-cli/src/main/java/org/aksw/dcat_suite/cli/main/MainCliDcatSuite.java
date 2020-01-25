@@ -31,6 +31,9 @@ import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
+import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
+import org.aksw.jena_sparql_api.core.connection.QueryExecutionFactorySparqlQueryConnection;
+import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
@@ -260,7 +263,8 @@ public class MainCliDcatSuite {
 			
 			logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
 			
-			RDFConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
+			SparqlQueryConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
+			
 			catalogResolvers.add(CatalogResolverUtils.createCatalogResolver(conn));
 			//catalogResolvers.add(new CatalogResolverModel(model));
 		}

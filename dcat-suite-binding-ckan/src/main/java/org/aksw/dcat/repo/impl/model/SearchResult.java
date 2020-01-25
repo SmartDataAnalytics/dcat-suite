@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
+import org.aksw.jena_sparql_api.mapper.annotation.IriType;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
 import org.apache.jena.ext.com.google.common.base.Objects;
 import org.apache.jena.rdf.model.Resource;
@@ -24,6 +25,7 @@ public interface SearchResult
 //	Boolean isLatestVersion();
 
 	@Iri(DCATX.Strs.versionTag)
+	@IriType
 	String getVersionTag();
 
 	@Iri(DCATX.Strs.relatedDataset)
@@ -34,7 +36,7 @@ public interface SearchResult
 	
 	default boolean isLatestVersion() {
 		String versionTag = getVersionTag();
-		return Objects.equal(versionTag, "latest");
+		return Objects.equal(versionTag, DCATX.Strs.latestVersion);
 	}
 	
 	

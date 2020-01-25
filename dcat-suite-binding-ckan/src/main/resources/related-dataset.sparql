@@ -2,9 +2,18 @@ CONSTRUCT {
   ?s dcat:relatedDataset ?d
 }
 {
-    { ?d dcat:distribution ?x BIND(?d AS ?s) } # datasets are related to themselves
-  UNION
+
+# Breaks on Virtuoso when filtering on ?s    { ?d dcat:distribution ?x BIND(?d AS ?s) } # datasets are related to themselves
+# Virtuoso 37000 Error SP031: SPARQL compiler: Internal error: sparp_gp_deprecate(): equiv replaces filter but under deprecation
+# Also breaks if we reverse variables:
+# Virtuoso 37000 Error SQ142: Different number of expected and generated columns in a select
+#
+#    { ?s dcat:distribution ?x BIND(?s AS ?d) } # datasets are related to themselves
+
+#    { SELECT DISTINCT ?s ?d { ?s dcat:distribution ?x BIND(IRI(STR(?s)) AS ?d) } }
+#  UNION
     { ?d dcat:distribution ?s }
   UNION
-    { ?d dcat:distribution/dcat:downloadURL ?s }
+    #{ ?d dcat:distribution/dcat:downloadURL ?s }
+    { ?d dcat:distribution ?x . ?x dcat:downloadURL ?s }
 }

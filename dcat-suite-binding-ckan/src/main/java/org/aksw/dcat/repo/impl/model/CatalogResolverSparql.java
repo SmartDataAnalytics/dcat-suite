@@ -209,7 +209,7 @@ public class CatalogResolverSparql
 			Var v = Var.alloc(placeholder);
 			result = QueryUtils.applyNodeTransform(shape, n -> n.equals(v) ? item.asNode() : n);
 		}
-		return result;		
+		return result;
 	}
 
 	public static DcatDataset fetchDataset(SparqlQueryConnection conn, SearchResult item, Query shape) {
@@ -307,6 +307,12 @@ public class CatalogResolverSparql
 
 	@Override
 	public Flowable<DistributionResolver> resolveDistribution(String distributionId) {
+		
+//		return resolveAny(distributionId, idToQuery, DCAT.Distribution)
+//				.firstElement()
+//				.map(this::searchResultToDataset)
+//				.map(e -> new DatasetResolverImpl(this, e.as(DcatDataset.class)));
+
 		//new DistributionResolverImpl(datasetResolver, dcatDistribution)
 		// FIXME The setup of the DatasetResolver is a hack: We need to fetch the information properly
 		return Flowable.empty();

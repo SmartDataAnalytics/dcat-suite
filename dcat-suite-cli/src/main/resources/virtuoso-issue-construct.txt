@@ -1,0 +1,137 @@
+Virtuoso 37000 Error SQ142: Different number of expected and generated columns in a select
+
+SPARQL query:
+define sql:big-data-const 0 
+#output-format:text/html
+
+CONSTRUCT 
+  { 
+    <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset> ?b ?DISTRIBUTION .
+    ?DISTRIBUTION ?d ?e .
+  }
+WHERE
+  {
+   {   {   {   { { SELECT DISTINCT  ?inj_1
+                      WHERE
+                        { ?inj_1  <http://www.w3.org/ns/dcat#distribution>  ?v_1
+                          FILTER NOT EXISTS { ?inj_1  a                     <http://www.w3.org/ns/dcat#Dataset> }
+                          FILTER ( ?inj_1 = <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset> )
+                        }
+                    }
+                    BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?DISTRIBUTION)
+                  }
+                UNION
+                  { { SELECT DISTINCT  ?inj_1
+                      WHERE
+                        { ?inj_1  <http://www.w3.org/ns/dcat#downloadURL>  ?v_1
+                          FILTER NOT EXISTS { ?inj_1  a                     <http://www.w3.org/ns/dcat#Distribution> }
+                          FILTER ( ?inj_1 = <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset> )
+                        }
+                    }
+                    BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?DISTRIBUTION)
+                  }
+                BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?b)
+              }
+            UNION
+              { {   { { SELECT DISTINCT  ?inj_1
+                        WHERE
+                          { ?inj_1  <http://www.w3.org/ns/dcat#distribution>  ?x
+                            FILTER ( ?inj_1 = <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset> )
+                          }
+                      }
+                    }
+                  UNION
+                    { { SELECT DISTINCT  ?inj_1
+                        WHERE
+                          { ?inj_1  <http://www.w3.org/ns/dcat#downloadURL>  ?x
+                            FILTER ( ?inj_1 = <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset> )
+                          }
+                      }
+                    }
+                  FILTER NOT EXISTS { ?inj_1  <http://www.w3.org/2002/07/owl#priorVersion>  ?x }
+                }
+                BIND(<http://www.w3.org/ns/dcat#versionTag> AS ?b)
+                BIND(<http://www.w3.org/ns/dcat#latestVersion> AS ?DISTRIBUTION)
+              }
+          }
+        UNION
+          {   { ?DISTRIBUTION
+                          <http://www.w3.org/ns/dcat#distribution>  <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset>
+              }
+            UNION
+              { ?DISTRIBUTION
+                          <http://www.w3.org/ns/dcat#distribution>  ?x .
+                ?x        <http://www.w3.org/ns/dcat#downloadURL>  <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset>
+              }
+            BIND(<http://www.w3.org/ns/dcat#relatedDataset> AS ?b)
+          }
+      }
+    UNION
+      { <https://downloads.dbpedia.org/repo/lts/transition/links/2017.09.01/dataid.ttl#Dataset>
+                  ?b  ?DISTRIBUTION
+      }
+    OPTIONAL
+      {   {   {   {   { { SELECT DISTINCT  ?DISTRIBUTION
+                          WHERE
+                            { ?DISTRIBUTION
+                                        <http://www.w3.org/ns/dcat#distribution>  ?v_1
+                              FILTER NOT EXISTS { ?DISTRIBUTION
+                                                            a                     <http://www.w3.org/ns/dcat#Dataset>
+                                                }
+                            }
+                        }
+                        BIND(<http://www.w3.org/ns/dcat#Dataset> AS ?e)
+                      }
+                    UNION
+                      { { SELECT DISTINCT  ?DISTRIBUTION
+                          WHERE
+                            { ?DISTRIBUTION
+                                        <http://www.w3.org/ns/dcat#downloadURL>  ?v_1
+                              FILTER NOT EXISTS { ?DISTRIBUTION
+                                                            a                     <http://www.w3.org/ns/dcat#Distribution>
+                                                }
+                            }
+                        }
+                        BIND(<http://www.w3.org/ns/dcat#Distribution> AS ?e)
+                      }
+                    BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?d)
+                  }
+                UNION
+                  { {   { { SELECT DISTINCT  ?DISTRIBUTION
+                            WHERE
+                              { ?DISTRIBUTION
+                                          <http://www.w3.org/ns/dcat#distribution>  ?x
+                              }
+                          }
+                        }
+                      UNION
+                        { { SELECT DISTINCT  ?DISTRIBUTION
+                            WHERE
+                              { ?DISTRIBUTION
+                                          <http://www.w3.org/ns/dcat#downloadURL>  ?x
+                              }
+                          }
+                        }
+                      FILTER NOT EXISTS { ?DISTRIBUTION
+                                                    <http://www.w3.org/2002/07/owl#priorVersion>  ?x
+                                        }
+                    }
+                    BIND(<http://www.w3.org/ns/dcat#versionTag> AS ?d)
+                    BIND(<http://www.w3.org/ns/dcat#latestVersion> AS ?e)
+                  }
+              }
+            UNION
+              {   { ?e  <http://www.w3.org/ns/dcat#distribution>  ?DISTRIBUTION }
+                UNION
+                  { ?e  <http://www.w3.org/ns/dcat#distribution>  ?x .
+                    ?x  <http://www.w3.org/ns/dcat#downloadURL>  ?DISTRIBUTION
+                  }
+                BIND(<http://www.w3.org/ns/dcat#relatedDataset> AS ?d)
+              }
+          }
+        UNION
+          { ?DISTRIBUTION
+                      ?d  ?e
+          }
+      }
+  }

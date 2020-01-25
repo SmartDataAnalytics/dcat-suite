@@ -1,0 +1,6 @@
+CONSTRUCT {
+  ?s dcat:relatedDataset ?s
+}
+{
+  { SELECT DISTINCT ?s { ?s dcat:distribution ?x } }
+}

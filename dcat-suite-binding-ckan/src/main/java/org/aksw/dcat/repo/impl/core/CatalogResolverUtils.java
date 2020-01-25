@@ -26,6 +26,9 @@ import org.aksw.jena_sparql_api.concepts.TernaryRelation;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPods;
 import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRef;
+import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
+import org.aksw.jena_sparql_api.core.connection.QueryExecutionFactorySparqlQueryConnection;
+import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
 import org.aksw.jena_sparql_api.utils.NodeUtils;
@@ -35,6 +38,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionModular;
+import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.lang.arq.ParseException;
 import org.slf4j.Logger;
@@ -72,7 +77,7 @@ public class CatalogResolverUtils {
 	};
 
 	
-	public static CatalogResolver createCatalogResolver(RDFConnection _conn) throws FileNotFoundException, IOException, ParseException {
+	public static CatalogResolver createCatalogResolver(SparqlQueryConnection _conn) throws FileNotFoundException, IOException, ParseException {
 		Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
 		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
 		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
@@ -87,7 +92,7 @@ public class CatalogResolverUtils {
 		//views.add(Ternar);
 
 
-		RDFConnection conn = RDFConnectionBuilder.from(_conn)
+		RDFConnection conn = RDFConnectionBuilder.from(new RDFConnectionModular(_conn, null, null))
 				.addQueryTransform(q -> VirtualPartitionedQuery.rewrite(views, q))
 				.getConnection();
 		
@@ -134,7 +139,18 @@ public class CatalogResolverUtils {
 					
 					logger.info("Loaded catalog: " + dataPod + " from " + dataRef);
 					
-					RDFConnection conn = dataPod.openConnection();
+					SparqlQueryConnection conn = dataPod.openConnection();
+					
+					// Wrap with client side construct because ... virtuoso
+					conn = new SparqlQueryConnectionJsa(
+							FluentQueryExecutionFactory
+							.from(new QueryExecutionFactorySparqlQueryConnection(conn))
+							.config()
+								.withClientSideConstruct()
+							.end()
+							.create());
+
+					
 					CatalogResolver resolver = createCatalogResolver(conn);
 					coreResolver.getResolvers().add(resolver);
 					
@@ -170,7 +186,8 @@ public class CatalogResolverUtils {
 		//String id = "fb3fed1f-cc9a-4232-a876-b185d8e002c8";
 		//String id = "http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity";
 		
-		CatalogResolver result = wrapWithDiskCache(coreResolver);
+//		CatalogResolver result = wrapWithDiskCache(coreResolver);
+		CatalogResolver result = coreResolver;
 
 		return result;
 	}

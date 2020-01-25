@@ -15,11 +15,13 @@ public class DCATX {
 	public static final Property relatedDataset = ResourceFactory.createProperty(Strs.relatedDataset);
 	public static final Property versionTag = ResourceFactory.createProperty(Strs.versionTag);
 
+	public static final Resource latestVersion = ResourceFactory.createResource(Strs.latestVersion);
 
 	public static class Strs {
 		public static final String DownloadURL = DCAT.NS + "DownloadURL";
 		//public static final String isLatestVersion = DCAT.NS + "isLatestVersion";
 		public static final String relatedDataset = DCAT.NS + "relatedDataset";		
 		public static final String versionTag = DCAT.NS + "versionTag";
+		public static final String latestVersion = DCAT.NS + "latestVersion";
 	}
 }
