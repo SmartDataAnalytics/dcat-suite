@@ -103,7 +103,7 @@ The second version provides all information as a JSON array, such as for subsequ
 ```
 
 The search command actually maps to a SPARQL query template and can in principle be exchanged with custom semantics.
-* [match-by-regex.sparql](../dcat-suite-binding-ckan/src/main/resoures/match-by-regex.sparql) - Template for matching items based on the search pattern. The resource IRIs and - if available - dct:identifiers will be used as the primary means of identification.
+* [match-by-regex.sparql](../dcat-suite-binding-ckan/src/main/resources/match-by-regex.sparql) - Template for matching items based on the search pattern. The resource IRIs and - if available - dct:identifiers will be used as the primary means of identification.
 * [match-exact.sparql](../dcat-suite-binding-ckan/src/main/resources/match-exact.sparql) - Match items by the exact given string - namely resource IRI and dct:identifier.
 
 Note, that if items actually have identifiers but use a vocabulary term different from dct:identifier, a view can be provided to align the models from the vantage point of the dcat client.
