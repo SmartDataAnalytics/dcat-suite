@@ -104,7 +104,7 @@ public class CatalogResolverUtils {
 		return views;
 	}
 	
-	public static CatalogResolver createCatalogResolver(SparqlQueryConnection conn, List<String> extraViews) throws FileNotFoundException, IOException, ParseException {
+	public static CatalogResolverSparql createCatalogResolver(SparqlQueryConnection conn, List<String> extraViews) throws FileNotFoundException, IOException, ParseException {
 		List<TernaryRelation> views = loadViews(extraViews);
 //
 //		
@@ -115,7 +115,7 @@ public class CatalogResolverUtils {
 		Function<String, Query> patternToQuery = loadTemplate("match-by-regex.sparql", "ARG");		
 		Function<String, Query> idToQuery = loadTemplate("match-exact.sparql", "ARG");
 
-		CatalogResolver result = new CatalogResolverSparql(_conn, idToQuery, patternToQuery);
+		CatalogResolverSparql result = new CatalogResolverSparql(_conn, idToQuery, patternToQuery);
 		return result;
 
 	}

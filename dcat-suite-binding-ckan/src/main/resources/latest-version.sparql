@@ -15,7 +15,7 @@ CONSTRUCT {
     { SELECT DISTINCT ?s { ?s dcat:distribution ?x } }
   UNION  
     { SELECT DISTINCT ?s { ?s dcat:downloadURL ?x } }
-  FILTER(NOT EXISTS { ?s owl:priorVersion ?x })
+  FILTER(NOT EXISTS { ?y owl:priorVersion ?s })
   
   # ?s ?p ?o
   #FILTER(?p = dcat:distribution || ?p = dcat:downloadURL)

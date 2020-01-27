@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -18,13 +19,17 @@ import org.aksw.facete.v3.api.FacetNode;
 import org.aksw.facete.v3.api.FacetedQuery;
 import org.aksw.facete.v3.impl.FacetedQueryBuilder;
 import org.aksw.jena_sparql_api.concepts.Concept;
+import org.aksw.jena_sparql_api.concepts.Relation;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.UnaryRelation;
 import org.aksw.jena_sparql_api.data_query.api.DataQuery;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
+import org.aksw.jena_sparql_api.rx.SparqlRx;
 import org.aksw.jena_sparql_api.utils.CountInfo;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
 import org.aksw.jena_sparql_api.vocab.DCAT;
+import org.apache.jena.ext.com.google.common.collect.Maps;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -70,6 +75,10 @@ public class CatalogResolverSparql
 		return idToQuery;
 	}
 
+	public Query getDcatShape() {
+		return dcatShape;
+	}
+
 	@Override
 	public Flowable<Resource> search(String pattern) {
 		return resolveAny(pattern, patternToQuery, null)
@@ -92,7 +101,10 @@ public class CatalogResolverSparql
 	}
 	
 	
-	public static List<SearchResult> searchDcat(SparqlQueryConnection conn, Query instanceQuery) {
+	public static List<SearchResult> searchDcat(
+			SparqlQueryConnection conn,
+			Query instanceQuery,
+			Query shapeQuery) {
 
 		FacetedQuery fq = FacetedQueryBuilder.builder()
 				.configDataConnection()
@@ -135,7 +147,7 @@ public class CatalogResolverSparql
 
 		fq.focus().fwd(RDF.type).one().constraints().eq(DCAT.Dataset).activate();
 
-		boolean doCounting = false;
+		boolean doCounting = true;
 		long count = -1;
 		long maxItems = 100l;
 		CountInfo countInfo = null;
@@ -167,22 +179,69 @@ public class CatalogResolverSparql
 				.addOptional(DCTerms.identifier)
 				.filter(Concept.create("FILTER(isIRI(?s))", "s"));
 		
+		
+		Entry<Node, Query> q = combineDataQueryWithShape(dataQuery, shapeQuery);
+		
 //		System.out.println("DATA QUERY: " + dataQuery.toConstructQuery());
 				
 		List<SearchResult> list = null;
 		if(!abort) {
-//			System.out.println("Matches:");
-			list = dataQuery
-					.exec()
+			list = SparqlRx.execConstructGrouped(conn, q)
 					.map(x -> x.as(SearchResult.class))
 					.timeout(10, TimeUnit.SECONDS)
 					.sorted(Ordering.from(SearchResult::defaultCompare).reversed())
 					.toList().blockingGet();
+//			System.out.println("Matches:");
+//			list = dataQuery
+//					.exec()
+//					.map(x -> x.as(SearchResult.class))
+//					.timeout(10, TimeUnit.SECONDS)
+//					.sorted(Ordering.from(SearchResult::defaultCompare).reversed())
+//					.toList().blockingGet();
 
 		}		
 //		System.out.println("Pick: " + pick);
 	
 		return list;
+	}
+	
+	public static Entry<Node, Query> combineDataQueryWithShape(DataQuery<RDFNode> dq, Query shape) {
+		//DataQuery<RDFNode> dq = createSearchDataQuery(pattern, patternToQuery, null);
+		
+		//Query shape = this.dcatShape;
+		Var shapeRootVar = Var.alloc("DATASET");
+		
+		Entry<Node, Query> e = dq.toConstructQuery();
+		UnaryRelation ur = new Concept(e.getValue().getQueryPattern(), (Var)e.getKey());
+		
+		Relation r = RelationUtils.fromQuery(shape);
+		Relation el = r.joinOn(shapeRootVar)
+			.filterRelationFirst(true)
+			.with(ur)
+			;
+
+		Query tmp = new Query();
+		tmp.setQuerySelectType();
+		tmp.setQueryPattern(el.getElement());;
+		Query finalQuery = QueryUtils.restoreQueryForm(tmp, shape);
+		
+		Entry<Node, Query> result = Maps.immutableEntry(shapeRootVar, finalQuery);
+		return result;
+		//Flowable<RDFNode> result = SparqlRx.execConstructGrouped(conn, shapeRootVar, finalQuery);
+		//return result;
+//		List<RDFNode> items = SparqlRx.execConstructGrouped(conn, shapeRootVar, finalQuery)
+//			.toList()
+//			.blockingGet();
+//		
+//		for(RDFNode item : items) {
+//			System.out.println("Item: "  + item);
+//			RDFDataMgr.write(System.out, item.getModel(), RDFFormat.TURTLE_PRETTY);
+//		}
+//		
+//		System.out.println("Printed " + items.size() + " items");
+//		
+//		System.out.println("Relation");
+//		System.out.println(el);
 	}
 	
 	
@@ -228,15 +287,15 @@ public class CatalogResolverSparql
 			RDFNode type) {
 
 		Query intstanceQuery = patternToQuery.apply(pattern);
-		List<SearchResult> l = searchDcat(conn, intstanceQuery);
+		List<SearchResult> l = searchDcat(conn, intstanceQuery, dcatShape);
 		
 		return Flowable.fromIterable(l);
 			//.map(RDFNode::asResource);
 	}
 	
 	
-	public Flowable<Resource> resolveAnyOld(
-			String pattern,
+	
+	public DataQuery<RDFNode> createSearchDataQuery(String pattern,
 			Function<String, Query> patternToQuery,
 			RDFNode type) {
 		FacetedQuery fq = FacetedQueryBuilder.builder()
@@ -261,9 +320,20 @@ public class CatalogResolverSparql
 			}
 		}
 		
-		DataQuery<RDFNode> dataQuery = fq.focus().availableValues()
-			.filter(Concept.create("FILTER(isIRI(?s))", "s"))
-			.add(RDF.type);
+		DataQuery<RDFNode> result = fq.focus().availableValues()
+			.filter(Concept.create("FILTER(isIRI(?s))", "s"));
+		
+		return result;
+	}
+	
+	
+	public Flowable<Resource> resolveAnyOld(
+			String pattern,
+			Function<String, Query> patternToQuery,
+			RDFNode type) {
+
+		DataQuery<RDFNode> dataQuery = createSearchDataQuery(pattern, patternToQuery, type)
+				.add(RDF.type);
 		
 //		System.out.println("DATA QUERY: ");
 //		System.out.println(dataQuery.toConstructQuery());

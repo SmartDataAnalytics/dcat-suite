@@ -288,7 +288,7 @@ public class MainCliDcatSuite {
 	
 	public static void main(String[] args) throws Exception {
 		JenaSystem.init();
-		
+
 		// TODO Move to a plugin
 		JenaPluginUtils.registerResourceClasses(SearchResult.class);
 		JenaPluginUtils.registerResourceClasses(DcatResolver.class);
@@ -393,7 +393,7 @@ public class MainCliDcatSuite {
 			}
 			break;
 		}
-		
+
 		case "import": {
 			String importCmd = importSubCommands.getParsedCommand();
 			switch(importCmd) {
@@ -571,6 +571,18 @@ public class MainCliDcatSuite {
 		}
 	}
 
+	/**
+	 * Search catalogs for a given keyword pattern
+	 * Applies a generic yet powerful search strategy to SPARQL-able catalogs,
+	 * whereas uses the search() method otherwise.
+	 * Note, that in the future we may want to add a flag for whether to override
+	 * a provided search() method
+	 * 
+	 * @param acc
+	 * @param catalogResolver
+	 * @param pattern
+	 * @throws IOException
+	 */
 	public static void searchDcat(Collection<SearchResult> acc, CatalogResolver catalogResolver, String pattern) throws IOException {
 		if(catalogResolver instanceof CatalogResolverCaching) {
 			
@@ -582,9 +594,10 @@ public class MainCliDcatSuite {
 		} else if(catalogResolver instanceof CatalogResolverSparql) {
 			CatalogResolverSparql crs = (CatalogResolverSparql)catalogResolver;
 			SparqlQueryConnection conn = crs.getConnection();
+			Query shapeQuery = crs.getDcatShape();
 			
 			Query patternQuery = crs.getPatternToQuery().apply(pattern);
-			List<SearchResult> matches = CatalogResolverSparql.searchDcat(conn, patternQuery);
+			List<SearchResult> matches = CatalogResolverSparql.searchDcat(conn, patternQuery, shapeQuery);
 			logger.info(matches.size() + " matches from sparql-based resolver " + catalogResolver);
 			acc.addAll(matches);
 			
