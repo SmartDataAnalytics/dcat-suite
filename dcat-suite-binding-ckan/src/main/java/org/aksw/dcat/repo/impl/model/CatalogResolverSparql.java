@@ -9,12 +9,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
-import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
-import org.aksw.dcat.repo.impl.core.DistributionResolverImpl;
 import org.aksw.facete.v3.api.ConstraintFacade;
 import org.aksw.facete.v3.api.FacetNode;
 import org.aksw.facete.v3.api.FacetedQuery;
@@ -23,7 +21,6 @@ import org.aksw.jena_sparql_api.concepts.Concept;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.UnaryRelation;
 import org.aksw.jena_sparql_api.data_query.api.DataQuery;
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
 import org.aksw.jena_sparql_api.utils.CountInfo;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
@@ -171,10 +168,7 @@ public class CatalogResolverSparql
 				.filter(Concept.create("FILTER(isIRI(?s))", "s"));
 		
 //		System.out.println("DATA QUERY: " + dataQuery.toConstructQuery());
-		
-		// TODO Move to a plugin
-		JenaPluginUtils.registerResourceClasses(SearchResult.class);
-		
+				
 		List<SearchResult> list = null;
 		if(!abort) {
 //			System.out.println("Matches:");

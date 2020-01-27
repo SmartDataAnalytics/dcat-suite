@@ -4,8 +4,8 @@ import java.io.Console;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -14,16 +14,14 @@ import java.util.stream.Collectors;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.dcat.repo.impl.model.SearchResult;
-import org.aksw.facete.v3.experimental.VirtualPartitionedQuery;
-import org.aksw.facete.v3.impl.RDFConnectionBuilder;
 import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
+import org.aksw.jena_sparql_api.algebra.utils.VirtualPartitionedQuery;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
-import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.TernaryRelation;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureContext;
-import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
+import org.aksw.jena_sparql_api.core.connection.RDFConnectionBuilder;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
 import org.aksw.jena_sparql_api.utils.PrefixUtils;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
@@ -137,17 +135,21 @@ public class MainDeleteme {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
 		JenaSystem.init();
-		Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
-		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
-		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
+//		Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
+//		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
+//		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
+//
+//		List<TernaryRelation> views = new ArrayList<>();
+//		
+//		views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
+//		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
+//		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
+//
+//		views.add(RelationUtils.SPO);
 
-		List<TernaryRelation> views = new ArrayList<>();
+		List<TernaryRelation> views = CatalogResolverUtils.loadViews(Collections.emptyList());
+
 		
-		views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
-		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
-		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
-
-		views.add(RelationUtils.SPO);
 
 		SparqlQueryParserImpl parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
 		
@@ -161,7 +163,8 @@ public class MainDeleteme {
 //		QueryUtils.optimizePrefixes(userQuery);
 		
 //		Query userQuery = QueryFactory.create("SELECT * { ?s <http://foo.bar/baz> ?o }");
-		Query userQuery = parser.apply("SELECT * { ?s a ?t . FILTER(?t = dcat:Dataset) }");
+//		Query userQuery = parser.apply("SELECT * { ?s a ?t . FILTER(?t = dcat:Dataset) }");
+		Query userQuery = parser.apply("SELECT * { <http://akswnc7.informatik.uni-leipzig.de/dstreitmatter/dbpedia-diff/article-templates-diff/2019.09.02/dataid.ttl#article-templates-diff_lang=cdo_deletes.ttl.bz2> ?p ?o }");
 		QueryUtils.optimizePrefixes(userQuery);
 
 		Query rawRewrite = VirtualPartitionedQuery.rewrite(views, userQuery);
@@ -205,7 +208,7 @@ public class MainDeleteme {
 			.getConnection();
 
 
-		CatalogResolver catResolver = CatalogResolverUtils.createCatalogResolver(conn);
+		CatalogResolver catResolver = CatalogResolverUtils.createCatalogResolver(conn, Collections.emptyList());
 		//String pattern = "org.limbo.*";
 		//String pattern = "org.limbo-bahn-1.0.0";
 		String pattern = "train_2";

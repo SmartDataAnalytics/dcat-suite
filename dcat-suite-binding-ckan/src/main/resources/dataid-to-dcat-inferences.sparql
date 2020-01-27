@@ -1,0 +1,17 @@
+CONSTRUCT {
+  ?s
+    a dcat:Distribution ;
+    # dcat:relatedDataset ?x .
+    .
+
+  ?x
+    a dcat:Dataset ;
+    dcat:distribution ?s ;
+    .
+}
+{
+  ?s a dataid:SingleFile
+  BIND(?s AS ?x)
+}
+
+

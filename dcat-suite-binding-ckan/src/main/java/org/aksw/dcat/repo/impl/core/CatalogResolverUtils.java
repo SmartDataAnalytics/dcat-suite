@@ -19,23 +19,26 @@ import org.aksw.dcat.repo.impl.ckan.CatalogResolverCkan;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
 import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
-import org.aksw.facete.v3.experimental.VirtualPartitionedQuery;
-import org.aksw.facete.v3.impl.RDFConnectionBuilder;
+import org.aksw.dcat.repo.impl.model.DcatResolver;
+import org.aksw.jena_sparql_api.algebra.utils.VirtualPartitionedQuery;
+import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.TernaryRelation;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPods;
 import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRef;
+import org.aksw.jena_sparql_api.conjure.resourcespec.ResourceSpecUtils;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.connection.QueryExecutionFactorySparqlQueryConnection;
+import org.aksw.jena_sparql_api.core.connection.RDFConnectionBuilder;
 import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa;
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
+import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
+import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
 import org.aksw.jena_sparql_api.utils.NodeUtils;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionModular;
@@ -76,30 +79,43 @@ public class CatalogResolverUtils {
 		return result;
 	};
 
-	
-	public static CatalogResolver createCatalogResolver(SparqlQueryConnection _conn) throws FileNotFoundException, IOException, ParseException {
-		Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
+	// No longer needed, as this is now part of the settings.ttl
+	public static List<TernaryRelation> loadViews(Collection<String> extraViews) throws FileNotFoundException, IOException, ParseException {
+		//Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
 		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
 		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
 
 		List<TernaryRelation> views = new ArrayList<>();
 		
-		views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
+		//views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
 		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
 		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
 
+		SparqlQueryParser parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
+		
+		for(String extraView : extraViews) {
+			Query query = parser.apply(extraView);
+			views.addAll(VirtualPartitionedQuery.toViews(query));
+		}
+		
 		views.add(RelationUtils.SPO);
 		//views.add(Ternar);
 
-
-		RDFConnection conn = RDFConnectionBuilder.from(new RDFConnectionModular(_conn, null, null))
+		return views;
+	}
+	
+	public static CatalogResolver createCatalogResolver(SparqlQueryConnection conn, List<String> extraViews) throws FileNotFoundException, IOException, ParseException {
+		List<TernaryRelation> views = loadViews(extraViews);
+//
+//		
+		RDFConnection _conn = RDFConnectionBuilder.from(new RDFConnectionModular(conn, null, null))
 				.addQueryTransform(q -> VirtualPartitionedQuery.rewrite(views, q))
 				.getConnection();
 		
 		Function<String, Query> patternToQuery = loadTemplate("match-by-regex.sparql", "ARG");		
 		Function<String, Query> idToQuery = loadTemplate("match-exact.sparql", "ARG");
 
-		CatalogResolver result = new CatalogResolverSparql(conn, idToQuery, patternToQuery);
+		CatalogResolver result = new CatalogResolverSparql(_conn, idToQuery, patternToQuery);
 		return result;
 
 	}
@@ -121,6 +137,10 @@ public class CatalogResolverUtils {
 		//Model configModel = ModelFactory.createDefaultModel();
 		String configUrl = dcatPath.resolve("settings.ttl").toUri().toString();
 		Model configModel = RDFDataMgr.loadModel(configUrl);
+		
+		// Resolve placeholders in the model
+		ResourceSpecUtils.resolve(configModel);
+		
 		List<DcatResolverConfig> configs = configModel
 				.listResourcesWithProperty(ResourceFactory.createProperty("http://www.example.org/resolvers"))
 				.mapWith(r -> r.as(DcatResolverConfig.class))
@@ -129,11 +149,13 @@ public class CatalogResolverUtils {
 		CatalogResolverMulti coreResolver = new CatalogResolverMulti();
 		
 		for(DcatResolverConfig config : configs) {
-			Collection<Resource> resolvers = config.resolvers(Resource.class);
-			for(Resource resolverSpec : resolvers) {
+			Collection<DcatResolver> resolvers = config.resolvers(DcatResolver.class);
+			for(DcatResolver resolverSpec : resolvers) {
+				
+				DataRef dataRef = resolverSpec.getDataRef();
 				
 				// Try to map as a DataRef
-				DataRef dataRef = JenaPluginUtils.polymorphicCast(resolverSpec, DataRef.class);
+				//DataRef dataRef = JenaPluginUtils.polymorphicCast(resolverSpec, DataRef.class);
 				if(dataRef != null) {
 					RdfDataPod dataPod = DataPods.fromDataRef(dataRef);
 					
@@ -150,8 +172,9 @@ public class CatalogResolverUtils {
 							.end()
 							.create());
 
+					List<String> extraViews = resolverSpec.getViews();
 					
-					CatalogResolver resolver = createCatalogResolver(conn);
+					CatalogResolver resolver = createCatalogResolver(conn, extraViews);
 					coreResolver.getResolvers().add(resolver);
 					
 //					DataPodFactory dataPodFactory = new DataPodFactoryImpl(opExecutor);

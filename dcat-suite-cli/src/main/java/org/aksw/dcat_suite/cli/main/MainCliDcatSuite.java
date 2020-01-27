@@ -28,16 +28,16 @@ import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.dcat.repo.impl.fs.CatalogResolverMulti;
 import org.aksw.dcat.repo.impl.model.CatalogResolverModel;
 import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
+import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
-import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
-import org.aksw.jena_sparql_api.core.connection.QueryExecutionFactorySparqlQueryConnection;
-import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
+import org.aksw.jena_sparql_api.json.RdfJsonUtils;
+import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
 import org.apache.jena.query.Dataset;
@@ -45,7 +45,6 @@ import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
@@ -54,6 +53,7 @@ import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.lang.arq.ParseException;
+import org.apache.jena.sys.JenaSystem;
 import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +65,9 @@ import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
 
@@ -97,6 +100,10 @@ public class MainCliDcatSuite {
 //		protected String artifactId;
 		@Parameter(names={"-c", "--catalog"}, description = "Catalog reference")
 		protected List<String> catalogs = Collections.emptyList();
+
+		// json output for processing by tools such as jq
+		@Parameter(names = "--jq", description = "json output")
+		protected boolean jsonOutput = false;
 
 		@Parameter(names = "--help", help = true)
 		protected boolean help = false;
@@ -265,7 +272,7 @@ public class MainCliDcatSuite {
 			
 			SparqlQueryConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
 			
-			catalogResolvers.add(CatalogResolverUtils.createCatalogResolver(conn));
+			catalogResolvers.add(CatalogResolverUtils.createCatalogResolver(conn, Collections.emptyList()));
 			//catalogResolvers.add(new CatalogResolverModel(model));
 		}
 		
@@ -275,7 +282,16 @@ public class MainCliDcatSuite {
 	}
 	
 	
+	public static void createEffectiveConfigModel() {
+		// TBD
+	}
+	
 	public static void main(String[] args) throws Exception {
+		JenaSystem.init();
+		
+		// TODO Move to a plugin
+		JenaPluginUtils.registerResourceClasses(SearchResult.class);
+		JenaPluginUtils.registerResourceClasses(DcatResolver.class);
 
 		
 		CommandMain cm = new CommandMain();
@@ -333,7 +349,7 @@ public class MainCliDcatSuite {
 			String pattern = noas.get(0);
 
 			CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);			
-			searchDcat(effectiveCatalogResolver, pattern);
+			searchDcat(effectiveCatalogResolver, pattern, cmSearch.jsonOutput);
 			break;
 		}
 		case "data": {
@@ -594,7 +610,7 @@ public class MainCliDcatSuite {
 		return acc;
 	}
 	
-	public static void searchDcat(CatalogResolver catalogResolver, String pattern) throws IOException {
+	public static void searchDcat(CatalogResolver catalogResolver, String pattern, boolean json) throws IOException {
 		List<CatalogResolver> catalogs = unnestResolvers(new ArrayList<>(), catalogResolver);
 		logger.info("Searching " + catalogs.size() + " catalogs for '" + pattern + "'");
 		List<SearchResult> items = new ArrayList<SearchResult>();
@@ -608,7 +624,18 @@ public class MainCliDcatSuite {
 		}
 
 		Collections.sort(items, Ordering.from(SearchResult::defaultCompare).reversed());
-		MainDeleteme.print(items);
+		
+		if(json) {
+			JsonArray j = RdfJsonUtils.toJson(items, 3, false);
+			Gson gson = new GsonBuilder()
+					.setLenient()
+					.setPrettyPrinting()
+					.create();
+			String str = gson.toJson(j);
+			System.out.println(str);
+		} else {
+			MainDeleteme.print(items);
+		}
 	}
 	
 	

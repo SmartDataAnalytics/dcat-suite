@@ -132,42 +132,45 @@ public class ControllerLookup {
 
 		DatasetResolver datasetResolver = catalogResolver.resolveDataset(id).blockingGet();
 		
-		List<DistributionResolver> dists = datasetResolver.resolveDistributions().toList().blockingGet();
-		
-		if(!dists.isEmpty()) {
-			DistributionResolver dist = dists.iterator().next();
-			String downloadUrl = dist.getDistribution().getDownloadURL();
+		if(datasetResolver != null) {
 			
-			if(downloadUrl != null) {
-				//Header[] apacheHeaders = springToApache(springHeaders);
+			List<DistributionResolver> dists = datasetResolver.resolveDistributions().toList().blockingGet();
+			
+			if(!dists.isEmpty()) {
+				DistributionResolver dist = dists.iterator().next();
+				String downloadUrl = dist.getDistribution().getDownloadURL();
 				
-				HttpUriRequest request = createRequest(downloadUrl, apacheHeaders);
-
-
-//				HttpUriRequest request = RequestBuilder
-//						.get(downloadUrl)
-//						.build();
-//				//List<Entry<String, String>> tmp = flattenHeaders(springHeaders).collect(Collectors.toList());
-//				List<Entry<String, String>> tmp = HttpHeaderUtils.toEntries(apacheHeaders).collect(Collectors.toList());
-//				for(Entry<String, String> e : tmp) {
-//					String k = e.getKey();
-//					String v = e.getValue();
-//					request.addHeader(k, v);
-//				}
-				
-
-				try {
-					result = datasetRepository.get(request, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
-				} catch (IOException e1) {
-					throw new RuntimeException(e1);
+				if(downloadUrl != null) {
+					//Header[] apacheHeaders = springToApache(springHeaders);
+					
+					HttpUriRequest request = createRequest(downloadUrl, apacheHeaders);
+	
+	
+	//				HttpUriRequest request = RequestBuilder
+	//						.get(downloadUrl)
+	//						.build();
+	//				//List<Entry<String, String>> tmp = flattenHeaders(springHeaders).collect(Collectors.toList());
+	//				List<Entry<String, String>> tmp = HttpHeaderUtils.toEntries(apacheHeaders).collect(Collectors.toList());
+	//				for(Entry<String, String> e : tmp) {
+	//					String k = e.getKey();
+	//					String v = e.getValue();
+	//					request.addHeader(k, v);
+	//				}
+					
+	
+					try {
+						result = datasetRepository.get(request, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
+					} catch (IOException e1) {
+						throw new RuntimeException(e1);
+					}
+	//				
+	//				if(entity == null) {
+	//					throw new RuntimeException("Should not happen");
+	//				}
 				}
-//				
-//				if(entity == null) {
-//					throw new RuntimeException("Should not happen");
-//				}
 			}
 		}
-		
+
 		return result; 
 	}
 

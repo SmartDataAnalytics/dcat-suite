@@ -1,11 +1,13 @@
 package org.aksw.dcat_suite.cli.main;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
 import org.aksw.dcat_suite.core.docker.ImageSpec;
 import org.aksw.dcat_suite.plugin.virtuoso.ImageSpecVirtuoso;
+import org.aksw.jena_sparql_api.conjure.resourcespec.ResourceSpecUtils;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rx.SparqlRx;
 import org.aksw.jena_sparql_api.utils.fs.DatasetFromWatchedFolder;
@@ -19,7 +21,16 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sys.JenaSystem;
 
 public class MainCliDcatSuitePlayground {
-	public static void main(String[] args) throws Exception {
+
+	// Test for resolving placeholders in the config
+	public static void main(String[] args) throws IOException {
+		Model model = RDFDataMgr.loadModel("/home/raven/.dcat/settings.ttl");
+		ResourceSpecUtils.resolve(model);
+		RDFDataMgr.write(System.out,  model, RDFFormat.TURTLE_PRETTY);
+	}
+
+
+	public static void main2(String[] args) throws Exception {
         JenaSystem.init();
 		JenaPluginUtils.scan(ImageSpec.class);
         JenaPluginUtils.scan(ImageSpecVirtuoso.class);
