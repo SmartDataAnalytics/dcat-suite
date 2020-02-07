@@ -1,4 +1,4 @@
-package org.aksw.ckan_deploy.core;
+package org.aksw.dcat.utils;
 
 import java.util.Collection;
 import java.util.function.Predicate;
@@ -57,18 +57,6 @@ public class DcatUtils {
 		return result;
 	}
 
-	public static Model createModelWithNormalizedDcatFragment(String fileOrUrl) {
-		Dataset dataset = RDFDataMgr.loadDataset(fileOrUrl);
-		Model result = DcatUtils.createModelWithNormalizedDcatFragment(dataset);
-		return result;
-	}
-
-	public static Model createModelWithNormalizedDcatFragment(Dataset dataset) {
-		Model result = createModelWithDcatFragment(dataset);
-		DcatCkanRdfUtils.normalizeDcatModel(result);
-		DcatUtils.addPrefixes(result);
-		return result;
-	}
 	
 	public static Model createModelWithDcatFragment(Dataset dataset) {
 		Model result = ModelFactory.createDefaultModel();			

@@ -13,13 +13,15 @@ import java.util.function.Supplier;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
+import org.aksw.dcat.utils.DcatUtils;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.DCAT;
@@ -36,6 +38,19 @@ public class DcatCkanRdfUtils {
 	private static final Logger logger = LoggerFactory.getLogger(DcatCkanRdfUtils.class);
 
 	
+	public static Model createModelWithNormalizedDcatFragment(String fileOrUrl) {
+		Dataset dataset = RDFDataMgr.loadDataset(fileOrUrl);
+		Model result = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(dataset);
+		return result;
+	}
+
+	public static Model createModelWithNormalizedDcatFragment(Dataset dataset) {
+		Model result = DcatUtils.createModelWithDcatFragment(dataset);
+		DcatCkanRdfUtils.normalizeDcatModel(result);
+		DcatUtils.addPrefixes(result);
+		return result;
+	}
+
 	public static void copyPropertyValues(Resource r, Property target, Property source) {
 //		org.aksw.jena_sparql_api.utils.model.ResourceUtils
 //			.listPropertyValues(r, source)

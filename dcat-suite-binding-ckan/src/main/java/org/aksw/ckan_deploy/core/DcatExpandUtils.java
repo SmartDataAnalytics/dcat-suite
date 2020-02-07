@@ -15,6 +15,7 @@ import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.DcatEntity;
+import org.aksw.dcat.utils.DcatUtils;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;

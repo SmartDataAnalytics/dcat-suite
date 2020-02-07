@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
-import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -30,6 +29,7 @@ import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
 import org.aksw.dcat.repo.impl.core.DistributionResolverImpl;
+import org.aksw.dcat.utils.DcatUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;

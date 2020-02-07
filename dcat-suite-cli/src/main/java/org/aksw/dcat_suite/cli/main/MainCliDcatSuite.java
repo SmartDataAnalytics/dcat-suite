@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,7 +22,6 @@ import org.aksw.ckan_deploy.core.DcatExpandUtils;
 import org.aksw.ckan_deploy.core.DcatInstallUtils;
 import org.aksw.ckan_deploy.core.DcatRepository;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
-import org.aksw.ckan_deploy.core.DcatUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
@@ -31,6 +33,7 @@ import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.server.controller.ControllerLookup;
+import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -40,6 +43,9 @@ import org.aksw.jena_sparql_api.json.RdfJsonUtils;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
+import org.apache.jena.ext.com.google.common.collect.Iterables;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
@@ -61,6 +67,7 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.github.jsonldjava.shaded.com.google.common.collect.Maps;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
@@ -80,6 +87,26 @@ public class MainCliDcatSuite {
 
 	
 	private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
+
+	@Parameters(separators="=", commandDescription="Transform DCAT model and data")
+	public static class CommandTransform {
+		@Parameter(description = "Non option args")
+		public List<String> nonOptionArgs;
+
+		@Parameter(names={"-t", "--transform"})
+		public List<String> transforms = new ArrayList<>();
+
+		/**
+		 * Environment variable assignments using the syntax
+		 * -D foo=bar -D 'moo=mar' 
+		 * 
+		 */
+		@Parameter(names={"-D"})
+		public List<String> envVars = new ArrayList<>();
+
+		@Parameter(names="--help", help=true)
+		public boolean help = false;
+	}
 
 	
 	@Parameters(separators = "=", commandDescription = "Show DCAT information")
@@ -302,6 +329,7 @@ public class MainCliDcatSuite {
 		CommandDeploy cmDeploy = new CommandDeploy();		
 		CommandImport cmImport = new CommandImport();
 		CommandInstall cmInstall = new CommandInstall();
+		CommandTransform cmTransform = new CommandTransform();
 
 		
 		// CommandCommit commit = new CommandCommit();
@@ -314,6 +342,7 @@ public class MainCliDcatSuite {
 				.addCommand("deploy", cmDeploy)
 				.addCommand("import", cmImport)
 				.addCommand("install", cmInstall)
+				.addCommand("transform", cmTransform)
 				.build();
 
 		JCommander deploySubCommands = jc.getCommands().get("deploy");
@@ -329,7 +358,6 @@ public class MainCliDcatSuite {
 
 		CommandImportCkan cmImportCkan = new CommandImportCkan();
 		importSubCommands.addCommand("ckan", cmImportCkan);
-
 		
 		jc.parse(args);
 
@@ -364,7 +392,7 @@ public class MainCliDcatSuite {
 			break;
 		}
 		case "show": {
-			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(cmShow.file);
+			Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(cmShow.file);
 			RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
 			break;
 		}
@@ -423,16 +451,46 @@ public class MainCliDcatSuite {
 				break;
 			}
 			default: {
+				
 			}
 			}
 
 			break;
 		}
+		
+		case "transform": {
+			// TODO Find some expectOne() args
+			List<String> transforms = cmTransform.transforms;
+			String dcatFile = Iterables.getOnlyElement(cmTransform.nonOptionArgs);
+			Model dcatModel = RDFDataMgr.loadModel(dcatFile);
+			
+			//Map<String, String> env = Collections.emptyMap();
+			Map<String, Node> env = cmTransform.envVars.stream()
+				.map(DcatOps::parseEntry)
+				.map(e -> Maps.immutableEntry(e.getKey(), NodeFactory.createLiteral(e.getValue())))
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+			
+			
+//			Properties p = new Properties();
+//			for(String env : cmTransform.envVars) {
+//				p.load(new ByteArrayInputStream(env.getBytes()));
+//			}
+			//SparqlStmtUtils.processFile(pm, filenameOrURI)
+			// cmTransform.nonOptionArgs
+			Consumer<Resource> distTransform = DcatOps.createDistTransformer(
+					transforms, env, Paths.get("target"));
+			
+			DcatOps.transformAllDists(dcatModel, distTransform);
+			
+			RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
+			break;
+		}
+
 
 		case "install": {
 			String dcatSource = cmInstall.file;
 
-			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(cmShow.file);
+			Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(cmShow.file);
 			Function<String, String> iriResolver = createIriResolver(dcatSource);
 			DcatRepository dcatRepository = createDcatRepository();
 			
@@ -486,7 +544,7 @@ public class MainCliDcatSuite {
 		Function<String, String> iriResolver = null;
 		if(dcatSource != null) {		
 			iriResolver = createIriResolver(dcatSource);
-			Model dcatModel = DcatUtils.createModelWithNormalizedDcatFragment(dcatSource);
+			Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(dcatSource);
 			Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
 			datasetIds = dcatDatasets.stream().map(Resource::getURI).collect(Collectors.toList());
 			
