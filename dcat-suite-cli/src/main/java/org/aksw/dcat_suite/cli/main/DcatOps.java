@@ -1,6 +1,7 @@
 package org.aksw.dcat_suite.cli.main;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -8,24 +9,40 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.utils.DcatUtils;
+import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
+import org.aksw.jena_sparql_api.conjure.dataset.engine.ExecutionUtils;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jena_sparql_api.conjure.resourcespec.RPIF;
+import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
+import org.aksw.jena_sparql_api.transform.result_set.QueryExecutionTransformResult;
+import org.aksw.jena_sparql_api.utils.NodeTransformRenameMap;
+import org.apache.jena.atlas.lib.IRILib;
 import org.apache.jena.ext.com.google.common.collect.Iterators;
 import org.apache.jena.ext.com.google.common.collect.Maps;
+import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.DCAT;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.Iterables;
@@ -56,6 +73,58 @@ public class DcatOps {
 		for(DcatDistribution dist : ds.getDistributions()) {
 			consumer.accept(dist);
 		}
+	}
+	
+	public static <T extends RDFNode> ExtendedIterator<T> listPolymorphicPropertyValues(Resource s, Property p, Class<T> clazz) {
+		ExtendedIterator<T> result = ResourceUtils.listPropertyValues(s, p)
+				.mapWith(o -> JenaPluginUtils.polymorphicCast(o, clazz))				
+				.filterKeep(Objects::nonNull);
+		return result;
+	}
+
+	public static <T extends RDFNode> Optional<T> tryGetPolymorphicPropertyValue(Resource s, Property p, Class<T> clazz) {
+		Optional<T> result = ResourceUtils.findFirst(listPolymorphicPropertyValues(s, p, clazz));
+		return result;		
+	}
+
+	public static <T extends RDFNode> T getPolymorphicPropertyValue(Resource s, Property p, Class<T> clazz) {
+		T result = tryGetPolymorphicPropertyValue(s, p, clazz).orElse(null);
+		return result;		
+	}
+
+	
+	
+	public static Consumer<Resource> createDistMaterializer(Path targetFolder) {
+		return dist -> {
+			Model xxx = org.apache.jena.util.ResourceUtils.reachableClosure(dist);
+			System.out.println(dist);
+			RDFDataMgr.write(System.out, xxx, RDFFormat.RDFJSON);
+			Op op = getPolymorphicPropertyValue(dist, RPIF.op, Op.class);
+			if(op != null) {
+				// TODO How to obtain a proper filename???
+				// Probably use localId + file extension based on content type / encoding
+				Path filename;
+				try {
+					filename = Files.createTempFile(targetFolder, "file-", ".dat");
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				
+				try(OutputStream out = Files.newOutputStream(filename)) {
+					RdfDataPod dataPod = ExecutionUtils.executeJob(op);
+					Model model = dataPod.getModel();
+					RDFDataMgr.write(out, model, RDFFormat.TURTLE_PRETTY);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				
+				String url = IRILib.fileToIRI(filename.toFile());
+				Resource dl = dist.getModel().createResource(url);
+				// Disconnect the op from the distribution
+				dist.removeAll(RPIF.op);
+				dist.addProperty(DCAT.downloadURL, dl);
+			}
+		};
 	}
 	
 	/**
@@ -107,6 +176,23 @@ public class DcatOps {
 				JobInstance ji = JobUtils.createJobInstance(job, env, map);
 				Op inst = JobUtils.materializeJobInstance(ji);
 
+				// TODO Materializing an instance must allocate fresh resources instead of
+				// performing in-place changes
+				Set<Node> allSubjects = Streams.stream(inst.getModel().listSubjects())
+					.map(RDFNode::asNode)
+					.collect(Collectors.toSet());
+				
+				Map<Node, Node> remap = allSubjects.stream()
+						.collect(Collectors.toMap(e -> e, e -> NodeFactory.createBlankNode()));
+				Resource newRoot = QueryExecutionTransformResult.applyNodeTransform(
+						new NodeTransformRenameMap(remap),
+					inst).asResource();
+				
+				System.out.println(newRoot);
+				RDFDataMgr.write(System.out, newRoot.getModel(), RDFFormat.RDFJSON);
+
+				inst = JenaPluginUtils.polymorphicCast(newRoot, Op.class);
+				
 				distribution.getModel().add(inst.getModel());
 
 				Iterators.removeIf(

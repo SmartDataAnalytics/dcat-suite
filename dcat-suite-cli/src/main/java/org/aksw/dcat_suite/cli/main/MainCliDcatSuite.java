@@ -85,9 +85,9 @@ import virtuoso.jdbc4.VirtuosoDataSource;
 
 public class MainCliDcatSuite {
 
-	
 	private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
 
+	
 	@Parameters(separators="=", commandDescription="Transform DCAT model and data")
 	public static class CommandTransform {
 		@Parameter(description = "Non option args")
@@ -103,6 +103,9 @@ public class MainCliDcatSuite {
 		 */
 		@Parameter(names={"-D"})
 		public List<String> envVars = new ArrayList<>();
+
+		@Parameter(names= {"-m", "--materialize"})
+		public boolean materialize = false;
 
 		@Parameter(names="--help", help=true)
 		public boolean help = false;
@@ -464,6 +467,8 @@ public class MainCliDcatSuite {
 			String dcatFile = Iterables.getOnlyElement(cmTransform.nonOptionArgs);
 			Model dcatModel = RDFDataMgr.loadModel(dcatFile);
 			
+			boolean materalize = cmTransform.materialize;
+			
 			//Map<String, String> env = Collections.emptyMap();
 			Map<String, Node> env = cmTransform.envVars.stream()
 				.map(DcatOps::parseEntry)
@@ -481,6 +486,12 @@ public class MainCliDcatSuite {
 					transforms, env, Paths.get("target"));
 			
 			DcatOps.transformAllDists(dcatModel, distTransform);
+			
+			if(materalize) {
+				Path path = Paths.get("target");
+				Consumer<Resource> materializer = DcatOps.createDistMaterializer(path);
+				DcatOps.transformAllDists(dcatModel, materializer);
+			}
 			
 			RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
 			break;
