@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,8 @@ import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jena_sparql_api.conjure.resourcespec.RPIF;
+import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
 import org.aksw.jena_sparql_api.transform.result_set.QueryExecutionTransformResult;
@@ -96,20 +99,42 @@ public class DcatOps {
 	
 	public static Consumer<Resource> createDistMaterializer(Path targetFolder) {
 		return dist -> {
-			Model xxx = org.apache.jena.util.ResourceUtils.reachableClosure(dist);
-			System.out.println(dist);
-			RDFDataMgr.write(System.out, xxx, RDFFormat.RDFJSON);
+//			Model xxx = org.apache.jena.util.ResourceUtils.reachableClosure(dist);
+//			System.out.println(dist);
+//			RDFDataMgr.write(System.out, xxx, RDFFormat.RDFJSON);
 			Op op = getPolymorphicPropertyValue(dist, RPIF.op, Op.class);
 			if(op != null) {
+				// Check for content type and encoding
+				RdfEntityInfo entityInfo = dist.as(RdfEntityInfo.class);
+				String contentType = entityInfo.getContentType();
+				List<String> encodings = entityInfo.getContentEncodings();
+
+				if(contentType == null) {
+					contentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentType().toString();
+				}
+				
+				String ext = "." + ContentTypeUtils.toFileExtension(contentType, encodings);
+
+				
+				// Check if there is a targetFile attribute
+				String targetBaseName = ResourceUtils.getLiteralPropertyValue(dist, RPIF.targetBaseName, String.class);
+				
 				// TODO How to obtain a proper filename???
 				// Probably use localId + file extension based on content type / encoding
 				Path filename;
-				try {
-					filename = Files.createTempFile(targetFolder, "file-", ".dat");
-				} catch (IOException e) {
-					throw new RuntimeException(e);
+				if(targetBaseName != null) {
+					filename = targetFolder.resolve(targetBaseName);
+					filename = filename.resolveSibling(filename.toString() + ext);
+				} else {
+					try {
+						filename = Files.createTempFile(targetFolder, "file-", ext);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
 				
+				// TODO Alternatively, use the localId				
+								
 				try(OutputStream out = Files.newOutputStream(filename)) {
 					RdfDataPod dataPod = ExecutionUtils.executeJob(op);
 					Model model = dataPod.getModel();
