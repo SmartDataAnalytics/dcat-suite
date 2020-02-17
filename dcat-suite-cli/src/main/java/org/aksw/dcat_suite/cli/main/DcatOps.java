@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -18,9 +17,11 @@ import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.dcat.jena.domain.api.MvnEntity;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
+import org.aksw.jena_sparql_api.conjure.dataset.algebra.OpJobInstance;
 import org.aksw.jena_sparql_api.conjure.dataset.engine.ExecutionUtils;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
@@ -95,8 +96,7 @@ public class DcatOps {
 		return result;		
 	}
 
-	
-	
+
 	public static Consumer<Resource> createDistMaterializer(Path targetFolder) {
 		return dist -> {
 //			Model xxx = org.apache.jena.util.ResourceUtils.reachableClosure(dist);
@@ -107,19 +107,49 @@ public class DcatOps {
 				// Check for content type and encoding
 				RdfEntityInfo entityInfo = dist.as(RdfEntityInfo.class);
 				String contentType = entityInfo.getContentType();
-				List<String> encodings = entityInfo.getContentEncodings();
-
-				if(contentType == null) {
-					contentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentType().toString();
+				String targetContentType = contentType;
+				
+				if(targetContentType == null) {
+					targetContentType = ResourceUtils.getLiteralPropertyValue(entityInfo, RPIF.targetContentType, String.class);
 				}
 				
-				String ext = "." + ContentTypeUtils.toFileExtension(contentType, encodings);
+
+				if(targetContentType == null) {
+					targetContentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentType().toString();
+				}
+				
+				List<String> encodings = entityInfo.getContentEncodings();
+//				if(encodings == null) {
+//					encodings = ResourceUtils.getPropertyValue(entityInfo, RPIF.targetEncoding, RDFList.class);
+//				}
+
+				String ext = "." + ContentTypeUtils.toFileExtension(targetContentType, encodings);
 
 				
 				// Check if there is a targetFile attribute
 				String targetBaseName = ResourceUtils.getLiteralPropertyValue(dist, RPIF.targetBaseName, String.class);
 				
-				// TODO How to obtain a proper filename???
+				if(targetBaseName == null) {
+					// TODO How to obtain a proper filename???
+					// The filename should be ${artifactId}-${version}.${format/encoding extension}
+
+					List<Resource> dss = ResourceUtils.listReversePropertyValues(dist, DCAT.distribution).toList();
+					if(dss.size() == 1) {
+						MvnEntity mvnEntity = dss.iterator().next().as(MvnEntity.class);
+						String artifactId = mvnEntity.getArtifactId();
+						String version = mvnEntity.getVersion();
+						
+						if(artifactId != null) {
+							targetBaseName = artifactId + Optional.ofNullable(version).map(v -> "-" + v).orElse("");
+						}
+					}
+				}
+				
+				// TODO We should keep track of all errors first and only then report them
+//				if(targetBaseName == null) {
+//					throw new RuntimeException("Could not obtain target base or file name for " + dist);
+//				}
+				
 				// Probably use localId + file extension based on content type / encoding
 				Path filename;
 				if(targetBaseName != null) {
@@ -152,6 +182,29 @@ public class DcatOps {
 		};
 	}
 	
+	
+	/**
+	 * Substitute each RDF term in subject position with a new blank node
+	 * 
+	 * @param root
+	 * @return
+	 */
+	public static RDFNode remapAllSubjects(RDFNode root) {
+		Model model = root.getModel();
+
+		Set<Node> allSubjects = Streams.stream(model.listSubjects())
+				.map(RDFNode::asNode)
+				.collect(Collectors.toSet());
+			
+		Map<Node, Node> remap = allSubjects.stream()
+				.collect(Collectors.toMap(e -> e, e -> NodeFactory.createBlankNode()));
+
+		RDFNode newRoot = QueryExecutionTransformResult.applyNodeTransform(
+				new NodeTransformRenameMap(remap), root);
+	
+		return newRoot;
+	}
+	
 	/**
 	 * Convenience method to apply a transformation by means of a sequence of SPARQL queries
 	 * to a distribution.
@@ -174,6 +227,10 @@ public class DcatOps {
 		Job job = JobUtils.fromSparqlFile(sparqlFile);
 
 		Consumer<Resource> result = distribution -> {
+			// Copy the job into the distribution model
+			// TODO Prevent repeatedly copying the job triples if the dists use the same model
+			Job distJob = JenaPluginUtils.copyInto(job, Job.class, distribution.getModel());
+			
 			
 			// Check whether this distribution qualifies for transform:
 			// (.) it must either have a downloadURL, or
@@ -198,27 +255,25 @@ public class DcatOps {
 				String opVar = Iterables.getOnlyElement(opVars);
 				
 				Map<String, Op> map = Collections.singletonMap(opVar, op);
-				JobInstance ji = JobUtils.createJobInstance(job, env, map);
-				Op inst = JobUtils.materializeJobInstance(ji);
+				JobInstance ji = JobUtils.createJobInstance(distJob, env, map);
+				
+				OpJobInstance opInst = OpJobInstance.create(ji.getModel(), ji);
+				
+				// Note, that we do not materialize the job instance in order to retain
+				// the original job
+				// Op inst = JobUtils.materializeJobInstance(ji);
 
 				// TODO Materializing an instance must allocate fresh resources instead of
 				// performing in-place changes
-				Set<Node> allSubjects = Streams.stream(inst.getModel().listSubjects())
-					.map(RDFNode::asNode)
-					.collect(Collectors.toSet());
-				
-				Map<Node, Node> remap = allSubjects.stream()
-						.collect(Collectors.toMap(e -> e, e -> NodeFactory.createBlankNode()));
-				Resource newRoot = QueryExecutionTransformResult.applyNodeTransform(
-						new NodeTransformRenameMap(remap),
-					inst).asResource();
-				
-				System.out.println(newRoot);
-				RDFDataMgr.write(System.out, newRoot.getModel(), RDFFormat.RDFJSON);
+				// Resource newRoot = remapAllSubjects(inst).asResource();
 
-				inst = JenaPluginUtils.polymorphicCast(newRoot, Op.class);
+//				System.out.println(newRoot);
+//				RDFDataMgr.write(System.out, newRoot.getModel(), RDFFormat.RDFJSON);
+//
+//				inst = JenaPluginUtils.polymorphicCast(newRoot, Op.class);
 				
-				distribution.getModel().add(inst.getModel());
+				// Copy the op instance into the distribution model
+				distribution.getModel().add(opInst.getModel());
 
 				Iterators.removeIf(
 						ResourceUtils.listPropertyValues(distribution, DCAT.downloadURL),
@@ -227,7 +282,7 @@ public class DcatOps {
 						ResourceUtils.listPropertyValues(distribution, RPIF.op),
 						x -> true);
 					
-				distribution.addProperty(RPIF.op, inst);
+				distribution.addProperty(RPIF.op, opInst);
 	
 			}
 			
