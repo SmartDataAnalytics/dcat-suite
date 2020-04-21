@@ -40,11 +40,11 @@ Run `setup-latest-release.sh uninstall` to conveniently remove downloaded and ge
 
 * via curl
 
-    `bash -c "$(curl -fsSL https://raw.githubusercontent.com/SmartDataAnalytics/SparqlIntegrate/develop/setup-latest-release.sh)"`
+    `bash -c "$(curl -fsSL https://raw.githubusercontent.com/SmartDataAnalytics/dcat-suite/develop/setup-latest-release.sh)"`
 
 * via wget
 
-    `bash -c "$(wget -O- https://raw.githubusercontent.com/SmartDataAnalytics/SparqlIntegrate/develop/setup-latest-release.sh)"`
+    `bash -c "$(wget -O- https://raw.githubusercontent.com/SmartDataAnalytics/dcat-suite/develop/setup-latest-release.sh)"`
     
 ## Feature overview
 
