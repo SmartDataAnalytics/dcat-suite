@@ -33,6 +33,19 @@ dcat deploy ckan --url=http://ckan.example.org --apikey=my-ckan-api-key dcat.nt
 ```
 
 
+## Install Latest Release
+Installing as root will perform global install in the folders `/usr/local/share/dcat-suite` and `/usr/local/bin`.
+For non-root users, the folders are `~/Downloads/dcat-suite` and `~/bin`.
+Run `setup-latest-release.sh uninstall` to conveniently remove downloaded and generated files.
+
+* via curl
+
+    `bash -c "$(curl -fsSL https://raw.githubusercontent.com/SmartDataAnalytics/SparqlIntegrate/develop/setup-latest-release.sh)"`
+
+* via wget
+
+    `bash -c "$(wget -O- https://raw.githubusercontent.com/SmartDataAnalytics/SparqlIntegrate/develop/setup-latest-release.sh)"`
+    
 ## Feature overview
 
 | API                        | DCAT retrieval | Deploy RDF | Deploy non RDF |
