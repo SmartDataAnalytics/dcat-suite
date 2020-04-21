@@ -3,6 +3,27 @@
 (work in progress)
 
 
+## Service Management
+The DCAT System supports creation of services and loading datasets.
+
+Creation of services is typically based on a docker service wrapper.
+The dcat command adds bookkeeping to track which datasets were loaded into which services.
+
+
+```
+dcat service create -t myname service-image
+dcat service up myname
+dcat service load -t myservice datasetid
+dcat service down myname
+
+# Show the list of services and known datasets
+dcat service list
+```
+
+
+
+
+
 
 ## The local DCAT repository
 It serves two purposes

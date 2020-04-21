@@ -88,6 +88,28 @@ public class MainCliDcatSuite {
 	private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
 
 	
+	@Parameters(separators = "=", commandDescription = "Service Management")
+	public static class CmdService {
+		@Parameter(names="--help", help=true)
+		public boolean help = false;
+	}
+	
+	
+	@Parameters(separators="=", commandDescription="Service Creation")
+	public static class CmdServiceCreate {
+		@Parameter(description="Non option args")
+		public List<String> nonOptionArgs;
+
+		@Parameter(names={"-t", "--tag"}, description="A name for the service")
+		public List<String> transforms = new ArrayList<>();
+
+		@Parameter(names="--help", help=true)
+		public boolean help = false;
+	}
+
+
+	
+	
 	@Parameters(separators="=", commandDescription="Transform DCAT model and data")
 	public static class CommandTransform {
 		@Parameter(description = "Non option args")
@@ -332,7 +354,8 @@ public class MainCliDcatSuite {
 		CommandDeploy cmDeploy = new CommandDeploy();		
 		CommandImport cmImport = new CommandImport();
 		CommandInstall cmInstall = new CommandInstall();
-		CommandTransform cmTransform = new CommandTransform();
+		CommandTransform cmTransform = new CommandTransform();		
+		CmdService cmdService = new CmdService();
 
 		
 		// CommandCommit commit = new CommandCommit();
@@ -346,7 +369,12 @@ public class MainCliDcatSuite {
 				.addCommand("import", cmImport)
 				.addCommand("install", cmInstall)
 				.addCommand("transform", cmTransform)
+				.addCommand("service", cmdService)
 				.build();
+
+		JCommander serviceSubCmds = jc.getCommands().get("service");
+		CmdServiceCreate serviceCreateCmd = new CmdServiceCreate();
+		serviceSubCmds.addCommand("create", serviceCreateCmd);
 
 		JCommander deploySubCommands = jc.getCommands().get("deploy");
 
@@ -372,6 +400,14 @@ public class MainCliDcatSuite {
         // TODO Change this to a plugin system - for now I hack this in statically
 		String cmd = jc.getParsedCommand();
 		switch (cmd) {
+		case "service": {
+			String serviceCmd = serviceSubCmds.getParsedCommand();
+			switch(serviceCmd) {
+			case "create":
+				//createService();
+			}
+			break;
+		}
 		case "search": {
 			List<String> noas = cmSearch.nonOptionArgs;
 			if(noas.size() != 1) {
