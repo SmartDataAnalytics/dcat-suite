@@ -176,7 +176,7 @@ public class CatalogResolverSparql
         DataQuery<RDFNode> dataQuery = fq.focus().availableValues()
                 .add(RDF.type)
                 //.add(DCATX.relatedDataset)
-                .add(DCATX.versionTag)
+                .addOptional(DCTerms.issued) // DCATX.versionTag)
                 .addOptional(DCTerms.identifier)
                 .filter(Concept.create("FILTER(isIRI(?s))", "s"));
 
