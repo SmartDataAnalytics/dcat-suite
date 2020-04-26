@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.aksw.dcat-suite</groupId>
+		<artifactId>dcat-suite-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>dcat-suite-service</artifactId>
+	<packaging>jar</packaging>
+
+
+	<dependencies>
+		<!-- <dependency> -->
+		<!-- <groupId>org.aksw.jena-sparql-api</groupId> -->
+		<!-- <artifactId>jena-sparql-api-core</artifactId> -->
+		<!-- </dependency> -->
+
+<!--
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-sdks-java-core</artifactId>
+		</dependency>
+-->
+
+		<dependency>	
+	        <groupId>org.hobbit</groupId>
+	        <artifactId>facete3-impl</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-conjure</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.dcat-suite</groupId>
+			<artifactId>dcat-api-jena-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hobbit</groupId>
+			<artifactId>docker-service-api-docker-client</artifactId>
+		</dependency>
+
+
+
+		<dependency>
+			<groupId>org.hobbit</groupId>
+			<artifactId>virtjdbc4</artifactId>
+			<!-- <scope>runtime</scope> -->
+		</dependency>
+
+		<dependency>
+			<groupId>org.hobbit</groupId>
+			<artifactId>virt_jena3</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-tdb2</artifactId>
+		</dependency>
+
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.jena</groupId> -->
+		<!-- <artifactId>jena-arq</artifactId> -->
+		<!-- </dependency> -->
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-mapper-proxy</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.trentorise.opendata</groupId>
+			<artifactId>jackan</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.1</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
+
