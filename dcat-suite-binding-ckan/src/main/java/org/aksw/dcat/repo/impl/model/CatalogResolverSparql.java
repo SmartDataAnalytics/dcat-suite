@@ -43,8 +43,8 @@ import org.apache.jena.vocabulary.RDF;
 import com.github.jsonldjava.shaded.com.google.common.collect.Ordering;
 import com.google.common.collect.ImmutableMap;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 
 
 /**

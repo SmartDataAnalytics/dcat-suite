@@ -5,23 +5,23 @@ import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 
 public class DatasetResolverCaching
-	implements DatasetResolver
+    implements DatasetResolver
 {
-	protected CatalogResolverCaching cr;
-	protected DatasetResolver dr;
+    protected CatalogResolverCaching cr;
+    protected DatasetResolver dr;
 
-	@Override
-	public CatalogResolver getCatalogResolver() {
-		return cr;
-	}
+    @Override
+    public CatalogResolver getCatalogResolver() {
+        return cr;
+    }
 
-	@Override
-	public DcatDataset getDataset() {
-		return dr.getDataset();
-	}
+    @Override
+    public DcatDataset getDataset() {
+        return dr.getDataset();
+    }
 
 //	@Override
 //	public Flowable<DistributionResolver> resolveDistributions(DcatDistribution distribution) throws Exception {
@@ -29,8 +29,8 @@ public class DatasetResolverCaching
 //	}
 
 
-	@Override
-	public Flowable<DistributionResolver> resolveDistribution(String distributionId) throws Exception {
-		return cr.resolveDistribution(distributionId);
-	}
+    @Override
+    public Flowable<DistributionResolver> resolveDistribution(String distributionId) throws Exception {
+        return cr.resolveDistribution(distributionId);
+    }
 }

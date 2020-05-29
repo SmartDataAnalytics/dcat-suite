@@ -20,66 +20,66 @@ import org.apache.jena.vocabulary.DCAT;
 
 import com.google.common.collect.Maps;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 
 // Use catalog resolver Sparql instead
 @Deprecated
 public class CatalogResolverModel
-	implements CatalogResolver
+    implements CatalogResolver
 {
-	protected Model model;
-	
-	public CatalogResolverModel(Model model) {
-		this.model = model;
-	}
+    protected Model model;
 
-	@Override
-	public Flowable<Resource> search(String pattern) {
-		throw new RuntimeException("not implemented");
-	}
+    public CatalogResolverModel(Model model) {
+        this.model = model;
+    }
 
-	
-	@Override
-	public Maybe<DatasetResolver> resolveDataset(String datasetId) {
-		Resource r = model.getResource(datasetId);
+    @Override
+    public Flowable<Resource> search(String pattern) {
+        throw new RuntimeException("not implemented");
+    }
 
-		Maybe<DatasetResolver> result = r == null ? Maybe.empty() : Maybe.just(
-				new DatasetResolverImpl(this, r.as(DcatDataset.class)));
-		return result;		
-	}
 
-	@Override
-	public Flowable<DistributionResolver> resolveDistribution(String distributionId) {
-		DcatDistribution rResource = model.createResource(distributionId).as(DcatDistribution.class);
-		DcatDistribution rBlankNode = model.wrapAsResource(NodeFactory.createBlankNode(distributionId)).as(DcatDistribution.class);
+    @Override
+    public Maybe<DatasetResolver> resolveDataset(String datasetId) {
+        Resource r = model.getResource(datasetId);
 
-		List<DistributionResolver> list =
-			Arrays.asList(rResource, rBlankNode).stream().flatMap(r ->
-				ResourceUtils.listReversePropertyValues(r, DCAT.distribution).toList().stream()
-					.map(s -> Maps.immutableEntry(s, r)))
-			.map(e -> (DistributionResolver)new DistributionResolverImpl(new DatasetResolverImpl(this, e.getKey().as(DcatDataset.class)), e.getValue()))
-			.collect(Collectors.toList());
+        Maybe<DatasetResolver> result = r == null ? Maybe.empty() : Maybe.just(
+                new DatasetResolverImpl(this, r.as(DcatDataset.class)));
+        return result;
+    }
 
-		Flowable<DistributionResolver> result = Flowable.fromIterable(list);
-		return result;
-	}
+    @Override
+    public Flowable<DistributionResolver> resolveDistribution(String distributionId) {
+        DcatDistribution rResource = model.createResource(distributionId).as(DcatDistribution.class);
+        DcatDistribution rBlankNode = model.wrapAsResource(NodeFactory.createBlankNode(distributionId)).as(DcatDistribution.class);
 
-	@Override
-	public Maybe<URL> resolveDownload(String downloadUri) throws Exception {
-		Maybe<URL> result = Maybe.just(new URL(downloadUri));
-		return result;
-	}
+        List<DistributionResolver> list =
+            Arrays.asList(rResource, rBlankNode).stream().flatMap(r ->
+                ResourceUtils.listReversePropertyValues(r, DCAT.distribution).toList().stream()
+                    .map(s -> Maps.immutableEntry(s, r)))
+            .map(e -> (DistributionResolver)new DistributionResolverImpl(new DatasetResolverImpl(this, e.getKey().as(DcatDataset.class)), e.getValue()))
+            .collect(Collectors.toList());
 
-	@Override
-	public Flowable<DistributionResolver> resolveDistribution(String datasetId, String distributionId) {
-		return resolveDistribution(distributionId)
-			.filter(r -> r.getDatasetResolver().getDataset().getURI().equals(datasetId));
-	}
+        Flowable<DistributionResolver> result = Flowable.fromIterable(list);
+        return result;
+    }
 
-	@Override
-	public Flowable<DistributionResolver> resolveDistribution(DcatDataset dataset, String distributionId) {
-		return resolveDistribution(dataset.getURI(), distributionId);
-	}
+    @Override
+    public Maybe<URL> resolveDownload(String downloadUri) throws Exception {
+        Maybe<URL> result = Maybe.just(new URL(downloadUri));
+        return result;
+    }
+
+    @Override
+    public Flowable<DistributionResolver> resolveDistribution(String datasetId, String distributionId) {
+        return resolveDistribution(distributionId)
+            .filter(r -> r.getDatasetResolver().getDataset().getURI().equals(datasetId));
+    }
+
+    @Override
+    public Flowable<DistributionResolver> resolveDistribution(DcatDataset dataset, String distributionId) {
+        return resolveDistribution(dataset.getURI(), distributionId);
+    }
 
 }

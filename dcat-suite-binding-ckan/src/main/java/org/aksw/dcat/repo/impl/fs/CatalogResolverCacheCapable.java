@@ -9,21 +9,21 @@ import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Maybe;
 
 public interface CatalogResolverCacheCapable
-	extends CatalogResolver
+    extends CatalogResolver
 {
-	 DistributionResolver doCacheDistribution(
-		String requestDistributionId,
-		DistributionResolver dr);
-	 
-	 Maybe<URL> doCacheDownload(URL downloadUrl) throws IOException;
+     DistributionResolver doCacheDistribution(
+        String requestDistributionId,
+        DistributionResolver dr);
 
-	 CompletableFuture<Path> doCacheDistribution(
-		String datasetId,
-		String requestDistributionId,
-		DistributionResolver dr, URL urlObj);
+     Maybe<URL> doCacheDownload(URL downloadUrl) throws IOException;
 
-	 DatasetResolver doCacheDataset(String requestId, DatasetResolver dr) throws Exception;
+     CompletableFuture<Path> doCacheDistribution(
+        String datasetId,
+        String requestDistributionId,
+        DistributionResolver dr, URL urlObj);
+
+     DatasetResolver doCacheDataset(String requestId, DatasetResolver dr) throws Exception;
 }

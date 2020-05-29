@@ -5,34 +5,34 @@ import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 
 public class DatasetResolverImpl
-	implements DatasetResolver
+    implements DatasetResolver
 {
-	protected CatalogResolver catalogResolver;
-	protected DcatDataset dcatDataset;
+    protected CatalogResolver catalogResolver;
+    protected DcatDataset dcatDataset;
 
-	public DatasetResolverImpl(CatalogResolver catalogResolver, DcatDataset dcatDataset) {
-		this.catalogResolver = catalogResolver;
-		this.dcatDataset = dcatDataset;
-	}
-	
-	
-	@Override
-	public DcatDataset getDataset() {
-		return dcatDataset;
-	}
-
-	@Override
-	public Flowable<DistributionResolver> resolveDistribution(String distributionId) throws Exception {
-		return catalogResolver.resolveDistribution(dcatDataset, distributionId);
-	}
+    public DatasetResolverImpl(CatalogResolver catalogResolver, DcatDataset dcatDataset) {
+        this.catalogResolver = catalogResolver;
+        this.dcatDataset = dcatDataset;
+    }
 
 
+    @Override
+    public DcatDataset getDataset() {
+        return dcatDataset;
+    }
 
-	@Override
-	public CatalogResolver getCatalogResolver() {
-		return catalogResolver;
-	}
+    @Override
+    public Flowable<DistributionResolver> resolveDistribution(String distributionId) throws Exception {
+        return catalogResolver.resolveDistribution(dcatDataset, distributionId);
+    }
+
+
+
+    @Override
+    public CatalogResolver getCatalogResolver() {
+        return catalogResolver;
+    }
 }

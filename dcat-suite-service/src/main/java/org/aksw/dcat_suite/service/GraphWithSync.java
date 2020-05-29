@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.aksw.jena_sparql_api.concurrent.util.Synchronized;
 import org.aksw.jena_sparql_api.io.common.Reference;
 import org.aksw.jena_sparql_api.io.common.ReferenceImpl;
 import org.apache.commons.io.input.CloseShieldInputStream;
@@ -293,7 +294,7 @@ abstract class FileSyncBase
 
                 // After closing the rootFileChannelRef the open-state of the file channel
                 // depends on the local reference
-                localFcRef = rootFileChannelRef.aquire(null);
+                localFcRef = rootFileChannelRef.acquire(null);
 
                 if(LockPolicy.TRANSACTION.equals(lockPolicy)) {
                     rootFileChannelRef.close();
@@ -307,7 +308,7 @@ abstract class FileSyncBase
 
             } else {
                 // Aquire may wait for close to finish
-                localFcRef = rootFileChannelRef.aquire(null);
+                localFcRef = rootFileChannelRef.acquire(null);
             }
         }
 
@@ -425,17 +426,7 @@ abstract class FileSyncBase
 
     @Override
     public void close() throws Exception {
-        syncronizeOn(this, () -> rootFileChannelRef != null, rootFileChannelRef::close);
-    }
-
-    public static void syncronizeOn(Object syncObj, Supplier<Boolean> condition, AutoCloseable action) throws Exception {
-        if(condition.get()) {
-            synchronized(syncObj) {
-                if(condition.get()) {
-                    action.close();
-                }
-            }
-        }
+        Synchronized.on(this, () -> rootFileChannelRef != null, rootFileChannelRef::close);
     }
 }
 

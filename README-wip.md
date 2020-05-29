@@ -7,20 +7,90 @@
 The DCAT System supports creation of services and loading datasets.
 
 Creation of services is typically based on a docker service wrapper.
-The dcat command adds bookkeeping to track which datasets were loaded into which services.
+The dcat command adds bookkeeping via `--managed` to track which datasets were loaded into which service.
+
+
+The DCAT service management provides a simple abstraction for the most common service management and dataset loading tasks.
+The purpose is NOT to reimplement a virtualization infrastructure such as docker.
+However, it should simplify the process of bulk loading datasets from a catalog
+
+
+
+Often, whenever one needs a good example for a dataset, one doesn't have one at hand.
+Based on the catalog it is useful to have quick access to several properties
+
+dcat serendipity
+
+  format preference nt
+  encoding preference gz
+  dataset size estimate -e.g 1GB
+  number of triples - e.g. 1M, .5B
+  number of classes
+  number of properties
+  avg number of properties by resource
+  use of multivalued properties
+  
+
+
 
 
 ```
-dcat service create -t myname service-image
+dcat service create -t myname -e 'KEY=VALUE' tenforce/virtuoso
 dcat service up myname
-dcat service load -t myservice datasetid
+
+
+## Dataset Loading
+dcat service load -t myservice datasetid-or-file-or-url
+dcat service load -t myservice --defer datasetid
+dcat service load -t myservice --rm-deferred datasetid
+dcat service load -t myservice --list-deferred
+dcat service load -t myservice run
+
+## Send a request to the service (e.g. a sparql statement)
+dcat service request -t myservice 'query'
+
+
+## Managed Dataset Loading
+--managed registers the service as a distribution of the given dataset
+dcat service load -t myservice --register-dist datasetid
+
+
+## Service/Dataset Mapping
+dcat servicemap
+
+myname [ containsData [ graph "g1"; datasetid "foo" ] ]
+
+
+
+## Service Life Cycle Management
 dcat service down myname
+dcat service restart myname
+dcat service reload myname # config relead
+dcat service delete myname
+dcat service getenv myname
+dcat service setenv -t myname KEY1=VALUE1 ... KEYn=VALUEn
+dcat service unsetenv -t myname KEY1 KEYn
+
 
 # Show the list of services and known datasets
 dcat service list
 ```
 
 
+File based services
+  start a fuseki backed by a file
+
+
+
+
+
+
+
+
+Quick serving
+```
+dcat docker serve --immutable dataset tenforce/virtuoso
+```
 
 
 
