@@ -250,10 +250,8 @@ public class MainCliDcatSuite {
         @Parameter(names = {"-o", "--org", "--orga", "--organization"}, description = "The ID or name of the organization into which to upload (matched in this order).")
         protected String organization = null;
 
-        @Parameter(names = {"--group"}, description = "Map organization by group attribute.")
-        protected boolean mapByGroup = false;
-
-
+        @Parameter(names = {"--no-group-map"}, description = "Disable mapping organization by group attribute.")
+        protected boolean noMapByGroup = false;
 
         @Parameter(names = "--apikey", description = "Your API key for the CKAN instance")
         protected String apikey;
@@ -454,7 +452,7 @@ public class MainCliDcatSuite {
                 CkanClient ckanClient = new CkanClient(cmDeployCkan.ckanUrl, cmDeployCkan.apikey);
                 //showCkanDatasets(ckanClient);
                 //if(false) {
-                processDeploy(ckanClient, cmDeployCkan.file, cmDeployCkan.noupload, cmDeployCkan.mapByGroup, cmDeployCkan.organization);
+                processDeploy(ckanClient, cmDeployCkan.file, cmDeployCkan.noupload, !cmDeployCkan.noMapByGroup, cmDeployCkan.organization);
                 //}
                 break;
             }

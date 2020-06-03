@@ -1,5 +1,6 @@
 package org.aksw.ckan_deploy.dcat;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -16,8 +17,11 @@ public class CkanDatasetUtils {
     }
 
     public static Map<String, String> getExtrasAsMap(Iterable<? extends CkanPair> extras) {
-        Map<String, String> result = StreamSupport.stream(extras.spliterator(), false)
-                .collect(Collectors.toMap(CkanPair::getKey, CkanPair::getValue));
+        Map<String, String> result = extras == null
+                ? Collections.emptyMap()
+                : StreamSupport.stream(extras.spliterator(), false)
+                    .collect(Collectors.toMap(CkanPair::getKey, CkanPair::getValue));
+
         return result;
     }
 

@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.dcat.CkanDatasetUtils;
@@ -33,8 +35,12 @@ import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Streams;
 
 import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.exceptions.CkanException;
@@ -49,7 +55,41 @@ public class DcatCkanDeployUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DcatCkanDeployUtils.class);
 
+    public static Function<String, List<String>> stringSplitter(String pattern) {
+        return str -> Arrays.asList(str.split(pattern)).stream()
+                .map(String::trim)
+                .filter(x -> !x.isEmpty())
+                .collect(Collectors.toList());
+    }
 
+    public static <K, X, T> Multimap<K, T> indexByAttributeSplit(
+            Iterable<T> items,
+            Function<? super T, ? extends X> keyFn,
+            Function<? super X, ? extends Collection<K>> keySplitter) {
+
+        Multimap<K, T> result = index(items, item -> {
+            X key = keyFn.apply(item);
+            Collection<K> r = key == null ? Collections.emptyList() : keySplitter.apply(key);
+            return r;
+        });
+
+        return result;
+    }
+
+
+    public static <T, K> Multimap<K, T> index(Iterable<T> items, Function<? super T, ? extends Collection<K>> keysFn) {
+        Multimap<K, T> result = ArrayListMultimap.create();
+
+        Streams.stream(items)
+            // item -> (unsplitKey, item)
+            .map(item -> Maps.immutableEntry(keysFn.apply(item), item))
+            // (item, keys) -> (key1, itemA), (key2, itemA), (key1, itemB) ...
+            .flatMap(e -> e.getKey().stream()
+                    .map(k -> Maps.immutableEntry(k, e.getValue())))
+            .forEach(e -> result.put(e.getKey(), e.getValue()));
+
+        return result;
+    }
 
     /**
      *
@@ -92,12 +132,14 @@ public class DcatCkanDeployUtils {
             }
         }
 
-
         // List dataset descriptions
         Model result = DcatUtils.createModelWithDcatFragment(dcatModel);
         Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(result);
 
+        String GROUP_ID_KEY = "groupId";
 
+
+        Multimap<String, CkanOrganization> groupIdToOrgas = null;
 
         for(DcatDataset d : dcatDatasets) {
 
@@ -110,21 +152,25 @@ public class DcatCkanDeployUtils {
                     if(orgas == null) {
                         // TODO We should directly make a lookup for orgas having a specific tag if the CKAN API allows for it
                         logger.info("Fetching organizations ...");
-                        orgas = ckanClient.getOrganizationList();
+                        List<String> orgaNames = ckanClient.getOrganizationNames();
+                        orgas = orgaNames.stream()
+                                .map(name -> ckanClient.getOrganization(name))
+                                .collect(Collectors.toList());
+                        // The list does not include extra tags...
+                        //orgas = ckanClientgetOrganizationList();
+
+                        groupIdToOrgas = indexByAttributeSplit(orgas,
+                                orga -> CkanDatasetUtils.getExtrasAsMap(orga.getExtras()).get(GROUP_ID_KEY),
+                                stringSplitter("\\s+"));
                     }
 
-                    String GROUP_ID = "groupId";
+                    Collection<CkanOrganization> candTargetOrgas = groupIdToOrgas.get(datasetGroupId);
+                    if(candTargetOrgas.size() > 1) {
+                        throw new RuntimeException("Multiple organization candidates: " + candTargetOrgas);
+                    }
 
-                    targetOrga = orgas.stream()
-                        .filter(orga -> {
-                            Map<String, String> map = CkanDatasetUtils.getExtrasAsMap(orga.getExtras());
-                            String orgaGroupId = map.get(GROUP_ID);
 
-                            boolean r = Objects.equals(orgaGroupId, datasetGroupId);
-                            return r;
-                        })
-                        .findFirst()
-                        .orElse(null);
+                    targetOrga = candTargetOrgas.isEmpty() ? null : candTargetOrgas.iterator().next();
                 }
             }
 
@@ -217,6 +263,7 @@ public class DcatCkanDeployUtils {
         logger.info("Post-processed name to " + datasetName);
 
         CkanDataset remoteCkanDataset;
+
 
         boolean isDatasetCreationRequired = false;
         try {
