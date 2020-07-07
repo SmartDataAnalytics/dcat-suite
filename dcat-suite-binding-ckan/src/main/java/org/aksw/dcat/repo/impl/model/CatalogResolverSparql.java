@@ -24,8 +24,8 @@ import org.aksw.jena_sparql_api.concepts.Relation;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.UnaryRelation;
 import org.aksw.jena_sparql_api.data_query.api.DataQuery;
-import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
 import org.aksw.jena_sparql_api.rx.SparqlRx;
+import org.aksw.jena_sparql_api.rx.SparqlStmtMgr;
 import org.aksw.jena_sparql_api.utils.CountInfo;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
 import org.apache.jena.ext.com.google.common.collect.Maps;
@@ -95,7 +95,7 @@ public class CatalogResolverSparql
         this.patternToQuery = patternToQuery;
 
         try {
-            this.dcatShape = RDFDataMgrEx.loadQuery("dcat-shape.sparql");
+            this.dcatShape = SparqlStmtMgr.loadQuery("dcat-shape.sparql");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

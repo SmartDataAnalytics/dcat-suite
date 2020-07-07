@@ -32,7 +32,7 @@ import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.connection.QueryExecutionFactorySparqlQueryConnection;
 import org.aksw.jena_sparql_api.core.connection.RDFConnectionBuilder;
 import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa;
-import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
+import org.aksw.jena_sparql_api.rx.SparqlStmtMgr;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
 import org.aksw.jena_sparql_api.utils.NodeUtils;
@@ -52,166 +52,166 @@ import eu.trentorise.opendata.commons.internal.org.apache.commons.lang3.SystemUt
 import eu.trentorise.opendata.jackan.CkanClient;
 
 public class CatalogResolverUtils {
-	private static final Logger logger = LoggerFactory.getLogger(CatalogResolverUtils.class);
-	
-	public static CatalogResolver createCatalogResolverDefault() throws IOException, ParseException {
-		Path dcatPath = Paths.get(SystemUtils.USER_HOME).resolve(".dcat");
-		CatalogResolver result = createCatalogResolverDefault(dcatPath);
-		return result;
-	}
-	
-	public static CatalogResolver wrapWithDiskCache(CatalogResolver coreCatalogResolver) {
-		CatalogResolver result = new CatalogResolverCaching(
-				CatalogResolverFilesystem.createDefault(),
-				coreCatalogResolver);
+    private static final Logger logger = LoggerFactory.getLogger(CatalogResolverUtils.class);
 
-		return result;
-	}
-	
-	public static Function<String, Query> loadTemplate(String fileOrURI, String templateArgName) throws FileNotFoundException, IOException, ParseException {
-		Query templateQuery = RDFDataMgrEx.loadQuery(fileOrURI);
+    public static CatalogResolver createCatalogResolverDefault() throws IOException, ParseException {
+        Path dcatPath = Paths.get(SystemUtils.USER_HOME).resolve(".dcat");
+        CatalogResolver result = createCatalogResolverDefault(dcatPath);
+        return result;
+    }
 
-		Function<String, Query> result = value -> {
-			Map<String, String> map = Collections.singletonMap(templateArgName, value);
-			Query r = QueryUtils.applyNodeTransform(templateQuery, x -> NodeUtils.substWithLookup(x, map::get));
-			return r;
-		};
-		return result;
-	};
+    public static CatalogResolver wrapWithDiskCache(CatalogResolver coreCatalogResolver) {
+        CatalogResolver result = new CatalogResolverCaching(
+                CatalogResolverFilesystem.createDefault(),
+                coreCatalogResolver);
 
-	// No longer needed, as this is now part of the settings.ttl
-	public static List<TernaryRelation> loadViews(Collection<String> extraViews) throws FileNotFoundException, IOException, ParseException {
-		//Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
-		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
-		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
+        return result;
+    }
 
-		List<TernaryRelation> views = new ArrayList<>();
-		
-		//views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
-		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
-		views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
+    public static Function<String, Query> loadTemplate(String fileOrURI, String templateArgName) throws FileNotFoundException, IOException, ParseException {
+        Query templateQuery = SparqlStmtMgr.loadQuery(fileOrURI);
 
-		SparqlQueryParser parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
-		
-		for(String extraView : extraViews) {
-			Query query = parser.apply(extraView);
-			views.addAll(VirtualPartitionedQuery.toViews(query));
-		}
-		
-		views.add(RelationUtils.SPO);
-		//views.add(Ternar);
+        Function<String, Query> result = value -> {
+            Map<String, String> map = Collections.singletonMap(templateArgName, value);
+            Query r = QueryUtils.applyNodeTransform(templateQuery, x -> NodeUtils.substWithLookup(x, map::get));
+            return r;
+        };
+        return result;
+    };
 
-		return views;
-	}
-	
-	public static CatalogResolverSparql createCatalogResolver(SparqlQueryConnection conn, List<String> extraViews) throws FileNotFoundException, IOException, ParseException {
-		List<TernaryRelation> views = loadViews(extraViews);
+    // No longer needed, as this is now part of the settings.ttl
+    public static List<TernaryRelation> loadViews(Collection<String> extraViews) throws FileNotFoundException, IOException, ParseException {
+        //Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
+        Query latestVersionQuery = SparqlStmtMgr.loadQuery("latest-version.sparql");
+        Query relatedDataset = SparqlStmtMgr.loadQuery("related-dataset.sparql");
+
+        List<TernaryRelation> views = new ArrayList<>();
+
+        //views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
+        views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
+        views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
+
+        SparqlQueryParser parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
+
+        for(String extraView : extraViews) {
+            Query query = parser.apply(extraView);
+            views.addAll(VirtualPartitionedQuery.toViews(query));
+        }
+
+        views.add(RelationUtils.SPO);
+        //views.add(Ternar);
+
+        return views;
+    }
+
+    public static CatalogResolverSparql createCatalogResolver(SparqlQueryConnection conn, List<String> extraViews) throws FileNotFoundException, IOException, ParseException {
+        List<TernaryRelation> views = loadViews(extraViews);
 //
-//		
-		RDFConnection _conn = RDFConnectionBuilder.from(new RDFConnectionModular(conn, null, null))
-				.addQueryTransform(q -> VirtualPartitionedQuery.rewrite(views, q))
-				.getConnection();
-		
-		Function<String, Query> patternToQuery = loadTemplate("match-by-regex.sparql", "ARG");		
-		Function<String, Query> idToQuery = loadTemplate("match-exact.sparql", "ARG");
+//
+        RDFConnection _conn = RDFConnectionBuilder.from(new RDFConnectionModular(conn, null, null))
+                .addQueryTransform(q -> VirtualPartitionedQuery.rewrite(views, q))
+                .getConnection();
 
-		CatalogResolverSparql result = new CatalogResolverSparql(_conn, idToQuery, patternToQuery);
-		return result;
+        Function<String, Query> patternToQuery = loadTemplate("match-by-regex.sparql", "ARG");
+        Function<String, Query> idToQuery = loadTemplate("match-exact.sparql", "ARG");
 
-	}
+        CatalogResolverSparql result = new CatalogResolverSparql(_conn, idToQuery, patternToQuery);
+        return result;
 
-	/**
-	 * 
-	 * dcatPath is e.g. ~/.dcat
-	 * 
-	 * @param dcatPath
-	 * @return
-	 * @throws IOException 
-	 * @throws ParseException 
-	 */
-	public static CatalogResolver createCatalogResolverDefault(Path dcatPath) throws IOException, ParseException {
-		
+    }
+
+    /**
+     *
+     * dcatPath is e.g. ~/.dcat
+     *
+     * @param dcatPath
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    public static CatalogResolver createCatalogResolverDefault(Path dcatPath) throws IOException, ParseException {
+
 //		HttpResourceRepositoryFromFileSystemImpl repo = HttpResourceRepositoryFromFileSystemImpl.createDefault();
 
-		
-		//Model configModel = ModelFactory.createDefaultModel();
-		String configUrl = dcatPath.resolve("settings.ttl").toUri().toString();
-		Model configModel = RDFDataMgr.loadModel(configUrl);
-		
-		// Resolve placeholders in the model
-		ResourceSpecUtils.resolve(configModel);
-		
-		List<DcatResolverConfig> configs = configModel
-				.listResourcesWithProperty(ResourceFactory.createProperty("http://www.example.org/resolvers"))
-				.mapWith(r -> r.as(DcatResolverConfig.class))
-				.toList();
 
-		CatalogResolverMulti coreResolver = new CatalogResolverMulti();
-		
-		for(DcatResolverConfig config : configs) {
-			Collection<DcatResolver> resolvers = config.resolvers(DcatResolver.class);
-			for(DcatResolver resolverSpec : resolvers) {
-				
-				DataRef dataRef = resolverSpec.getDataRef();
-				
-				// Try to map as a DataRef
-				//DataRef dataRef = JenaPluginUtils.polymorphicCast(resolverSpec, DataRef.class);
-				if(dataRef != null) {
-					RdfDataPod dataPod = DataPods.fromDataRef(dataRef);
-					
-					logger.info("Loaded catalog: " + dataPod + " from " + dataRef);
-					
-					SparqlQueryConnection conn = dataPod.openConnection();
-					
-					// Wrap with client side construct because ... virtuoso
-					conn = new SparqlQueryConnectionJsa(
-							FluentQueryExecutionFactory
-							.from(new QueryExecutionFactorySparqlQueryConnection(conn))
-							.config()
-								.withClientSideConstruct()
-							.end()
-							.create());
+        //Model configModel = ModelFactory.createDefaultModel();
+        String configUrl = dcatPath.resolve("settings.ttl").toUri().toString();
+        Model configModel = RDFDataMgr.loadModel(configUrl);
 
-					List<String> extraViews = resolverSpec.getViews();
-					
-					CatalogResolver resolver = createCatalogResolver(conn, extraViews);
-					coreResolver.getResolvers().add(resolver);
-					
+        // Resolve placeholders in the model
+        ResourceSpecUtils.resolve(configModel);
+
+        List<DcatResolverConfig> configs = configModel
+                .listResourcesWithProperty(ResourceFactory.createProperty("http://www.example.org/resolvers"))
+                .mapWith(r -> r.as(DcatResolverConfig.class))
+                .toList();
+
+        CatalogResolverMulti coreResolver = new CatalogResolverMulti();
+
+        for(DcatResolverConfig config : configs) {
+            Collection<DcatResolver> resolvers = config.resolvers(DcatResolver.class);
+            for(DcatResolver resolverSpec : resolvers) {
+
+                DataRef dataRef = resolverSpec.getDataRef();
+
+                // Try to map as a DataRef
+                //DataRef dataRef = JenaPluginUtils.polymorphicCast(resolverSpec, DataRef.class);
+                if(dataRef != null) {
+                    RdfDataPod dataPod = DataPods.fromDataRef(dataRef);
+
+                    logger.info("Loaded catalog: " + dataPod + " from " + dataRef);
+
+                    SparqlQueryConnection conn = dataPod.openConnection();
+
+                    // Wrap with client side construct because ... virtuoso
+                    conn = new SparqlQueryConnectionJsa(
+                            FluentQueryExecutionFactory
+                            .from(new QueryExecutionFactorySparqlQueryConnection(conn))
+                            .config()
+                                .withClientSideConstruct()
+                            .end()
+                            .create());
+
+                    List<String> extraViews = resolverSpec.getViews();
+
+                    CatalogResolver resolver = createCatalogResolver(conn, extraViews);
+                    coreResolver.getResolvers().add(resolver);
+
 //					DataPodFactory dataPodFactory = new DataPodFactoryImpl(opExecutor);
 //					DataPods.fromSparqlEndpoint(dataRef)
-				} else {
-					
-					// TODO Improve this - we simply assume a ckan resolver here which is not
-					// necessarily what we get
-					
-					DcatResolverCkan ckanResolverSpec = resolverSpec.as(DcatResolverCkan.class);
-					
-//					System.out.println("Got: " + ckanResolverSpec.getApiKey());	
+                } else {
+
+                    // TODO Improve this - we simply assume a ckan resolver here which is not
+                    // necessarily what we get
+
+                    DcatResolverCkan ckanResolverSpec = resolverSpec.as(DcatResolverCkan.class);
+
+//					System.out.println("Got: " + ckanResolverSpec.getApiKey());
 //					System.out.println("Got: " + ckanResolverSpec.getUrl());
-					
-					
-					String ckanApiUrl = ckanResolverSpec.getUrl();
-					String ckanApiKey = ckanResolverSpec.getApiKey();
-					
-	//				CkanClient ckanClient = new CkanClient("http://ckan.qrowd.aksw.org", "25b91078-fbc6-4b3a-93c5-acfce414bbeb");
-					CkanClient ckanClient = new CkanClient(ckanApiUrl, ckanApiKey);
-					CatalogResolver ckanResolver = new CatalogResolverCkan(ckanClient);
-					coreResolver.getResolvers().add(ckanResolver);
-				}
-			}			
-		}
-		
-		logger.info("Registered " + coreResolver.getResolvers().size() + " dcat resolvers");
 
-			
-		
-		//String id = "http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/fb3fed1f-cc9a-4232-a876-b185d8e002c8/download/osm-bremen-2018-04-04-ways-amenity.sorted.nt.bz2";
-		//String id = "fb3fed1f-cc9a-4232-a876-b185d8e002c8";
-		//String id = "http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity";
-		
+
+                    String ckanApiUrl = ckanResolverSpec.getUrl();
+                    String ckanApiKey = ckanResolverSpec.getApiKey();
+
+    //				CkanClient ckanClient = new CkanClient("http://ckan.qrowd.aksw.org", "25b91078-fbc6-4b3a-93c5-acfce414bbeb");
+                    CkanClient ckanClient = new CkanClient(ckanApiUrl, ckanApiKey);
+                    CatalogResolver ckanResolver = new CatalogResolverCkan(ckanClient);
+                    coreResolver.getResolvers().add(ckanResolver);
+                }
+            }
+        }
+
+        logger.info("Registered " + coreResolver.getResolvers().size() + " dcat resolvers");
+
+
+
+        //String id = "http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/fb3fed1f-cc9a-4232-a876-b185d8e002c8/download/osm-bremen-2018-04-04-ways-amenity.sorted.nt.bz2";
+        //String id = "fb3fed1f-cc9a-4232-a876-b185d8e002c8";
+        //String id = "http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity";
+
 //		CatalogResolver result = wrapWithDiskCache(coreResolver);
-		CatalogResolver result = coreResolver;
+        CatalogResolver result = coreResolver;
 
-		return result;
-	}
+        return result;
+    }
 }
