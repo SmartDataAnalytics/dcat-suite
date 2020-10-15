@@ -25,7 +25,7 @@ import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.concepts.UnaryRelation;
 import org.aksw.jena_sparql_api.data_query.api.DataQuery;
 import org.aksw.jena_sparql_api.rx.SparqlRx;
-import org.aksw.jena_sparql_api.rx.SparqlStmtMgr;
+import org.aksw.jena_sparql_api.stmt.SparqlStmtMgr;
 import org.aksw.jena_sparql_api.utils.CountInfo;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
 import org.apache.jena.ext.com.google.common.collect.Maps;

@@ -5,9 +5,9 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Set;
 
-import org.aksw.commons.accessors.CollectionFromConverter;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
+import org.aksw.commons.collections.ConvertingCollection;
 import org.aksw.commons.converters.CastConverter;
 import org.aksw.dcat.ap.domain.accessors.DcatApDatasetAccessor;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
@@ -170,7 +170,7 @@ public class RdfDcatApDatasetImpl
 	@Override
 	public SingleValuedAccessor<DcatApAgent> publisher() {
 		return new SingleValuedAccessorFromCollection<>(
-				new CollectionFromConverter<DcatApAgent, RdfDcatApAgent, Collection<RdfDcatApAgent>>(
+				new ConvertingCollection<DcatApAgent, RdfDcatApAgent, Collection<RdfDcatApAgent>>(
 						(Collection<RdfDcatApAgent>)new SetFromPropertyValues<RdfDcatApAgent>(this, DCTerms.publisher, RdfDcatApAgent.class),
 						new CastConverter<RdfDcatApAgent, DcatApAgent>()));
 						

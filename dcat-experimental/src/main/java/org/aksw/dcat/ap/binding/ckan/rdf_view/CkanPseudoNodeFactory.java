@@ -13,11 +13,11 @@ import org.aksw.commons.accessors.AccessorSupplierFactoryClass;
 import org.aksw.commons.accessors.CollectionAccessorFromCollection;
 import org.aksw.commons.accessors.CollectionAccessorFromCollectionValue;
 import org.aksw.commons.accessors.CollectionAccessorSingleton;
-import org.aksw.commons.accessors.CollectionFromConverter;
 import org.aksw.commons.accessors.LazyCollection;
 import org.aksw.commons.accessors.PropertySource;
 import org.aksw.commons.accessors.PropertySourcePrefix;
 import org.aksw.commons.accessors.SingleValuedAccessor;
+import org.aksw.commons.collections.ConvertingCollection;
 import org.aksw.commons.converters.CastConverter;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.dcat.jena.ap.vocab.Spdx;
@@ -290,7 +290,7 @@ public class CkanPseudoNodeFactory {
 		registry.put(p,
 				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
-							new CollectionFromConverter<>(
+							new ConvertingCollection<>(
 								new LazyCollection<>(
 									s.getCollectionProperty(attr, attrClass),
 									ArrayList::new, true),
@@ -306,7 +306,7 @@ public class CkanPseudoNodeFactory {
 		registry.put(p,
 				s -> new PseudoRdfPropertyImpl<>(
 						new CollectionAccessorFromCollection<>(
-								new CollectionFromConverter<>(
+								new ConvertingCollection<>(
 										new SetFromJsonListString(s.getProperty(attr, String.class), true),
 										new CastConverter<>())),
 							//new RdfTypeUri(),

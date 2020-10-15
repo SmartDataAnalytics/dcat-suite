@@ -3,7 +3,7 @@ package org.aksw.jena_sparql_api.pseudo_rdf;
 import java.util.Collection;
 
 import org.aksw.commons.accessors.CollectionAccessor;
-import org.aksw.commons.accessors.CollectionFromConverter;
+import org.aksw.commons.collections.ConvertingCollection;
 import org.aksw.jena_sparql_api.rdf.collections.ConverterFromNodeMapper;
 import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
 import org.apache.jena.graph.Node;
@@ -54,7 +54,7 @@ public class PseudoRdfPropertyImpl<T>
 			throw new RuntimeException("Got null value for " + accessor);
 		}
 		
-		Collection<Node> result = new CollectionFromConverter<>(backend, converter);
+		Collection<Node> result = new ConvertingCollection<>(backend, converter);
 		return result;
 	}
 
