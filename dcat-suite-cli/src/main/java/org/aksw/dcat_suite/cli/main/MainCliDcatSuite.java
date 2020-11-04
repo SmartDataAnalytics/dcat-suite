@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,9 +16,9 @@ import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
 import org.aksw.ckan_deploy.core.DcatDeployVirtuosoUtils;
 import org.aksw.ckan_deploy.core.DcatExpandUtils;
-import org.aksw.ckan_deploy.core.DcatInstallUtils;
 import org.aksw.ckan_deploy.core.DcatRepository;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
+import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
@@ -34,6 +31,8 @@ import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.dcat.utils.DcatUtils;
+import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
+import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -43,9 +42,6 @@ import org.aksw.jena_sparql_api.json.RdfJsonUtils;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
-import org.apache.jena.ext.com.google.common.collect.Iterables;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
@@ -64,10 +60,6 @@ import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDock
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.github.jsonldjava.shaded.com.google.common.collect.Maps;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
@@ -81,220 +73,13 @@ import com.spotify.docker.client.messages.ContainerInfo;
 import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
+import picocli.CommandLine;
 import virtuoso.jdbc4.VirtuosoDataSource;
 
 public class MainCliDcatSuite {
 
     private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
 
-
-    @Parameters(separators = "=", commandDescription = "Service Management")
-    public static class CmdService {
-        @Parameter(names="--help", help=true)
-        public boolean help = false;
-    }
-
-
-    @Parameters(separators="=", commandDescription="Service Creation")
-    public static class CmdServiceCreate {
-        @Parameter(description="Non option args")
-        public List<String> nonOptionArgs;
-
-        @Parameter(names={"-t", "--tag"}, description="A name for the service")
-        public List<String> transforms = new ArrayList<>();
-
-        @Parameter(names="--help", help=true)
-        public boolean help = false;
-    }
-
-
-
-
-    @Parameters(separators="=", commandDescription="Transform DCAT model and data")
-    public static class CommandTransform {
-        @Parameter(description = "Non option args")
-        public List<String> nonOptionArgs;
-
-        @Parameter(names={"-t", "--transform"})
-        public List<String> transforms = new ArrayList<>();
-
-        /**
-         * Environment variable assignments using the syntax
-         * -D foo=bar -D 'moo=mar'
-         *
-         */
-        @Parameter(names={"-D"})
-        public List<String> envVars = new ArrayList<>();
-
-        @Parameter(names= {"-m", "--materialize"})
-        public boolean materialize = false;
-
-        @Parameter(names="--help", help=true)
-        public boolean help = false;
-    }
-
-
-    @Parameters(separators = "=", commandDescription = "Show DCAT information")
-    public static class CommandMain {
-        @Parameter(description = "Non option args")
-        protected List<String> nonOptionArgs;
-
-        @Parameter(names = "--help", help = true)
-        protected boolean help = false;
-    }
-
-    @Parameters(separators = "=", commandDescription = "Search DCAT catalogs")
-    public static class CommandSearch {
-        @Parameter(description = "Search pattern (regex)")
-        protected List<String> nonOptionArgs;
-
-//		// ArtifactID - can refer to any dataset, distribution, download
-//		protected String artifactId;
-        @Parameter(names={"-c", "--catalog"}, description = "Catalog reference")
-        protected List<String> catalogs = Collections.emptyList();
-
-        // json output for processing by tools such as jq
-        @Parameter(names = "--jq", description = "json output")
-        protected boolean jsonOutput = false;
-
-        @Parameter(names = "--help", help = true)
-        protected boolean help = false;
-    }
-
-
-    @Parameters(separators = "=", commandDescription = "Show data")
-    public static class CommandData {
-        @Parameter(description = "Non option args")
-        protected List<String> nonOptionArgs;
-
-//		// ArtifactID - can refer to any dataset, distribution, download
-//		protected String artifactId;
-        @Parameter(names={"-c", "--catalog"}, description = "Catalog reference")
-        protected List<String> catalogs = Collections.emptyList();
-
-        // Note: format is more generic than content-type as csv or rdf.gzip are valid formats
-        // So a format is any string from which content type and encoding can be inferred
-        @Parameter(names={"-f", "--format"}, description = "Preferred format / content type")
-        protected String contentType = "text/turtle";
-
-        @Parameter(names={"-e", "--encoding"}, description = "Preferred encoding(s)")
-        protected List<String> encodings = Collections.emptyList();
-
-        @Parameter(names={"-l", "--link"}, description = "Instead of returning the content directly, return a file url in the cache")
-        protected boolean link = false;
-
-        @Parameter(names = "--help", help = true)
-        protected boolean help = false;
-    }
-
-    @Parameters(separators = "=", commandDescription = "Show DCAT information")
-    public static class CommandShow {
-
-        @Parameter(description = "Any RDF file")
-        protected String file;
-    }
-
-    @Parameters(separators = "=", commandDescription = "Download datasets to local repository based on DCAT information")
-    public static class CommandInstall {
-        @Parameter(description = "A DCAT file")
-        protected String file;
-    }
-
-
-    @Parameters(separators = "=", commandDescription = "Expand quad datasets")
-    public static class CommandExpand {
-
-        @Parameter(description = "Quad-based RDF dataset")
-        protected String file;
-    }
-
-    @Parameters(separators = "=", commandDescription = "Deploy DCAT datasets")
-    public static class CommandDeploy {
-    }
-
-    @Parameters(separators = "=", commandDescription = "Retrieve DCAT descriptions")
-    public static class CommandImport {
-    }
-
-    @Parameters(separators = "=", commandDescription = "Retrieve DCAT descriptions from CKAN")
-    public static class CommandImportCkan {
-
-        @Parameter(names="--url", description="The URL of the CKAN instance", required=true)
-        protected String ckanUrl = "http://localhost/ckan";
-
-        @Parameter(names="--apikey", description="Your API key for the CKAN instance")
-        protected String apikey;
-
-        @Parameter(names = { "--ds" ,"--dataset"} , description = "Import a specific datasets (ckan id or name)")
-        protected List<String> datasets = new ArrayList<>();
-
-        @Parameter(names="--all", description="Import everything")
-        protected boolean all = false;
-
-        @Parameter(names = "--prefix", description = "Allocate URIs using this prefix")
-        protected String prefix;
-
-        // TODO Add arguments to filter datastes
-
-    }
-
-    @Parameters(separators = "=", commandDescription = "Deploy DCAT datasets")
-    public static class CommandDeployCkan {
-
-        @Parameter(description = "The DCAT file which to deploy", required = true)
-        protected String file;
-
-        @Parameter(names = "--url", description = "The URL of the CKAN instance")
-        protected String ckanUrl = "http://localhost/ckan";
-
-        @Parameter(names = {"-o", "--org", "--orga", "--organization"}, description = "The ID or name of the organization into which to upload (matched in this order).")
-        protected String organization = null;
-
-        @Parameter(names = {"--no-group-map"}, description = "Disable mapping organization by group attribute.")
-        protected boolean noMapByGroup = false;
-
-        @Parameter(names = "--apikey", description = "Your API key for the CKAN instance")
-        protected String apikey;
-
-        @Parameter(names = "--noupload", description = "Disable file upload")
-        protected boolean noupload = false;
-
-    }
-
-    @Parameters(separators = "=", commandDescription = "Deploy datasets to a local Virtuoso via OBDC")
-    public static class CommandDeployVirtuoso {
-
-        @Parameter(description = "The DCAT file which to deploy") //, required = true)
-        protected String file;
-
-        @Parameter(names = { "--ds" ,"--dataset"} , description = "Datasets which to deploy (iri, identifier or title)")
-        protected List<String> datasets = new ArrayList<>();
-
-        @Parameter(names = "--port", description = "Virtuoso's ODBC port")
-        protected int port = 1111;
-
-        @Parameter(names = "--host", description = "Hostname")
-        protected String host = null; //"localhost";
-
-        @Parameter(names = "--user", description = "Username")
-        protected String user = "dba";
-
-        @Parameter(names = "--pass", description = "Password")
-        protected String pass = "dba";
-
-        @Parameter(names = "--allowed", description = "A writeable folder readable by virtuoso")
-        protected String allowed = ".";
-
-        @Parameter(names = "--docker", description = "Id of a docker container - files will be copied into the container to the folder specified by --allowed")
-        protected String docker = null;
-
-        @Parameter(names = "--nosymlinks", description = "Copy datsets to the allowed folder instead of linking them")
-        protected boolean nosymlinks = false;
-
-        @Parameter(names = "--tmp", description = "Temporary directory for e.g. unzipping large files")
-        protected String tmpFolder = StandardSystemProperty.JAVA_IO_TMPDIR.value() + "/dcat/";
-
-    }
 
     public static void showCkanDatasets(CkanClient ckanClient) {
         List<String> ds = ckanClient.getDatasetList(10, 0);
@@ -351,216 +136,242 @@ public class MainCliDcatSuite {
         JenaPluginUtils.registerResourceClasses(SearchResult.class);
         JenaPluginUtils.registerResourceClasses(DcatResolver.class);
 
-
-        CommandMain cm = new CommandMain();
-        CommandSearch cmSearch = new CommandSearch();
-        CommandData cmData = new CommandData();
-        CommandShow cmShow = new CommandShow();
-        CommandExpand cmExpand = new CommandExpand();
-        CommandDeploy cmDeploy = new CommandDeploy();
-        CommandImport cmImport = new CommandImport();
-        CommandInstall cmInstall = new CommandInstall();
-        CommandTransform cmTransform = new CommandTransform();
-        CmdService cmdService = new CmdService();
-
-
-        // CommandCommit commit = new CommandCommit();
-        JCommander jc = JCommander.newBuilder()
-                .addObject(cm)
-                .addCommand("search", cmSearch)
-                .addCommand("data", cmData)
-                .addCommand("show", cmShow)
-                .addCommand("expand", cmExpand)
-                .addCommand("deploy", cmDeploy)
-                .addCommand("import", cmImport)
-                .addCommand("install", cmInstall)
-                .addCommand("transform", cmTransform)
-                .addCommand("service", cmdService)
-                .build();
-
-        JCommander serviceSubCmds = jc.getCommands().get("service");
-        CmdServiceCreate serviceCreateCmd = new CmdServiceCreate();
-        serviceSubCmds.addCommand("create", serviceCreateCmd);
-
-        JCommander deploySubCommands = jc.getCommands().get("deploy");
-
-        CommandDeployCkan cmDeployCkan = new CommandDeployCkan();
-        deploySubCommands.addCommand("ckan", cmDeployCkan);
-
-        CommandDeployVirtuoso cmDeployVirtuoso = new CommandDeployVirtuoso();
-        deploySubCommands.addCommand("virtuoso", cmDeployVirtuoso);
-
-
-        JCommander importSubCommands = jc.getCommands().get("import");
-
-        CommandImportCkan cmImportCkan = new CommandImportCkan();
-        importSubCommands.addCommand("ckan", cmImportCkan);
-
-        jc.parse(args);
-
-        if (cm.help) {
-            jc.usage();
-            return;
-        }
-
-        // TODO Change this to a plugin system - for now I hack this in statically
-        String cmd = jc.getParsedCommand();
-        switch (cmd) {
-        case "service": {
-            String serviceCmd = serviceSubCmds.getParsedCommand();
-            switch(serviceCmd) {
-            case "create":
-                //createService();
-            }
-            break;
-        }
-        case "search": {
-            List<String> noas = cmSearch.nonOptionArgs;
-            if(noas.size() != 1) {
-                throw new RuntimeException("Only one non-option argument expected for the artifact id");
-            }
-            String pattern = noas.get(0);
-
-            CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);
-            searchDcat(effectiveCatalogResolver, pattern, cmSearch.jsonOutput);
-            break;
-        }
-        case "data": {
-            List<String> noas = cmData.nonOptionArgs;
-            if(noas.size() != 1) {
-                throw new RuntimeException("Only one non-option argument expected for the artifact id");
-            }
-            String artifactId = noas.get(0);
-
-            CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);
-            showData(effectiveCatalogResolver, artifactId, cmData.contentType, cmData.encodings, cmData.link);
-            break;
-        }
-        case "show": {
-            Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(cmShow.file);
-            RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
-            break;
-        }
-        case "expand": {
-            processExpand(cmExpand.file);
-            break;
-        }
-        case "deploy": {
-            String deployCmd = deploySubCommands.getParsedCommand();
-            switch(deployCmd) {
-            case "ckan": {
-                CkanClient ckanClient = new CkanClient(cmDeployCkan.ckanUrl, cmDeployCkan.apikey);
-                //showCkanDatasets(ckanClient);
-                //if(false) {
-                processDeploy(ckanClient, cmDeployCkan.file, cmDeployCkan.noupload, !cmDeployCkan.noMapByGroup, cmDeployCkan.organization);
-                //}
-                break;
-            }
-            case "virtuoso": {
-                processDeployVirtuoso(cmDeployVirtuoso);
-                break;
-            }
-            default: {
-                throw new RuntimeException("Unknow deploy command: " + deployCmd);
-            }
-            }
-            break;
-        }
-
-        case "import": {
-            String importCmd = importSubCommands.getParsedCommand();
-            switch(importCmd) {
-            case "ckan": {
-                CkanClient ckanClient = new CkanClient(cmImportCkan.ckanUrl, cmImportCkan.apikey);
-
-                List<String> datasets;
-
-                if(cmImportCkan.all) {
-                    if(!cmImportCkan.datasets.isEmpty()) {
-                        throw new RuntimeException("Options for import all and specific datasets mutually exclusive");
-                    }
-
-                    logger.info("Retrieving the list of all datasets in the catalog");
-                    datasets = ckanClient.getDatasetList();
-                } else {
-                    if(cmImportCkan.datasets.isEmpty()) {
-                        throw new RuntimeException("No datasets to import");
-                    }
-
-                    datasets = cmImportCkan.datasets;
-                }
-
-
-                processCkanImport(ckanClient, cmImportCkan.prefix, datasets);
-
-                break;
-            }
-            default: {
-
-            }
-            }
-
-            break;
-        }
-
-        case "transform": {
-            // TODO Find some expectOne() args
-            List<String> transforms = cmTransform.transforms;
-            String dcatFile = Iterables.getOnlyElement(cmTransform.nonOptionArgs);
-            Model dcatModel = RDFDataMgr.loadModel(dcatFile);
-
-            boolean materalize = cmTransform.materialize;
-
-            //Map<String, String> env = Collections.emptyMap();
-            Map<String, Node> env = cmTransform.envVars.stream()
-                .map(DcatOps::parseEntry)
-                .map(e -> Maps.immutableEntry(e.getKey(), NodeFactory.createLiteral(e.getValue())))
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-
-//			Properties p = new Properties();
-//			for(String env : cmTransform.envVars) {
-//				p.load(new ByteArrayInputStream(env.getBytes()));
-//			}
-            //SparqlStmtUtils.processFile(pm, filenameOrURI)
-            // cmTransform.nonOptionArgs
-            Consumer<Resource> distTransform = DcatOps.createDistTransformer(
-                    transforms, env, Paths.get("target"));
-
-            DcatOps.transformAllDists(dcatModel, distTransform);
-
-            if(materalize) {
-                Path path = Paths.get("target");
-                Consumer<Resource> materializer = DcatOps.createDistMaterializer(path);
-                DcatOps.transformAllDists(dcatModel, materializer);
-            }
-
-            RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
-            break;
-        }
-
-
-        case "install": {
-            String dcatSource = cmInstall.file;
-
-            Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(cmShow.file);
-            Function<String, String> iriResolver = createIriResolver(dcatSource);
-            DcatRepository dcatRepository = createDcatRepository();
-
-            //for(dcatModel.listSubjects(null, DCAT.distribution, null)
-
-            for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
-                DcatInstallUtils.install(dcatRepository, dcatDataset, iriResolver, false);
-            }
-            break;
-        }
-
-
-        default:
-            throw new RuntimeException("Unknown command: " + cmd);
-
+        int exitCode = mainCore(args);
+        if (exitCode != 0) {
+            System.exit(exitCode);
         }
     }
+
+
+
+    public static int mainCore(String[] args) throws Exception {
+
+        int result = new CommandLine(new CmdDcatSuiteMain())
+                .setExecutionExceptionHandler((ex, commandLine, parseResult) -> {
+                    boolean debugMode = false;
+                    if (debugMode) {
+                        ExceptionUtilsAksw.rethrowIfNotBrokenPipe(ex);
+                    } else {
+                        ExceptionUtilsAksw.forwardRootCauseMessageUnless(ex, logger::error, ExceptionUtilsAksw::isBrokenPipeException);
+                    }
+                    return 0;
+                })
+                .execute(args);
+            return result;
+
+    }
+
+//
+//        CmdMain cm = new CmdMain();
+//        CmdSearch cmSearch = new CmdSearch();
+//        CmdData cmData = new CmdData();
+//        CmdShow cmShow = new CmdShow();
+//        CmdExpand cmExpand = new CmdExpand();
+//        CmdDeploy cmDeploy = new CmdDeploy();
+//        CmdImport cmImport = new CmdImport();
+//        CmdInstall cmInstall = new CmdInstall();
+//        CmdTransform cmTransform = new CmdTransform();
+//        CmdService cmdService = new CmdService();
+//
+//
+//        // CommandCommit commit = new CommandCommit();
+//        JCommander jc = JCommander.newBuilder()
+//                .addObject(cm)
+//                .addCommand("search", cmSearch)
+//                .addCommand("data", cmData)
+//                .addCommand("show", cmShow)
+//                .addCommand("expand", cmExpand)
+//                .addCommand("deploy", cmDeploy)
+//                .addCommand("import", cmImport)
+//                .addCommand("install", cmInstall)
+//                .addCommand("transform", cmTransform)
+//                .addCommand("service", cmdService)
+//                .build();
+//
+//        JCommander serviceSubCmds = jc.getCommands().get("service");
+//        CmdServiceCreate serviceCreateCmd = new CmdServiceCreate();
+//        serviceSubCmds.addCommand("create", serviceCreateCmd);
+//
+//        JCommander deploySubCommands = jc.getCommands().get("deploy");
+//
+//        CmdDeployCkan cmDeployCkan = new CmdDeployCkan();
+//        deploySubCommands.addCommand("ckan", cmDeployCkan);
+//
+//        CmdDeployVirtuoso cmDeployVirtuoso = new CmdDeployVirtuoso();
+//        deploySubCommands.addCommand("virtuoso", cmDeployVirtuoso);
+//
+//
+//        JCommander importSubCommands = jc.getCommands().get("import");
+//
+//        CmdImportCkan cmImportCkan = new CmdImportCkan();
+//        importSubCommands.addCommand("ckan", cmImportCkan);
+//
+//        jc.parse(args);
+//
+//        if (cm.help) {
+//            jc.usage();
+//            return;
+//        }
+//
+//        // TODO Change this to a plugin system - for now I hack this in statically
+//        String cmd = jc.getParsedCommand();
+//        switch (cmd) {
+//        case "service": {
+//            String serviceCmd = serviceSubCmds.getParsedCommand();
+//            switch(serviceCmd) {
+//            case "create":
+//                //createService();
+//            }
+//            break;
+//        }
+//        case "search": {
+////            List<String> noas = cmSearch.nonOptionArgs;
+////            if(noas.size() != 1) {
+////                throw new RuntimeException("Only one non-option argument expected for the artifact id");
+////            }
+////            String pattern = noas.get(0);
+////
+////            CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);
+////            searchDcat(effectiveCatalogResolver, pattern, cmSearch.jsonOutput);
+////            break;
+//        }
+//        case "data": {
+////            List<String> noas = cmData.nonOptionArgs;
+////            if(noas.size() != 1) {
+////                throw new RuntimeException("Only one non-option argument expected for the artifact id");
+////            }
+////            String artifactId = noas.get(0);
+////
+////            CatalogResolver effectiveCatalogResolver = createEffectiveCatalogResolver(cmSearch.catalogs);
+////            showData(effectiveCatalogResolver, artifactId, cmData.contentType, cmData.encodings, cmData.link);
+////            break;
+//        }
+//        case "show": {
+////            Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(cmShow.file);
+////            RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
+////            break;
+//        }
+//        case "expand": {
+////            processExpand(cmExpand.file);
+////            break;
+//        }
+//        case "deploy": {
+//            String deployCmd = deploySubCommands.getParsedCommand();
+//            switch(deployCmd) {
+//            case "ckan": {
+//                CkanClient ckanClient = new CkanClient(cmDeployCkan.ckanUrl, cmDeployCkan.apikey);
+//                //showCkanDatasets(ckanClient);
+//                //if(false) {
+//                processDeploy(ckanClient, cmDeployCkan.file, cmDeployCkan.noupload, !cmDeployCkan.noMapByGroup, cmDeployCkan.organization);
+//                //}
+//                break;
+//            }
+//            case "virtuoso": {
+//                processDeployVirtuoso(cmDeployVirtuoso);
+//                break;
+//            }
+//            default: {
+//                throw new RuntimeException("Unknow deploy command: " + deployCmd);
+//            }
+//            }
+//            break;
+//        }
+//
+//        case "import": {
+//            String importCmd = importSubCommands.getParsedCommand();
+//            switch(importCmd) {
+//            case "ckan": {
+//                CkanClient ckanClient = new CkanClient(cmImportCkan.ckanUrl, cmImportCkan.apikey);
+//
+//                List<String> datasets;
+//
+//                if(cmImportCkan.all) {
+//                    if(!cmImportCkan.datasets.isEmpty()) {
+//                        throw new RuntimeException("Options for import all and specific datasets mutually exclusive");
+//                    }
+//
+//                    logger.info("Retrieving the list of all datasets in the catalog");
+//                    datasets = ckanClient.getDatasetList();
+//                } else {
+//                    if(cmImportCkan.datasets.isEmpty()) {
+//                        throw new RuntimeException("No datasets to import");
+//                    }
+//
+//                    datasets = cmImportCkan.datasets;
+//                }
+//
+//
+//                processCkanImport(ckanClient, cmImportCkan.prefix, datasets);
+//
+//                break;
+//            }
+//            default: {
+//
+//            }
+//            }
+//
+//            break;
+//        }
+//
+////        case "transform": {
+////            // TODO Find some expectOne() args
+////            List<String> transforms = cmTransform.transforms;
+////            String dcatFile = Iterables.getOnlyElement(cmTransform.nonOptionArgs);
+////            Model dcatModel = RDFDataMgr.loadModel(dcatFile);
+////
+////            boolean materalize = cmTransform.materialize;
+////
+////            //Map<String, String> env = Collections.emptyMap();
+////            Map<String, Node> env = cmTransform.envVars.stream()
+////                .map(DcatOps::parseEntry)
+////                .map(e -> Maps.immutableEntry(e.getKey(), NodeFactory.createLiteral(e.getValue())))
+////                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+////
+////
+//////			Properties p = new Properties();
+//////			for(String env : cmTransform.envVars) {
+//////				p.load(new ByteArrayInputStream(env.getBytes()));
+//////			}
+////            //SparqlStmtUtils.processFile(pm, filenameOrURI)
+////            // cmTransform.nonOptionArgs
+////            Consumer<Resource> distTransform = DcatOps.createDistTransformer(
+////                    transforms, env, Paths.get("target"));
+////
+////            DcatOps.transformAllDists(dcatModel, distTransform);
+////
+////            if(materalize) {
+////                Path path = Paths.get("target");
+////                Consumer<Resource> materializer = DcatOps.createDistMaterializer(path);
+////                DcatOps.transformAllDists(dcatModel, materializer);
+////            }
+////
+////            RDFDataMgr.write(System.out, dcatModel, RDFFormat.TURTLE_PRETTY);
+////            break;
+////        }
+//
+//
+//        case "install": {
+////            String dcatSource = cmInstall.file;
+////
+////            Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(cmShow.file);
+////            Function<String, String> iriResolver = createIriResolver(dcatSource);
+////            DcatRepository dcatRepository = createDcatRepository();
+////
+////            //for(dcatModel.listSubjects(null, DCAT.distribution, null)
+////
+////            for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(dcatModel)) {
+////                DcatInstallUtils.install(dcatRepository, dcatDataset, iriResolver, false);
+////            }
+////            break;
+//        }
+//
+//
+//        default:
+//            throw new RuntimeException("Unknown command: " + cmd);
+//
+//        }
+//    }
+
     public static Function<String, String> createIriResolver(String dcatSource) {
         Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
         String baseIRI = dcatPath.getParent().toUri().toString();
@@ -585,7 +396,7 @@ public class MainCliDcatSuite {
         return result;
     }
 
-    private static void processDeployVirtuoso(CommandDeployVirtuoso cmDeployVirtuoso) throws Exception {
+    public static void processDeployVirtuoso(CmdDeployVirtuoso cmDeployVirtuoso) throws Exception {
 
         String dcatSource = cmDeployVirtuoso.file;
 
