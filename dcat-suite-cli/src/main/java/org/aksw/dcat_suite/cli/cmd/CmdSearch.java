@@ -12,7 +12,7 @@ import com.beust.jcommander.Parameter;
 import picocli.CommandLine.Command;
 
 
-@Command(name = "search", description = "Search DCAT catalogs")
+@Command(name = "search", separator = "=", description = "Search DCAT catalogs")
 public class CmdSearch
     implements Callable<Integer>
 {

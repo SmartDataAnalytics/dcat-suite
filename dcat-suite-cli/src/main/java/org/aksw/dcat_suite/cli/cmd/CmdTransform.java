@@ -26,7 +26,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "transform", description="Transform DCAT model and data")
+@Command(name = "transform", separator = "=", description="Transform DCAT model and data")
 public class CmdTransform
     implements Callable<Integer>
 {

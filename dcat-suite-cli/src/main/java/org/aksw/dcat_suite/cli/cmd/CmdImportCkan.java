@@ -12,7 +12,7 @@ import eu.trentorise.opendata.jackan.CkanClient;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "ckan", description = "Retrieve DCAT descriptions from CKAN")
+@Command(name = "ckan", separator = "=", description = "Retrieve DCAT descriptions from CKAN")
 public class CmdImportCkan
     implements Callable<Integer>
 {

@@ -11,7 +11,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "data", description = "Show data")
+@Command(name = "data", separator = "=", description = "Show data")
 public class CmdData
     implements Callable<Integer>
 {

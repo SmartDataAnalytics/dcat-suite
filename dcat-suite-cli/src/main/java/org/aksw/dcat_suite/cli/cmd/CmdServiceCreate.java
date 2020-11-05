@@ -7,7 +7,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "craete", description="Service Creation")
+@Command(name = "craete", separator = "=", description="Service Creation")
 public class CmdServiceCreate {
     @Parameters(description="Non option args")
     public List<String> nonOptionArgs;

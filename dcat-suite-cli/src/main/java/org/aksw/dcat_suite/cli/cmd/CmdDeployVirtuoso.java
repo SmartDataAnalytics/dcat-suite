@@ -12,7 +12,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "virtuoso", description = "Deploy datasets to a local Virtuoso via OBDC")
+@Command(name = "virtuoso", separator = "=", description = "Deploy datasets to a local Virtuoso via OBDC")
 public class CmdDeployVirtuoso
     implements Callable<Integer>
 {

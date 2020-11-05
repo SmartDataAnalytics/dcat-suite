@@ -15,7 +15,7 @@ import com.beust.jcommander.Parameter;
 
 import picocli.CommandLine.Command;
 
-@Command(name = "install", description = "Download datasets to local repository based on DCAT information")
+@Command(name = "install", separator = "=", description = "Download datasets to local repository based on DCAT information")
 public class CmdInstall
     implements Callable<Integer>
 {

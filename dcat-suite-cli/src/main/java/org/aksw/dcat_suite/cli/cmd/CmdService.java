@@ -4,7 +4,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 
-@Command(name = "service", description = "Service Management", subcommands = {
+@Command(name = "service", separator = "=", description = "Service Management", subcommands = {
         CmdServiceCreate.class
 })
 public class CmdService {

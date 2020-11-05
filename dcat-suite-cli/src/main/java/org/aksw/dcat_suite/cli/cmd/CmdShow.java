@@ -10,7 +10,7 @@ import org.apache.jena.riot.RDFFormat;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "show", description = "Show DCAT information")
+@Command(name = "show", separator = "=", description = "Show DCAT information")
 public class CmdShow
     implements Callable<Integer>
 {

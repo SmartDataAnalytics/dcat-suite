@@ -8,7 +8,7 @@ import org.aksw.dcat_suite.cli.main.MainCliDcatSuite;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "expand", description = "Expand quad datasets")
+@Command(name = "expand", separator = "=", description = "Expand quad datasets")
 public class CmdExpand
     implements Callable<Integer>
 {

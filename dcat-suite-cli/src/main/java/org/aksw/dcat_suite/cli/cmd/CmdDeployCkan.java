@@ -9,7 +9,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "ckan", description = "Deploy DCAT datasets to CKAN")
+@Command(name = "ckan", separator = "=", description = "Deploy DCAT datasets to CKAN")
 public class CmdDeployCkan
     implements Callable<Integer>
 {
