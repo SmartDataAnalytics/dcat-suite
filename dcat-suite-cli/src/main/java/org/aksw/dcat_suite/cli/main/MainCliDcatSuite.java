@@ -148,7 +148,7 @@ public class MainCliDcatSuite {
 
         int result = new CommandLine(new CmdDcatSuiteMain())
                 .setExecutionExceptionHandler((ex, commandLine, parseResult) -> {
-                    boolean debugMode = false;
+                    boolean debugMode = true;
                     if (debugMode) {
                         ExceptionUtilsAksw.rethrowIfNotBrokenPipe(ex);
                     } else {

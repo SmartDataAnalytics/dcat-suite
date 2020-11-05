@@ -35,89 +35,89 @@ import eu.trentorise.opendata.jackan.model.CkanResource;
 import eu.trentorise.opendata.jackan.model.CkanTag;
 
 public class DcatCkanRdfUtils {
-	private static final Logger logger = LoggerFactory.getLogger(DcatCkanRdfUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(DcatCkanRdfUtils.class);
 
-	
-	public static Model createModelWithNormalizedDcatFragment(String fileOrUrl) {
-		Dataset dataset = RDFDataMgr.loadDataset(fileOrUrl);
-		Model result = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(dataset);
-		return result;
-	}
 
-	public static Model createModelWithNormalizedDcatFragment(Dataset dataset) {
-		Model result = DcatUtils.createModelWithDcatFragment(dataset);
-		DcatCkanRdfUtils.normalizeDcatModel(result);
-		DcatUtils.addPrefixes(result);
-		return result;
-	}
+    public static Model createModelWithNormalizedDcatFragment(String fileOrUrl) {
+        Dataset dataset = RDFDataMgr.loadDataset(fileOrUrl);
+        Model result = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(dataset);
+        return result;
+    }
 
-	public static void copyPropertyValues(Resource r, Property target, Property source) {
+    public static Model createModelWithNormalizedDcatFragment(Dataset dataset) {
+        Model result = DcatUtils.createModelWithDcatFragment(dataset);
+        DcatCkanRdfUtils.normalizeDcatModel(result);
+        DcatUtils.addPrefixes(result);
+        return result;
+    }
+
+    public static void copyPropertyValues(Resource r, Property target, Property source) {
 //		org.aksw.jena_sparql_api.utils.model.ResourceUtils
 //			.listPropertyValues(r, source)
-//			.forEach(v -> r.addProperty(target, v));		
-		List<RDFNode> values = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
-			.listPropertyValues(r, source).toList();
-		
-		values.forEach(v -> r.addProperty(target, v));		
-	}
-	
-	public static void normalizeDcatModel(Model model) {
-		for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(model)) {
-			DcatCkanRdfUtils.normalizeDataset(dcatDataset);
-		}
-	}
-	
-	public static void normalizeDataset(DcatDataset dcatDataset) {
-		normalizeCommon(dcatDataset);
+//			.forEach(v -> r.addProperty(target, v));
+        List<RDFNode> values = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
+            .listPropertyValues(r, source).toList();
 
-		for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
-			normalizeDistribution(dcatDistribution);
-		}
-		
-		// Skolemize dcat distributions
-		// TODO We should natively support anonymous distributions and
-		// thus get rid of the need of the subsequent snippet
-		//String datasetNamespace = dcatDataset.getNameSpace();
+        values.forEach(v -> r.addProperty(target, v));
+    }
 
-		if(dcatDataset.isURIResource()) {
-			for(DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
-				Resource downloadUrl = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
-						.toList().stream()
-						.filter(RDFNode::isURIResource)
-						.map(RDFNode::asResource)
-						.findFirst().orElse(null);
-				
-				if(downloadUrl != null && dcatDistribution.isAnon()) {
-					// Allocate an id
-					String id = dcatDataset.getURI() + "/distribution-" + downloadUrl.getLocalName();
-					logger.info("Skolemized a blank node to " + id);
-					ResourceUtils.renameResource(dcatDistribution, id);				
-				}
-			}
-		}		
-	}
+    public static void normalizeDcatModel(Model model) {
+        for(DcatDataset dcatDataset : DcatUtils.listDcatDatasets(model)) {
+            DcatCkanRdfUtils.normalizeDataset(dcatDataset);
+        }
+    }
+
+    public static void normalizeDataset(DcatDataset dcatDataset) {
+        normalizeCommon(dcatDataset);
+
+        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
+            normalizeDistribution(dcatDistribution);
+        }
+
+        // Skolemize dcat distributions
+        // TODO We should natively support anonymous distributions and
+        // thus get rid of the need of the subsequent snippet
+        //String datasetNamespace = dcatDataset.getNameSpace();
+
+        if(dcatDataset.isURIResource()) {
+            for(DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
+                Resource downloadUrl = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
+                        .toList().stream()
+                        .filter(RDFNode::isURIResource)
+                        .map(RDFNode::asResource)
+                        .findFirst().orElse(null);
+
+                if(downloadUrl != null && dcatDistribution.isAnon()) {
+                    // Allocate an id
+                    String id = dcatDataset.getURI() + "/distribution-" + downloadUrl.getLocalName();
+                    logger.info("Skolemized a blank node to " + id);
+                    ResourceUtils.renameResource(dcatDistribution, id);
+                }
+            }
+        }
+    }
 
 
-	public static void normalizeDistribution(DcatDistribution dcatDistribution) {
-		normalizeCommon(dcatDistribution);
-	}
+    public static void normalizeDistribution(DcatDistribution dcatDistribution) {
+        normalizeCommon(dcatDistribution);
+    }
 
-	public static void normalizeCommon(Resource r) {
-		copyPropertyValues(r, DcatDeployVirtuosoUtils.dcatDefaultGraph, DcatDeployVirtuosoUtils.sdDefaultGraph);
-	}
-	
-	public static Resource skolemizeClosureUsingCkanConventions(Resource r) {
-		// Skolemize the entry resource
-		Resource result = DcatCkanRdfUtils.skolemizeUsingCkanConventions(r);
+    public static void normalizeCommon(Resource r) {
+        copyPropertyValues(r, DcatDeployVirtuosoUtils.dcatDefaultGraph, DcatDeployVirtuosoUtils.sdDefaultGraph);
+    }
 
-		List<Resource> reachableSubjects = ResourceUtils.reachableClosure(result).listSubjects().toList();
-		for(Resource s : reachableSubjects) {
-			skolemizeUsingCkanConventions(s.inModel(result.getModel()));
-		}
-		
-		return result;
-	}
-	
+    public static Resource skolemizeClosureUsingCkanConventions(Resource r) {
+        // Skolemize the entry resource
+        Resource result = DcatCkanRdfUtils.skolemizeUsingCkanConventions(r);
+
+        List<Resource> reachableSubjects = ResourceUtils.reachableClosure(result).listSubjects().toList();
+        for(Resource s : reachableSubjects) {
+            skolemizeUsingCkanConventions(s.inModel(result.getModel()));
+        }
+
+        return result;
+    }
+
 //	public static void skolemizeUsingCkanConventions(Model dcatModel) {
 //		Collection<Resource> rs = dcatModel.listSubjects().toList();
 //		for(Resource r : rs) {
@@ -132,326 +132,329 @@ public class DcatCkanRdfUtils {
 //		}
 //	}
 
-	/**
-	 * Rename blank nodes that have an extra:uri property
-	 * 
-	 * @param dcatEntity
-	 * @return
-	 */
-	public static Resource skolemizeUsingCkanConventions(Resource dcatEntity) {
-		Resource result;
-		
-		if(dcatEntity.isAnon()) {
-			
-	//		RDFDataMgr.write(System.err, dcatEntity.getModel(), RDFFormat.TURTLE_PRETTY);
-			
-			// Check if there is an extra:uri attribute
-			String uri = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.tryGetPropertyValue(dcatEntity, DcatUtils.extraUri)
-				.filter(RDFNode::isURIResource)
-				.map(RDFNode::asResource)
-				.map(Resource::getURI)
-				.orElse(null);
-	
-			if(uri != null) {
-				// remove the property
-				org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatEntity, DcatUtils.extraUri, null);
-			}
-			
-			result = uri == null
-					? dcatEntity
-					: ResourceUtils.renameResource(dcatEntity, uri);
-		} else {
-			result = dcatEntity;
-		}
+    /**
+     * Rename blank nodes that have an extra:uri property
+     *
+     * @param dcatEntity
+     * @return
+     */
+    public static Resource skolemizeUsingCkanConventions(Resource dcatEntity) {
+        Resource result;
 
-		return result;
-	}
+        if(dcatEntity.isAnon()) {
 
-	@SuppressWarnings("unlikely-arg-type")
-	public static DcatDataset assignFallbackIris(DcatDataset dcatDataset, String baseIri) {
-		// NOTE Create a copy to avoid concurrent modification
-		for (DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
-			String iri = generateFallbackIri(dcatDistribution, baseIri);
+    //		RDFDataMgr.write(System.err, dcatEntity.getModel(), RDFFormat.TURTLE_PRETTY);
 
-			// Avoid cryptic errors about resources not found for badly modeled data
-			if (!dcatDistribution.equals(dcatDataset)) {
-				ResourceUtils.renameResource(dcatDistribution, iri);
-			}
-		}
+            // Check if there is an extra:uri attribute
+            String uri = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.tryGetPropertyValue(dcatEntity, DcatUtils.extraUri)
+                .filter(RDFNode::isURIResource)
+                .map(RDFNode::asResource)
+                .map(Resource::getURI)
+                .orElse(null);
 
-		DcatDataset result;
-		if (dcatDataset.isAnon()) {
-			String iri = generateFallbackIri(dcatDataset, baseIri);
-			result = ResourceUtils.renameResource(dcatDataset, iri).as(DcatDataset.class);
-		} else {
-			result = dcatDataset;
-		}
+            if(uri != null) {
+                // remove the property
+                org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatEntity, DcatUtils.extraUri, null);
+            }
 
-		return result;
-	}
+            result = uri == null
+                    ? dcatEntity
+                    : ResourceUtils.renameResource(dcatEntity, uri);
+        } else {
+            result = dcatEntity;
+        }
 
-	/**
-	 * Default strategy to assign URIs under a given prefix.
-	 * 
-	 * TODO: Make use of extra:uri field if present
-	 * 
-	 * dataset IRI pattern: baseIri-dataset-${dct:identifier} resource IRI pattern:
-	 * baseIri-distribution-${dct:title}
-	 * 
-	 * @param dcatDataset
-	 * @param baseIri
-	 * @return
-	 */
-	public static String generateFallbackIri(DcatDataset dcatDataset, String baseIri) {
-		String result = Optional.ofNullable(dcatDataset.getIdentifier())
-				.map(id -> baseIri + "dataset/" + StringUtils.urlEncode(id)).orElseThrow(
-						() -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
+        return result;
+    }
 
-		return result;
-	}
+    @SuppressWarnings("unlikely-arg-type")
+    public static DcatDataset assignFallbackIris(DcatDataset dcatDataset, String baseIri) {
+        // NOTE Create a copy to avoid concurrent modification
+        for (DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
+            String iri = generateFallbackIri(dcatDistribution, baseIri);
 
-	public static String generateFallbackIri(DcatDistribution dcatDistribution, String baseIri) {
-		String result = Optional.ofNullable(dcatDistribution.getIdentifier())
-				.map(id -> baseIri + "distribution/" + StringUtils.urlEncode(id)).orElseThrow(
-						() -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
+            // Avoid cryptic errors about resources not found for badly modeled data
+            if (!dcatDistribution.equals(dcatDataset)) {
+                ResourceUtils.renameResource(dcatDistribution, iri);
+            }
+        }
 
-		return result;
-	}
+        DcatDataset result;
+        if (dcatDataset.isAnon()) {
+            String iri = generateFallbackIri(dcatDataset, baseIri);
+            result = ResourceUtils.renameResource(dcatDataset, iri).as(DcatDataset.class);
+        } else {
+            result = dcatDataset;
+        }
 
-	/**
-	 * This will create blank node resources for representing the ckan datsaet. You
-	 * can use assignUris() for the default strategy to get rid of blank nodes - or
-	 * use your own.
-	 * 
-	 * @param ckanDataset
-	 * @return
-	 */
-	public static DcatDataset convertToDcat(CkanDataset ckanDataset, PrefixMapping pm) {
-		Model model = ModelFactory.createDefaultModel();
-		DcatDataset result = convertToDcat(model, ckanDataset, pm);
-		return result;
-	}
+        return result;
+    }
 
-	public static DcatDataset convertToDcat(Model model, CkanDataset ckanDataset, PrefixMapping pm) {
-		DcatDataset dcatDataset = model.createResource().as(DcatDataset.class);
-		convertToDcat(dcatDataset, ckanDataset, pm);
+    /**
+     * Default strategy to assign URIs under a given prefix.
+     *
+     * TODO: Make use of extra:uri field if present
+     *
+     * dataset IRI pattern: baseIri-dataset-${dct:identifier} resource IRI pattern:
+     * baseIri-distribution-${dct:title}
+     *
+     * @param dcatDataset
+     * @param baseIri
+     * @return
+     */
+    public static String generateFallbackIri(DcatDataset dcatDataset, String baseIri) {
+        String result = Optional.ofNullable(dcatDataset.getIdentifier())
+                .map(id -> baseIri + "dataset/" + StringUtils.urlEncode(id)).orElseThrow(
+                        () -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
 
-		for (CkanResource ckanResource : ckanDataset.getResources()) {
-			DcatDistribution dcatDistribution = model.createResource().as(DcatDistribution.class);
-			dcatDataset.getDistributions(DcatDistribution.class).add(dcatDistribution);
+        return result;
+    }
 
-			convertToDcat(dcatDistribution, ckanResource, pm);
-		}
+    public static String generateFallbackIri(DcatDistribution dcatDistribution, String baseIri) {
+        String result = Optional.ofNullable(dcatDistribution.getIdentifier())
+                .map(id -> baseIri + "distribution/" + StringUtils.urlEncode(id)).orElseThrow(
+                        () -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
 
-		return dcatDataset;
-	}
+        return result;
+    }
 
-	public static String tryAsIri(String str, PrefixMapping pm) {
-		String result;
+    /**
+     * This will create blank node resources for representing the ckan datsaet. You
+     * can use assignUris() for the default strategy to get rid of blank nodes - or
+     * use your own.
+     *
+     * @param ckanDataset
+     * @return
+     */
+    public static DcatDataset convertToDcat(CkanDataset ckanDataset, PrefixMapping pm) {
+        Model model = ModelFactory.createDefaultModel();
+        DcatDataset result = convertToDcat(model, ckanDataset, pm);
+        return result;
+    }
 
-		if (str.startsWith("http://")) {
-			result = str;
-		} else {
-			String expanded = pm.expandPrefix(str);
+    public static DcatDataset convertToDcat(Model model, CkanDataset ckanDataset, PrefixMapping pm) {
+        DcatDataset dcatDataset = model.createResource().as(DcatDataset.class);
+        convertToDcat(dcatDataset, ckanDataset, pm);
 
-			result = expanded.equals(str) ? null : expanded;
-		}
+        for (CkanResource ckanResource : ckanDataset.getResources()) {
+            DcatDistribution dcatDistribution = model.createResource().as(DcatDistribution.class);
+            dcatDataset.getDistributions(DcatDistribution.class).add(dcatDistribution);
 
-		return result;
-	}
+            convertToDcat(dcatDistribution, ckanResource, pm);
+        }
 
-	public static void convertToDcat(DcatDataset dcatDataset, CkanDataset ckanDataset, PrefixMapping pm) {
+        return dcatDataset;
+    }
 
-		dcatDataset.addProperty(RDF.type, DCAT.Dataset);
+    public static String tryAsIri(String str, PrefixMapping pm) {
+        String result;
 
-		dcatDataset.setIdentifier(ckanDataset.getName());
-		dcatDataset.setTitle(ckanDataset.getTitle());
-		dcatDataset.setDescription(ckanDataset.getNotes());
+        if (str.startsWith("http://")) {
+            result = str;
+        } else {
+            String expanded = pm.expandPrefix(str);
 
-		for (CkanTag ckanTag : Optional.ofNullable(ckanDataset.getTags()).orElse(Collections.emptyList())) {
-			String tagName = ckanTag.getName();
-			dcatDataset.getKeywords().add(tagName);
+            result = expanded.equals(str) ? null : expanded;
+        }
 
-			Optional.ofNullable(ckanTag.getVocabularyId()).ifPresent(vocabId -> {
-				logger.warn("Tag had a vocabulary id which is not exported " + tagName + " " + vocabId);
-			});
-		}
+        return result;
+    }
 
-		for (CkanPair entry : Optional.ofNullable(ckanDataset.getExtras()).orElse(Collections.emptyList())) {
-			String k = entry.getKey();
-			String v = entry.getValue();
+    public static void convertToDcat(DcatDataset dcatDataset, CkanDataset ckanDataset, PrefixMapping pm) {
 
-			tagToRdf(dcatDataset, k, v, pm);
-		}
+        dcatDataset.addProperty(RDF.type, DCAT.Dataset);
 
-		//
-		// for(Entry<String, Object> entry :
-		// Optional.ofNullable(ckanDataset.getOthers()).orElse(Collections.emptyMap()).entrySet())
-		// {
-		// // auto-expand all keys for which a prefix is registered
-		// String k = entry.getKey();
-		//
-		// // TODO Support datatypes
-		// String v = "" + entry.getValue();
-		//
-		// String kIri = tryAsIri(k, pm);
-		//
-		// if(kIri != null) {
-		// Property p = ResourceFactory.createProperty(kIri);
-		//
-		// String vIri = tryAsIri(v, pm);
-		// RDFNode o = vIri != null ? ResourceFactory.createResource(vIri) :
-		// ResourceFactory.createPlainLiteral(v);
-		//
-		// dcatDataset.addProperty(p, o);
-		// }
-		// }
-	}
+        dcatDataset.setIdentifier(ckanDataset.getName());
+        dcatDataset.setTitle(ckanDataset.getTitle());
+        dcatDataset.setDescription(ckanDataset.getNotes());
 
-	public static void othersToRdf(Resource s, Map<String, Object> others, PrefixMapping pm) {
-		others = Optional.ofNullable(others).orElse(Collections.emptyMap());
+        for (CkanTag ckanTag : Optional.ofNullable(ckanDataset.getTags()).orElse(Collections.emptyList())) {
+            String tagName = ckanTag.getName();
+            dcatDataset.getKeywords().add(tagName);
 
-		for (Entry<String, Object> entry : others.entrySet()) {
-			String k = entry.getKey();
-			Object v = entry.getValue();
+            Optional.ofNullable(ckanTag.getVocabularyId()).ifPresent(vocabId -> {
+                logger.warn("Tag had a vocabulary id which is not exported " + tagName + " " + vocabId);
+            });
+        }
 
-			tagToRdf(s, k, v, pm);
-		}
-	}
+        for (CkanPair entry : Optional.ofNullable(ckanDataset.getExtras()).orElse(Collections.emptyList())) {
+            String k = entry.getKey();
+            String v = entry.getValue();
 
-	public static void tagToRdf(Resource s, String k, Object v, PrefixMapping pm) {
-		// auto-expand all keys for which a prefix is registered
+            tagToRdf(dcatDataset, k, v, pm);
+        }
+
+        //
+        // for(Entry<String, Object> entry :
+        // Optional.ofNullable(ckanDataset.getOthers()).orElse(Collections.emptyMap()).entrySet())
+        // {
+        // // auto-expand all keys for which a prefix is registered
+        // String k = entry.getKey();
+        //
+        // // TODO Support datatypes
+        // String v = "" + entry.getValue();
+        //
+        // String kIri = tryAsIri(k, pm);
+        //
+        // if(kIri != null) {
+        // Property p = ResourceFactory.createProperty(kIri);
+        //
+        // String vIri = tryAsIri(v, pm);
+        // RDFNode o = vIri != null ? ResourceFactory.createResource(vIri) :
+        // ResourceFactory.createPlainLiteral(v);
+        //
+        // dcatDataset.addProperty(p, o);
+        // }
+        // }
+    }
+
+    public static void othersToRdf(Resource s, Map<String, Object> others, PrefixMapping pm) {
+        others = Optional.ofNullable(others).orElse(Collections.emptyMap());
+
+        for (Entry<String, Object> entry : others.entrySet()) {
+            String k = entry.getKey();
+            Object v = entry.getValue();
+
+            tagToRdf(s, k, v, pm);
+        }
+    }
+
+    public static void tagToRdf(Resource s, String k, Object v, PrefixMapping pm) {
+        // auto-expand all keys for which a prefix is registered
 
 //		logger.info("  Seen tag: " + k + ", " + v);
-		
-		String vStr = "" + v;
-		String kIri = tryAsIri(k, pm);
 
-		if (kIri != null) {
-			Property p = ResourceFactory.createProperty(kIri);
+        String vStr = "" + v;
+        String kIri = tryAsIri(k, pm);
 
-			String vIri = tryAsIri(vStr, pm);
-			RDFNode o = vIri != null ? ResourceFactory.createResource(vIri) : ResourceFactory.createPlainLiteral(vStr);
+        if (kIri != null) {
+            Property p = ResourceFactory.createProperty(kIri);
+
+            String vIri = tryAsIri(vStr, pm);
+            RDFNode o = vIri != null ? ResourceFactory.createResource(vIri) : ResourceFactory.createPlainLiteral(vStr);
 
 //			logger.info("    Obtained RDF: " + kIri + " " + o);
-			s.addProperty(p, o);
-		}
-	}
+            s.addProperty(p, o);
+        }
+    }
 
-	public static void convertToDcat(DcatDistribution dcatDistribution, CkanResource ckanResource, PrefixMapping pm) {
+    public static void convertToDcat(DcatDistribution dcatDistribution, CkanResource ckanResource, PrefixMapping pm) {
 
-		dcatDistribution.addProperty(RDF.type, DCAT.Distribution);
+        dcatDistribution.addProperty(RDF.type, DCAT.Distribution);
 
-		//dcatDistribution.setName(ckanResource.getName());
-		dcatDistribution.setTitle(ckanResource.getName());
-		dcatDistribution.setDescription(ckanResource.getDescription());
-		dcatDistribution.setFormat(ckanResource.getFormat());
+        //dcatDistribution.setName(ckanResource.getName());
+        dcatDistribution.setTitle(ckanResource.getName());
+        dcatDistribution.setDescription(ckanResource.getDescription());
+        dcatDistribution.setFormat(ckanResource.getFormat());
 
-		Optional.ofNullable(ckanResource.getUrl())
-				.ifPresent(dcatDistribution::setDownloadURL);
+        Optional.ofNullable(ckanResource.getUrl())
+                .ifPresent(dcatDistribution::setDownloadURL);
 
-		othersToRdf(dcatDistribution, ckanResource.getOthers(), pm);
-	}
+        othersToRdf(dcatDistribution, ckanResource.getOthers(), pm);
+    }
 
-	/**
-	 * Create a consumer that adds item to the collection returned by the getter
-	 * when they are not contained. If the collection does not yet exist, it is
-	 * created via ctor and passed to the setter.
-	 * 
-	 * @param getter
-	 * @param setter
-	 * @param ctor
-	 * @return
-	 */
-	public static <T, C extends Collection<T>> Consumer<T> uniqueAdder(Supplier<C> getter, Consumer<C> setter,
-			Supplier<C> ctor) {
-		return (item) -> setter.accept(addIfNotContainsAndCreateIfAbsent(getter.get(), item, ctor));
-	}
+    /**
+     * Create a consumer that adds item to the collection returned by the getter
+     * when they are not contained. If the collection does not yet exist, it is
+     * created via ctor and passed to the setter.
+     *
+     * @param getter
+     * @param setter
+     * @param ctor
+     * @return
+     */
+    public static <T, C extends Collection<T>> Consumer<T> uniqueAdder(Supplier<C> getter, Consumer<C> setter,
+            Supplier<C> ctor) {
+        return (item) -> setter.accept(addIfNotContainsAndCreateIfAbsent(getter.get(), item, ctor));
+    }
 
-	/**
-	 * Adds items to a collection that are not yet contained and creates the
-	 * collection if it does not exist
-	 * 
-	 * @param collection
-	 * @param item
-	 * @param ctor
-	 * @return
-	 */
-	public static <T, C extends Collection<T>> C addIfNotContainsAndCreateIfAbsent(C collection, T item,
-			Supplier<C> ctor) {
-		C result = addIfNotContains(Optional.ofNullable(collection).orElse(ctor.get()), item);
-		return result;
-	}
+    /**
+     * Adds items to a collection that are not yet contained and creates the
+     * collection if it does not exist
+     *
+     * @param collection
+     * @param item
+     * @param ctor
+     * @return
+     */
+    public static <T, C extends Collection<T>> C addIfNotContainsAndCreateIfAbsent(C collection, T item,
+            Supplier<C> ctor) {
+        C result = addIfNotContains(Optional.ofNullable(collection).orElse(ctor.get()), item);
+        return result;
+    }
 
-	public static <T, C extends Collection<T>> C addIfNotContains(C collection, T item) {
-		// Stream.of(item).filter(x ->
-		// !collection.contains(item)).forEach(collection::add);
-		if (!collection.contains(item)) {
-			collection.add(item);
-		}
-		return collection;
-	}
+    public static <T, C extends Collection<T>> C addIfNotContains(C collection, T item) {
+        // Stream.of(item).filter(x ->
+        // !collection.contains(item)).forEach(collection::add);
+        if (!collection.contains(item)) {
+            collection.add(item);
+        }
+        return collection;
+    }
 
-	// TODO Move to ResourceUtils
-	public static Optional<String> getUri(Resource r, Property p) {
-		Optional<String> result = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.tryGetPropertyValue(r, p)
-				.filter(RDFNode::isURIResource).map(RDFNode::asResource).map(Resource::getURI);
+    // TODO Move to ResourceUtils
+    public static Optional<String> getUri(Resource r, Property p) {
+        Optional<String> result = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.tryGetPropertyValue(r, p)
+                .filter(RDFNode::isURIResource).map(RDFNode::asResource).map(Resource::getURI);
 
-		return result;
-	}
+        return result;
+    }
 
-	public static void convertToCkan(CkanDataset ckanDataset, DcatDataset dcatDataset) {
+    public static void convertToCkan(CkanDataset ckanDataset, DcatDataset dcatDataset) {
 
-		Optional.ofNullable(dcatDataset.getIdentifier()).ifPresent(ckanDataset::setName);
-		Optional.ofNullable(dcatDataset.getTitle()).ifPresent(ckanDataset::setTitle);
-		Optional.ofNullable(dcatDataset.getDescription()).ifPresent(ckanDataset::setNotes);
+//		DcatApDataset dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(DcatApDataset.class);
 
-		Consumer<CkanPair> uniqueTagAdder = uniqueAdder(ckanDataset::getExtras, ckanDataset::setExtras, ArrayList::new);
-		//
+
+        Optional.ofNullable(dcatDataset.getIdentifier()).ifPresent(ckanDataset::setName);
+        Optional.ofNullable(dcatDataset.getTitle()).ifPresent(ckanDataset::setTitle);
+        Optional.ofNullable(dcatDataset.getDescription()).ifPresent(ckanDataset::setNotes);
+
+        Consumer<CkanPair> uniqueTagAdder = uniqueAdder(ckanDataset::getExtras, ckanDataset::setExtras, ArrayList::new);
+        //
 //		getUri(dcatDataset, DcatDeployVirtuosoUtils.dcatDefaultGraphGroup)
 //				.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraphGroup", v)));
 
-		DcatDeployVirtuosoUtils.findUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphGroupProperties)
-			.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraphGroup", v)));
+        DcatDeployVirtuosoUtils.findUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphGroupProperties)
+            .ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraphGroup", v)));
 
-		// TODO Wrap these lookups with an interface
-		DcatDeployVirtuosoUtils.findUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphProperties)
-				.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraph", v)));
+        // TODO Wrap these lookups with an interface
+        DcatDeployVirtuosoUtils.findUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphProperties)
+                .ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraph", v)));
 
 //		getUri(dcatDataset, DcatDeployVirtuosoUtils.dcatDefaultGraph)
 //		.ifPresent(v -> uniqueTagAdder.accept(new CkanPair("dcat:defaultGraph", v)));
 
-		if (dcatDataset.isURIResource()) {
-			uniqueTagAdder.accept(new CkanPair("extra:uri", dcatDataset.getURI()));
-		}
+        if (dcatDataset.isURIResource()) {
+            uniqueTagAdder.accept(new CkanPair("extra:uri", dcatDataset.getURI()));
+        }
 
-		// getUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphGroup)
-		// .ifPresent(v -> ckanDataset.putOthers("dcat:defaultGraphGroup", v));
-		//
-		// getUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraph)
-		// .ifPresent(v -> ckanDataset.putOthers("dcat:defaultGraph", v));
+        // getUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraphGroup)
+        // .ifPresent(v -> ckanDataset.putOthers("dcat:defaultGraphGroup", v));
+        //
+        // getUri(dcatDataset, DcatDeployVirtuosoUtils.defaultGraph)
+        // .ifPresent(v -> ckanDataset.putOthers("dcat:defaultGraph", v));
 
-	}
+    }
 
-	public static void convertToCkan(CkanResource ckanResource, DcatDistribution dcatDistribution) {
+    public static void convertToCkan(CkanResource ckanResource, DcatDistribution dcatDistribution) {
 
-		Optional.ofNullable(dcatDistribution.getTitle()).ifPresent(ckanResource::setName);
-		// Optional.ofNullable(res.getTitle()).ifPresent(remote::setna);
-		Optional.ofNullable(dcatDistribution.getDescription()).ifPresent(ckanResource::setDescription);
+        Optional.ofNullable(dcatDistribution.getTitle()).ifPresent(ckanResource::setName);
+        // Optional.ofNullable(res.getTitle()).ifPresent(remote::setna);
+        Optional.ofNullable(dcatDistribution.getDescription()).ifPresent(ckanResource::setDescription);
 
-		getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraphGroup)
-				.ifPresent(v -> ckanResource.putOthers("dcat:defaultGraphGroup", v));
+        getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraphGroup)
+                .ifPresent(v -> ckanResource.putOthers("dcat:defaultGraphGroup", v));
 
-		getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraph)
-				.ifPresent(v -> ckanResource.putOthers("dcat:defaultGraph", v));
+        getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraph)
+                .ifPresent(v -> ckanResource.putOthers("dcat:defaultGraph", v));
 
-		Optional.ofNullable(dcatDistribution.getFormat())
-			.ifPresent(v -> ckanResource.setFormat(v));
+        Optional.ofNullable(dcatDistribution.getFormat())
+            .ifPresent(v -> ckanResource.setFormat(v));
 
-		if (dcatDistribution.isURIResource()) {
-			ckanResource.putOthers("extra:uri", dcatDistribution.getURI());
-		}
+        if (dcatDistribution.isURIResource()) {
+            ckanResource.putOthers("extra:uri", dcatDistribution.getURI());
+        }
 
-	}
+    }
 
 }

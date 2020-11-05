@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,14 +27,27 @@ import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MvnEntity;
 import org.aksw.dcat.utils.DcatUtils;
+import org.aksw.jena_sparql_api.conjure.utils.FileUtils;
+import org.aksw.jena_sparql_api.http.repository.api.HttpRepository;
+import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
+import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
+import org.aksw.jena_sparql_api.io.endpoint.InputStreamSource;
+import org.aksw.jena_sparql_api.io.endpoint.InputStreamSupplier;
+import org.aksw.jena_sparql_api.util.sparql.syntax.path.PathUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.message.BasicHttpRequest;
+import org.apache.jena.ext.com.google.common.collect.Sets;
+import org.apache.jena.ext.com.google.common.io.MoreFiles;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.riot.WebContent;
 import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.util.SplitIRI;
 import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.cal10n.LocLogger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ArrayListMultimap;
@@ -106,6 +120,7 @@ public class DcatCkanDeployUtils {
      * @param orgaByGroup
      * @param organization
      * @return
+     * @throws IOException
      */
     public static Model deploy(
             CkanClient ckanClient,
@@ -114,7 +129,7 @@ public class DcatCkanDeployUtils {
             boolean noFileUpload,
             boolean orgaByGroup,
             String organization
-        ) {
+        ) throws IOException {
 
 
 
@@ -251,7 +266,7 @@ public class DcatCkanDeployUtils {
         return result;
     }
 
-    public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload, String targetOrgaId) {
+    public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload, String targetOrgaId) throws IOException {
         String rawDatasetName = DcatDataset.getLabel(dataset);
 
         String datasetName = rawDatasetName
@@ -352,27 +367,64 @@ public class DcatCkanDeployUtils {
                     .map(iriResolver::resolveToStringSilent)
                     .collect(Collectors.toList());
 
-            List<URI> resolvedValidUrls = resolvedUrls.stream()
+            Set<URI> resolvedValidUrls = resolvedUrls.stream()
                     .map(str -> DcatCkanDeployUtils.tryNewURI(str).orElse(null))
                     .filter(r -> r != null)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            if (resolvedUrls.size() > 1) {
+                logger.warn("Multiple URLs associated with a distribution; assuming they mirror content and choosing one from " + resolvedUrls);
+            }
+
+            Set<URI> urlsToExistingPaths = resolvedValidUrls.stream()
+                    .filter(uri ->
+                            DcatCkanDeployUtils.pathsGet(uri)
+                            .filter(Files::exists)
+                            .filter(Files::isRegularFile)
+                            .isPresent())
+                    .collect(Collectors.toSet());
+
+            Set<URI> webUrls = Sets.difference(resolvedValidUrls, urlsToExistingPaths);
+
+            String downloadFilename;
+            Optional<Path> pathReference = Optional.empty();
+            Path root = null;
+            if (urlsToExistingPaths.size() > 0) {
+                URI fileUrl = urlsToExistingPaths.iterator().next();
+                pathReference = DcatCkanDeployUtils.pathsGet(fileUrl);
+                downloadFilename = pathReference.get().getFileName().toString();
+            } else {
+                root = Files.createTempDirectory("http-cache-");
+                URI webUrl = webUrls.iterator().next();
+                String webUrlPathStr = webUrl.getPath();
+                Path tmp =  Paths.get(webUrlPathStr);
+                downloadFilename = tmp.getFileName().toString();
+
+                HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
+
+                BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
+//                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
+//                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
+
+                RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
+                pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
+            }
 
             // TODO This breaks if the downloadURLs are web urls.
             // We need a flag whether to do a file upload for web urls, or whether to just update metadata
 
-            Optional<Path> pathReference = resolvedValidUrls.stream()
-                .map(DcatCkanDeployUtils::pathsGet)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .filter(Files::exists)
-                .findFirst();
-
+//            Optional<Path> pathReference = resolvedValidUrls.stream()
+//                .map(DcatCkanDeployUtils::pathsGet)
+//                .filter(Optional::isPresent)
+//                .map(Optional::get)
+//                .filter(Files::exists)
+//                .findFirst();
+//
 
             if(pathReference.isPresent()) {
                 Path path = pathReference.get();
 
                 //String filename = distributionName + ".nt";
-                String filename = path.getFileName().toString();
                 String probedContentType = null;
                 try {
                     probedContentType = Files.probeContentType(path);
@@ -382,7 +434,8 @@ public class DcatCkanDeployUtils {
 
                 String contentType = Optional.ofNullable(probedContentType).orElse(ContentType.APPLICATION_OCTET_STREAM.toString());
 
-                if(!noFileUpload) {
+                if (!noFileUpload) {
+
                     logger.info("Uploading file " + path);
                     CkanResource tmp = CkanClientUtils.uploadFile(
                             ckanClient,
@@ -390,7 +443,7 @@ public class DcatCkanDeployUtils {
                             remoteCkanResource.getId(),
                             path.toString(),
                             ContentType.create(contentType),
-                            filename);
+                            downloadFilename);
 
                     tmp.setOthers(remoteCkanResource.getOthers());
                     int maxRetries = 5;
@@ -434,6 +487,11 @@ public class DcatCkanDeployUtils {
             Resource newDownloadUrl = ResourceFactory.createResource(remoteCkanResource.getUrl());
 
             org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
+
+            if (root != null) {
+                logger.info("Removing directory recursively: " + root);
+                // MoreFiles.deleteRecursively(root);
+            }
         }
     }
 
@@ -486,6 +544,7 @@ public class DcatCkanDeployUtils {
             isResourceCreationRequired = true;
 
             remote = new CkanResource(null, ckanDataset.getName());
+            remote.setName(resName);
         }
 
         // Update existing attributes with non-null values
