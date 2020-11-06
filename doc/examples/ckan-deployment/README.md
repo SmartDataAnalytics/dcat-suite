@@ -70,7 +70,8 @@ Deploy DCAT datasets to CKAN
 ```
 
 Running the command on the example data creates the following CKAN entry which can also be viewed on [http://ckan.qrowd.aksw.org/dataset/org-limbo-train_2-0-2](http://ckan.qrowd.aksw.org/dataset/org-limbo-train_2-0-2):
-![ckan-orga-group.png](../../images/ckan-train2.png)
+
+<img src="../../images/ckan-train2.png" height="500px">
 
 
 
