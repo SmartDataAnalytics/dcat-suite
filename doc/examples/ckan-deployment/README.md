@@ -37,7 +37,7 @@ The dcat suite supports mapping datasets into the namespace of CKAN organization
 If `dataid:group "mygroup"` is given then a lookup on CKAN is performed to find organizations carrying a tag with key `groupId` with value `mygroup`.
 Organizations can be tagged as shown in the screenshot below.
 
-![ckan-orga-group.png](../../images/ckan-orga-group.png | height=300)
+![ckan-orga-group.png](../../images/ckan-orga-group.png)test{:height="50%"}
 
 > :wrench: DBpedia Databus groupId / artifactId are inspired by maven however DataId uses IRIs whereas DCAT client needs strings. As a consequence the properties need to be renamed.
 
