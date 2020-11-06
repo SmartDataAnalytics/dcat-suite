@@ -1,5 +1,6 @@
 package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -182,14 +183,14 @@ public class CkanPseudoNodeFactory {
         Class<T> clazz;
         NodeMapper<T> nodeMapper;
         RdfType<T> rdfType;
-        if(dtypeUri.equals(MappingVocab.r2rmlIRI.getURI())) {
+        if (dtypeUri.equals(MappingVocab.r2rmlIRI.getURI())) {
             clazz = (Class<T>)String.class;
             nodeMapper = (NodeMapper<T>)NodeMappers.uriString;
             rdfType = (RdfType<T>)new RdfTypeUri();
 //			addUriStringMapping(registry, dtypeUri, attr);
         } else {
             RDFDatatype rdfDatatype = typeMapper.getTypeByName(dtypeUri);
-            if(rdfDatatype == null) {
+            if (rdfDatatype == null) {
                 throw new RuntimeException("Provided TypeMapper did not contain a RDFDatatype for " + dtypeUri);
             }
             clazz = (Class<T>)rdfDatatype.getJavaClass();
@@ -255,7 +256,12 @@ public class CkanPseudoNodeFactory {
             if(rdfDatatype == null) {
                 throw new RuntimeException("Provided TypeMapper did not contain a RDFDatatype for " + dtypeUri);
             }
-            Class<T> clazz = (Class<T>) rdfDatatype.getJavaClass();
+            Class<T> clazz = (Class<T>)rdfDatatype.getJavaClass();
+
+            if (clazz == BigDecimal.class) {
+                System.out.println("Here");
+            }
+
             NodeMapper<T> nodeMapper = NodeMappers.from(clazz);
 
             validateAccessor(accessorSupplierFactory, attr, clazz);
@@ -473,7 +479,10 @@ public class CkanPseudoNodeFactory {
         addStringMapping(ckanDatasetAccessors, DCTerms.description.getURI(), "notes");
 //        addCollectionMapping(ckanDatasetAccessors, DCAT.keyword.getURI(), "tags", String.class, new RdfTypeRDFDatatype<>(String.class), NodeMappers.string, null);
         addExtraJsonArrayMapping(ckanDatasetAccessors, DCAT.theme.getURI(), "extra:theme", String.class, new RdfTypeUri(), NodeMappers.uriString);
-        addStringMapping(ckanDatasetAccessors, DCTerms.identifier.getURI(), "extra:identifier");
+
+        // FIXME Identifier must not contain colons (maybe this applies to all tags in ckan?)
+        //       In any case, it prevents gradle-like ids such as groupId:artifactId:version
+        //        addStringMapping(ckanDatasetAccessors, DCTerms.identifier.getURI(), "extra:identifier");
 
 //		DcatDataset x;
 //		x.keyw
@@ -586,6 +595,11 @@ public class CkanPseudoNodeFactory {
     public NodeView createDataset() {
         CkanDataset ckanDataset = new CkanDataset();
 
+        return wrap(ckanDataset);
+    }
+
+
+    public NodeView wrap(CkanDataset ckanDataset) {
         AccessorSupplierFactory<CkanDataset> accessorFactory = getAccessorFactory(CkanDataset.class);
         PropertySource propertySource = new PropertySourceFromAccessorSupplier<CkanDataset>(ckanDataset, accessorFactory);
 
@@ -595,13 +609,15 @@ public class CkanPseudoNodeFactory {
 
     public NodeView createDistribution() {
         CkanResource ckanResource = new CkanResource();
+        return wrap(ckanResource);
 
+    }
+
+    public NodeView wrap(CkanResource ckanResource) {
         AccessorSupplierFactory<CkanResource> accessorFactory = getAccessorFactory(CkanResource.class);
         PropertySource propertySource = new PropertySourceFromAccessorSupplier<CkanResource>(ckanResource, accessorFactory);
 
         NodeView result = new NodeView(propertySource, ckanResourceAccessors);
         return result;
     }
-
-
 }

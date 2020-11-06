@@ -11,9 +11,12 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.aksw.commons.util.strings.StringUtils;
+import org.aksw.dcat.ap.binding.ckan.rdf_view.CkanPseudoNodeFactory;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.utils.DcatUtils;
+import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
+import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -403,11 +406,17 @@ public class DcatCkanRdfUtils {
     public static void convertToCkan(CkanDataset ckanDataset, DcatDataset dcatDataset) {
 
 //		DcatApDataset dataset = m.asRDFNode(CkanPseudoNodeFactory.get().createDataset()).as(DcatApDataset.class);
+        NodeView target = CkanPseudoNodeFactory.get().wrap(ckanDataset);
 
+        GraphCopy.copy(dcatDataset, target);
 
-        Optional.ofNullable(dcatDataset.getIdentifier()).ifPresent(ckanDataset::setName);
-        Optional.ofNullable(dcatDataset.getTitle()).ifPresent(ckanDataset::setTitle);
-        Optional.ofNullable(dcatDataset.getDescription()).ifPresent(ckanDataset::setNotes);
+        // Unset resources that may have set by graph copy;
+        // FIXME Is there a better way to avoid this in the first place?
+        ckanDataset.setResources(null);
+
+//        Optional.ofNullable(dcatDataset.getIdentifier()).ifPresent(ckanDataset::setName);
+//        Optional.ofNullable(dcatDataset.getTitle()).ifPresent(ckanDataset::setTitle);
+//        Optional.ofNullable(dcatDataset.getDescription()).ifPresent(ckanDataset::setNotes);
 
         Consumer<CkanPair> uniqueTagAdder = uniqueAdder(ckanDataset::getExtras, ckanDataset::setExtras, ArrayList::new);
         //
@@ -438,9 +447,15 @@ public class DcatCkanRdfUtils {
 
     public static void convertToCkan(CkanResource ckanResource, DcatDistribution dcatDistribution) {
 
+        NodeView target = CkanPseudoNodeFactory.get().wrap(ckanResource);
+
+        GraphCopy.copy(dcatDistribution, target);
+
+
         Optional.ofNullable(dcatDistribution.getTitle()).ifPresent(ckanResource::setName);
         // Optional.ofNullable(res.getTitle()).ifPresent(remote::setna);
-        Optional.ofNullable(dcatDistribution.getDescription()).ifPresent(ckanResource::setDescription);
+        // Should be covered by the graph copy
+//        Optional.ofNullable(dcatDistribution.getDescription()).ifPresent(ckanResource::setDescription);
 
         getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraphGroup)
                 .ifPresent(v -> ckanResource.putOthers("dcat:defaultGraphGroup", v));
@@ -448,8 +463,8 @@ public class DcatCkanRdfUtils {
         getUri(dcatDistribution, DcatDeployVirtuosoUtils.dcatDefaultGraph)
                 .ifPresent(v -> ckanResource.putOthers("dcat:defaultGraph", v));
 
-        Optional.ofNullable(dcatDistribution.getFormat())
-            .ifPresent(v -> ckanResource.setFormat(v));
+//        Optional.ofNullable(dcatDistribution.getFormat())
+//            .ifPresent(v -> ckanResource.setFormat(v));
 
         if (dcatDistribution.isURIResource()) {
             ckanResource.putOthers("extra:uri", dcatDistribution.getURI());

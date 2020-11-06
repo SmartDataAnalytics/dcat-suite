@@ -6,7 +6,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "main", separator = "=", description = "Show DCAT information", subcommands = {
+@Command(name = "dcat", separator = "=", description = "Show DCAT information", subcommands = {
     CmdDeploy.class,
     CmdExpand.class,
     CmdSearch.class,

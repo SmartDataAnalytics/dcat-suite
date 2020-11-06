@@ -1,0 +1,31 @@
+@prefix eg:    <http://www.example.org/> .
+@prefix void:  <http://rdfs.org/ns/void#> .
+@prefix dataid: <http://dataid.dbpedia.org/ns/core#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix cat:   <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix mcloud: <https://metadata.limbo-project.org/> .
+@prefix limbo: <https://datasets.limbo-project.org/> .
+
+mcloud:distribution-org.limbo-train_2-0.2_train_2-dataset.ttl
+        a                cat:Distribution ;
+        eg:localId       "train_2-dataset.ttl" ;
+        cat:downloadURL  <https://gitlab.com/limbo-project/train_2-dataset/raw/v0.2/release/train_2-dataset.ttl> .
+
+mcloud:dataset-org.limbo-train_2-0.2
+        a                    cat:Dataset ;
+        dataid:artifact      "train_2" ;
+        dataid:group         "org.limbo" ;
+        dcterms:identifier   "org.limbo:train_2:0.2" ;
+        dcterms:issued       "2020-04-07T14:11:18.726+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+        dcterms:license      limbo:NullLicense ;
+        dcterms:description  "This is the train_2 dataset" ;
+        void:triples         2429 ;
+        eg:iriPath           "org.limbo-train_2-0.2" ;
+        eg:primary           true ;
+        owl:priorVersion     mcloud:dataset-org.limbo-train_2-0.1 ;
+        owl:versionInfo      "0.2" ;
+        cat:distribution     mcloud:distribution-org.limbo-train_2-0.2_train_2-dataset.ttl ;
+        prov:wasDerivedFrom  mcloud:distribution-5670eb707309b5e1523b0d97fb0353ac .
