@@ -34,6 +34,7 @@ import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeSimple;
 import org.aksw.jena_sparql_api.pseudo_rdf.RdfTypeUri;
 import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
 import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
@@ -396,7 +397,8 @@ public class CkanPseudoNodeFactory {
             try {
                 processMapping(targetToAccessors, targetToEntityClass, mapping);
             } catch(Exception e) {
-                logger.warn("Skipping mapping due to error", e);
+                String msg = ExceptionUtils.getRootCauseMessage(e);
+                logger.warn("Skipping mapping due to error: " + msg);
             }
         }
 
