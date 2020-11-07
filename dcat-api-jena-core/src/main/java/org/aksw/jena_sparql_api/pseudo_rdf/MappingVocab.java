@@ -6,7 +6,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 public class MappingVocab {
     public static final Property r2rmlIRI = ResourceFactory.createProperty("http://www.w3.org/ns/r2rml#IRI");
 
-    public static final String NS = "http://example.org/";
+    public static final String NS = "http://www.example.org/";
 
     //public static final Property ckanTag = ResourceFactory.createProperty("http://example.org/ckanTag");
 

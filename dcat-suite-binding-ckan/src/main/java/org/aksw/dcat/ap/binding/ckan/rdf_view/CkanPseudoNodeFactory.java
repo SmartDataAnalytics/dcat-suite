@@ -258,9 +258,9 @@ public class CkanPseudoNodeFactory {
             }
             Class<T> clazz = (Class<T>)rdfDatatype.getJavaClass();
 
-            if (clazz == BigDecimal.class) {
-                System.out.println("Here");
-            }
+//            if (p.startsWith("http://www.example.org/uri")) {
+//                System.out.println("Here");
+//            }
 
             NodeMapper<T> nodeMapper = NodeMappers.from(clazz);
 
@@ -433,7 +433,7 @@ public class CkanPseudoNodeFactory {
 
             //typeMapper.getTypeByName(dtype.getURI());
 
-            System.out.println("Adding " + predicate + " -> " + key);
+            logger.debug("Adding " + predicate + " -> " + key);
             CkanPseudoNodeFactory.addLiteralMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI());
             //if(type.get)
 
@@ -447,10 +447,10 @@ public class CkanPseudoNodeFactory {
             if(via != null && converter == null) {
                 throw new RuntimeException("No converter registered for: " + via);
             } else {
-                System.out.println("Converter found for: " + via);
+                logger.debug("Converter found for: " + via);
             }
 
-            System.out.println("Adding " + predicate + " -> " + key + " via " + via);
+            logger.debug("Adding " + predicate + " -> " + key + " via " + via);
             CkanPseudoNodeFactory.addCollectionMapping(accessorSupplierFactory, mappingRegistry, predicate, key, typeMapper, dtype.getURI(), converter);
 
         } else if(mappingType.equals(MappingVocab.JsonArrayMapping.getURI())) {

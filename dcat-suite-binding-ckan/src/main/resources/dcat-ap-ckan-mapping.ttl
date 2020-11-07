@@ -1,4 +1,4 @@
-@prefix eg: <http://example.org/> .
+@prefix eg: <http://www.example.org/> .
 
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
@@ -14,7 +14,7 @@
 
 @prefix r2rml: <http://www.w3.org/ns/r2rml#>
 
-@prefix m: <http://example.org/>
+@prefix m: <http://www.example.org/>
 
 #eg:defaultJavaBindings
 #  m:binding [
@@ -123,6 +123,10 @@ eg:dcatApMappingCollection
   m:mapping [ m:type xsd:decimal ;
               m:target dcat:Dataset ; m:predicate void:triples                ; m:key "extra:triples" ] ;
   m:mapping [ m:type r2rml:IRI ;
-              m:target dcat:Dataset ; m:predicate prov:wasDerivedFrom         ; m:key "extra:wasDerivedFrom" ]
+              m:target dcat:Dataset ; m:predicate prov:wasDerivedFrom         ; m:key "extra:wasDerivedFrom" ] ;
+  m:mapping [ m:type xsd:string ;
+              m:target dcat:Dataset ; m:predicate eg:uri                      ; m:key "extra:uri" ] ;
+  m:mapping [ m:type xsd:string ;
+              m:target dcat:Distribution ; m:predicate eg:uri                 ; m:key "others:uri" ]
   .
 
