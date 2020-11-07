@@ -20,6 +20,7 @@ import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
+import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
 import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
 import org.aksw.jena_sparql_api.transform.result_set.QueryExecutionTransformResult;
 import org.apache.jena.graph.Graph;
@@ -377,7 +378,9 @@ public class DcatCkanRdfUtils {
 //        System.out.println("Size: " + newS.listProperties().toList().size());
 
         removeTriplesWithImplicitNullValues(newS);
-        newS = rename(newS, ResourceFactory.createProperty("http://www.example.org/uri")).asResource();
+        newS = rename(newS, MappingVocab.iri).asResource();
+
+        newS.getModel().removeAll(null, MappingVocab.iri, null);
 
 //        System.err.println("OUTPUT");
 //        RDFDataMgr.write(System.out, newS.getModel(), RDFFormat.TURTLE_BLOCKS);

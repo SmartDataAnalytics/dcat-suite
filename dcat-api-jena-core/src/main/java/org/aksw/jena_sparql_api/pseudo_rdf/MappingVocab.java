@@ -23,4 +23,5 @@ public class MappingVocab {
     public static final Property key = ResourceFactory.createProperty(NS + "key");
     public static final Property via = ResourceFactory.createProperty(NS + "via");
 
+    public static final Property iri = ResourceFactory.createProperty("http://www.example.org/uri");
 }
