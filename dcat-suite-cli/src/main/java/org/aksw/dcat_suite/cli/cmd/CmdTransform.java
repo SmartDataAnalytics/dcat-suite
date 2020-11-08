@@ -1,5 +1,6 @@
 package org.aksw.dcat_suite.cli.cmd;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class CmdTransform
     @Option(names={"-D"})
     public List<String> envVars = new ArrayList<>();
 
-    @Option(names= {"-m", "--materialize"})
+    @Option(names= {"-m", "--materialize"}, arity="0")
     public boolean materialize = false;
 
     @Parameter(names="--help", help=true)
@@ -74,13 +75,17 @@ public class CmdTransform
 //		}
         //SparqlStmtUtils.processFile(pm, filenameOrURI)
         // cmTransform.nonOptionArgs
-        Consumer<Resource> distTransform = DcatOps.createDistTransformer(
-                transforms, env, Paths.get("target"));
 
-        DcatOps.transformAllDists(dcatModel, distTransform);
+        if (!transforms.isEmpty()) {
+            Consumer<Resource> distTransform = DcatOps.createDistTransformer(
+                    transforms, env, Paths.get("target"));
+
+            DcatOps.transformAllDists(dcatModel, distTransform);
+        }
 
         if(materalize) {
             Path path = Paths.get("target");
+            Files.createDirectories(path);
             Consumer<Resource> materializer = DcatOps.createDistMaterializer(path);
             DcatOps.transformAllDists(dcatModel, materializer);
         }

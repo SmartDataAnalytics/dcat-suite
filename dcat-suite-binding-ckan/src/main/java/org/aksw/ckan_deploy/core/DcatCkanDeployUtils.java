@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import org.aksw.ckan_deploy.dcat.CkanDatasetUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.aksw.dcat.jena.domain.api.MvnEntity;
+import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.conjure.utils.FileUtils;
 import org.aksw.jena_sparql_api.http.repository.api.HttpRepository;
@@ -161,7 +161,7 @@ public class DcatCkanDeployUtils {
             CkanOrganization targetOrga = null;
             if(orgaByGroup) {
                 // If the dataset has a group id, try to match it to an organization
-                String datasetGroupId = d.as(MvnEntity.class).getGroupId();
+                String datasetGroupId = d.as(MavenEntity.class).getGroupId();
                 if(datasetGroupId != null) {
                     logger.info("Dataset " + DcatDataset.getLabel(d) + " has groupId set - attempting to resolve against organizations");
                     if(orgas == null) {
