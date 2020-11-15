@@ -1,6 +1,5 @@
 package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

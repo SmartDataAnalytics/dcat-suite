@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
@@ -42,6 +43,7 @@ import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -49,6 +51,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.DCAT;
+import org.apache.jena.vocabulary.RDF;
 
 
 
@@ -69,6 +72,22 @@ public class DcatOps {
         for(DcatDataset ds : dcatDatasets) {
             transformAllDists(ds, consumer);
         }
+    }
+
+    public static DcatDataset transformAllDists(DcatDataset source, Function<DcatDistribution, DcatDistribution> transform) {
+        DcatDataset result = ModelFactory.createDefaultModel().createResource().as(DcatDataset.class);
+
+        for(DcatDistribution dist : source.getDistributions()) {
+            DcatDistribution newDist = transform.apply(dist);
+            result.getModel().add(newDist.getModel());
+            result.getDistributions(DcatDistribution.class).add(newDist);
+        }
+
+//        for(DcatDataset ds : dcatDatasets) {
+//            transformAllDists(ds, consumer);
+//        }
+
+        return result;
     }
 
     public static void transformAllDists(DcatDataset ds, Consumer<Resource> consumer) {
@@ -94,6 +113,7 @@ public class DcatOps {
         T result = tryGetPolymorphicPropertyValue(s, p, clazz).orElse(null);
         return result;
     }
+
 
 
     public static Consumer<Resource> createDistMaterializer(Path targetFolder) {
@@ -183,6 +203,96 @@ public class DcatOps {
         };
     }
 
+    public static Function<DcatDistribution, DcatDistribution> createDistMaterializerNew(Path targetFolder) {
+        return dist -> {
+            DcatDistribution r = null;
+//			Model xxx = org.apache.jena.util.ResourceUtils.reachableClosure(dist);
+//			System.out.println(dist);
+//			RDFDataMgr.write(System.out, xxx, RDFFormat.RDFJSON);
+            Op op = getPolymorphicPropertyValue(dist, RPIF.op, Op.class);
+            if(op != null) {
+                // Check for content type and encoding
+                RdfEntityInfo entityInfo = dist.as(RdfEntityInfo.class);
+                String contentType = entityInfo.getContentType();
+                String targetContentType = contentType;
+
+                if(targetContentType == null) {
+                    targetContentType = ResourceUtils.getLiteralPropertyValue(entityInfo, RPIF.targetContentType, String.class);
+                }
+
+
+                if(targetContentType == null) {
+                    targetContentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentType().toString();
+                }
+
+                List<String> encodings = entityInfo.getContentEncodings();
+//				if(encodings == null) {
+//					encodings = ResourceUtils.getPropertyValue(entityInfo, RPIF.targetEncoding, RDFList.class);
+//				}
+
+                String ext = "." + ContentTypeUtils.toFileExtension(targetContentType, encodings);
+
+
+                // Check if there is a targetFile attribute
+                String targetBaseName = ResourceUtils.getLiteralPropertyValue(dist, RPIF.targetBaseName, String.class);
+
+                if(targetBaseName == null) {
+                    // TODO How to obtain a proper filename???
+                    // The filename should be ${artifactId}-${version}.${format/encoding extension}
+
+                    List<Resource> dss = ResourceUtils.listReversePropertyValues(dist, DCAT.distribution).toList();
+                    if(dss.size() == 1) {
+                        MavenEntity mvnEntity = dss.iterator().next().as(MavenEntity.class);
+                        String artifactId = mvnEntity.getArtifactId();
+                        String version = mvnEntity.getVersion();
+
+                        if(artifactId != null) {
+                            targetBaseName = artifactId + Optional.ofNullable(version).map(v -> "-" + v).orElse("");
+                        }
+                    }
+                }
+
+                // TODO We should keep track of all errors first and only then report them
+//				if(targetBaseName == null) {
+//					throw new RuntimeException("Could not obtain target base or file name for " + dist);
+//				}
+
+                // Probably use localId + file extension based on content type / encoding
+                Path filename;
+                if (targetBaseName != null) {
+                    //String name = targetFolder.resolve(targetBaseName).getFileName().toString();
+                    Path path = targetFolder.resolve(targetBaseName);
+                    String filenameStr = path.getFileName().toString();
+                    filename = path.resolveSibling(filenameStr + ext);
+                } else {
+                    try {
+                        filename = Files.createTempFile(targetFolder, "file-", ext);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                // TODO Alternatively, use the localId
+
+                try(OutputStream out = Files.newOutputStream(filename)) {
+                    RdfDataPod dataPod = ExecutionUtils.executeJob(op);
+                    Model model = dataPod.getModel();
+                    RDFDataMgr.write(out, model, RDFFormat.TURTLE_PRETTY);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                String url = IRILib.fileToIRI(filename.toFile());
+                Model rModel = ModelFactory.createDefaultModel();
+                //dist.getModel()
+                // Disconnect the op from the distribution
+                //r.removeAll(RPIF.op);
+                r = rModel.createResource().as(DcatDistribution.class);
+                r.setDownloadURL(url);
+            }
+            return r;
+        };
+    }
 
     /**
      * Substitute each RDF term in subject position with a new blank node
@@ -232,7 +342,6 @@ public class DcatOps {
             // TODO Prevent repeatedly copying the job triples if the dists use the same model
             Job distJob = JenaPluginUtils.copyInto(job, Job.class, distribution.getModel());
 
-
             // Check whether this distribution qualifies for transform:
             // (.) it must either have a downloadURL, or
             // (.) it must have a rpif:op operation attached
@@ -256,7 +365,7 @@ public class DcatOps {
                 String opVar = Iterables.getOnlyElement(opVars);
 
                 Map<String, Op> map = Collections.singletonMap(opVar, op);
-                JobInstance ji = JobUtils.createJobInstance(distJob, env, map);
+                JobInstance ji = JobUtils.createJobInstanceWithCopy(distJob, env, map);
 
                 OpJobInstance opInst = OpJobInstance.create(ji.getModel(), ji);
 
@@ -284,7 +393,6 @@ public class DcatOps {
                         x -> true);
 
                 distribution.addProperty(RPIF.op, opInst);
-
             }
 
         };
@@ -315,6 +423,86 @@ public class DcatOps {
         // JenaPluginUtils.copyClosureInto(rdfNode, viewClass, target)
 
     }
+
+
+    public static Function<DcatDistribution, DcatDistribution> createDistTransformerNew(
+//			Resource distribution,
+            Job job,
+            Map<String, Node> env) throws Exception {
+
+        Function<DcatDistribution, DcatDistribution> result = distribution -> {
+            DcatDistribution r = null;
+
+            // Copy the job into the distribution model
+            // TODO Prevent repeatedly copying the job triples if the dists use the same model
+
+            // Check whether this distribution qualifies for transform:
+            // (.) it must either have a downloadURL, or
+            // (.) it must have a rpif:op operation attached
+            String downloadURL = org.aksw.dcat.ap.utils.DcatUtils.getFirstDownloadUrlFromDistribution(distribution);
+
+            // If there is a downloadURL, create a DataRefUrl from it
+            // otherwise, if there is an op, inject this one instead
+
+            Op op;
+            if(downloadURL != null) {
+                op = ConjureBuilderImpl.start().fromUrl(downloadURL).getOp();
+            } else {
+                op = ResourceUtils.getLiteralPropertyValue(distribution, RPIF.op, Op.class);
+            }
+
+            if(op != null) {
+                Model rModel = ModelFactory.createDefaultModel();
+                r = rModel.createResource().as(DcatDistribution.class);
+                Job distJob = JenaPluginUtils.copyInto(job, Job.class, rModel);
+
+                //DataRef dataRef = DataRefUrl.create(ModelFactory.createDefaultModel(), "http://foo.bar/baz");
+    //			JenaSystem.init();
+
+                Set<String> opVars = distJob.getOpVars();
+                String opVar = Iterables.getOnlyElement(opVars);
+
+                Map<String, Op> map = Collections.singletonMap(opVar, op);
+                JobInstance ji = JobUtils.createJobInstance(distJob, env, map);
+
+                OpJobInstance opInst = OpJobInstance.create(ji.getModel(), ji);
+
+                // Note, that we do not materialize the job instance in order to retain
+                // the original job
+                // Op inst = JobUtils.materializeJobInstance(ji);
+
+                // TODO Materializing an instance must allocate fresh resources instead of
+                // performing in-place changes
+                // Resource newRoot = remapAllSubjects(inst).asResource();
+
+//				System.out.println(newRoot);
+//				RDFDataMgr.write(System.out, newRoot.getModel(), RDFFormat.RDFJSON);
+//
+//				inst = JenaPluginUtils.polymorphicCast(newRoot, Op.class);
+
+                // Copy the op instance into the distribution model
+//                distribution.getModel().add(opInst.getModel());
+
+//                Iterators.removeIf(
+//                        ResourceUtils.listPropertyValues(distribution, DCAT.downloadURL),
+//                        x -> true);
+//                Iterators.removeIf(
+//                        ResourceUtils.listPropertyValues(distribution, RPIF.op),
+//                        x -> true);
+
+                //distribution.addProperty(RPIF.op, opInst);
+                r
+                        .addProperty(RDF.type, DCAT.Distribution)
+                        .addProperty(RPIF.op, opInst)
+                        .as(DcatDistribution.class);
+
+            }
+            return r;
+        };
+
+        return result;
+    }
+
 
     /**
      * Copy all referenced files into a target folder

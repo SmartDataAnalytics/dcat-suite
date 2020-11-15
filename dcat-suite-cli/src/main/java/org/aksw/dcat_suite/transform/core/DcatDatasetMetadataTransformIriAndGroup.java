@@ -8,8 +8,10 @@ public class DcatDatasetMetadataTransformIriAndGroup
     implements DcatDatasetMetadataTransform
 {
     protected String baseIri;
-    protected String groupId;
 
+    protected String groupId;
+    protected String artifactId;
+    // protected MavenEntity datasetFields;
 
 
     @Override

@@ -9,7 +9,7 @@ import org.aksw.dcat.repo.impl.core.DistributionResolverImpl;
 import io.reactivex.rxjava3.core.Flowable;
 
 /**
- * Resolve distributions in regard to a dataset
+ * Resolve distributions with respect to a dataset
  *
  * @author Claus Stadler, Nov 21, 2018
  *
