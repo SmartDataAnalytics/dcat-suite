@@ -7,6 +7,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
+import org.aksw.jena_sparql_api.utils.model.DatasetGraphDiff;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.jena.riot.Lang;
@@ -56,7 +57,7 @@ public class FileSyncGraph
 //      if(!dsg.isInTransaction()) {
 //          throw new RuntimeException("we should be in a transaction here");
 //      }
-        dsg.clear();
+
 
         // The input stream is intentionally not closed;
         // as it would close the file cannel.
@@ -64,8 +65,16 @@ public class FileSyncGraph
         // needs to remain open for the time of transaction
         Lang lang = rdfFormat.getLang();
         InputStream in = new CloseShieldInputStream(Channels.newInputStream(localFc));
-        Txn.executeWrite(dsg, () ->
-            RDFDataMgr.read(dsg, in, lang));
+        Txn.executeWrite(dsg, () -> {
+            dsg.clear();
+            RDFDataMgr.read(dsg, in, lang);
+
+            // Materialize the dataset graph so that loading
+            // leaves the addition/removal sets empty
+            if (dsg instanceof DatasetGraphDiff) {
+                ((DatasetGraphDiff)dsg).materialize();
+            }
+        });
 
 //        int hash = dsg.hashCode();
 //        System.out.println("HASH: " + hash);

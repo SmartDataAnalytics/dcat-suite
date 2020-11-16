@@ -9,16 +9,19 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.aksw.jena_sparql_api.utils.model.DatasetGraphDiff;
 import org.apache.jena.atlas.lib.InternalErrorException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -32,7 +35,6 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.JenaTransactionException;
 import org.apache.jena.sparql.core.DatasetChanges;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.DatasetGraphWrapper;
 import org.apache.jena.sparql.core.GraphView;
 import org.apache.jena.sparql.core.Quad;
@@ -58,7 +60,7 @@ public class DatasetGraphWithSync
 {
     private static final Logger logger = LoggerFactory.getLogger(DatasetGraphWithSync.class);
 
-    protected Transactional syncher;
+    protected Transactional syncer;
 
     protected AtomicLong generation = new AtomicLong(1l);
 
@@ -67,22 +69,63 @@ public class DatasetGraphWithSync
      *  Each mutation (change of state) increases the version.
      *  Upon commit the generation is set to the version of the committing transaction
      */
+//    protected ThreadLocal<State> version = ThreadLocal.withInitial(() -> null);
+
+
     protected ThreadLocal<Long> version = ThreadLocal.withInitial(() -> null);
 
-    public static class GraphViewSimple
-        extends GraphView
-    {
-        public GraphViewSimple(DatasetGraph dsg, Node gn) {
-            super(dsg, gn);
-        }
 
-//        @Override
-//        protected PrefixMapping createPrefixMapping() {
-//            final DatasetPrefixStorage prefixes = datasetGraph().prefixes();
-//            return isDefaultGraph() || isUnionGraph() ? prefixes.getPrefixMapping() : prefixes
-//                .getPrefixMapping(getGraphName().getURI());
-//        }
+    protected Set<Consumer<? super DatasetGraphDiff>> preCommitHooks;
+
+
+    /**
+     * Register a consumer that can process the dataset graph (including the diff) just before commit.
+     *
+     * @param preCommitHook The pre commit hook to register
+     * @return A runnable that when run removes the pre commit hook
+     */
+    public Runnable addPreCommitHook(Consumer<? super DatasetGraphDiff> preCommitHook) {
+        this.preCommitHooks.add(preCommitHook);
+
+        return () -> preCommitHooks.remove(preCommitHook);
     }
+
+//    public Set<Consumer<? super DatasetGraphDiff>> getPreCommitHooks() {
+//		return preCommitHooks;
+//	}
+
+    public void setPreCommitHooks(Set<Consumer<? super DatasetGraphDiff>> preCommitHooks) {
+        this.preCommitHooks = preCommitHooks;
+    }
+
+
+
+//    public static class TxnState {
+//        public TxnState(Long version, Delta delta) {
+//            super();
+//            this.version = version;
+//            this.delta = delta;
+//        }
+//        public Long version;
+//        public Delta delta;
+//    }
+
+//    public static class GraphViewSimple
+//        extends GraphView
+//    {
+//        public GraphViewSimple(DatasetGraph dsg, Node gn) {
+//            super(dsg, gn);
+//        }
+//
+////        @Override
+////        protected PrefixMapping createPrefixMapping() {
+////            final DatasetPrefixStorage prefixes = datasetGraph().prefixes();
+////            return isDefaultGraph() || isUnionGraph() ? prefixes.getPrefixMapping() : prefixes
+////                .getPrefixMapping(getGraphName().getURI());
+////        }
+//    }
+
+
 
     /** A cache to ensure that the same graph view is returned for each name. */
     protected Map<Node, Graph> graphViewCache = Collections.synchronizedMap(new HashMap<>());
@@ -91,18 +134,20 @@ public class DatasetGraphWithSync
     public Graph getGraph(Node graphNode) {
         // return super.getGraph(graphNode);
 //    	Graph tmp = new GraphViewSimple(this, graphNode);
-        Graph result = graphViewCache.computeIfAbsent(graphNode, n -> new GraphViewSimple(this, n));
+        Graph result = graphViewCache.computeIfAbsent(graphNode, n -> GraphView.createNamedGraph(this, n));
         return result;
     }
 
     public DatasetGraphWithSync(Path path, LockPolicy lockPolicy) throws Exception {
-        this(DatasetGraphFactory.createTxnMem(), path, lockPolicy);
+//        this(DatasetGraphFactory.createTxnMem(), path, lockPolicy);
+        this(new DatasetGraphDiff(), path, lockPolicy);
     }
 
     public DatasetGraphWithSync(DatasetGraph dsg, Path path, LockPolicy lockPolicy) throws Exception {
         super(dsg);
         RDFFormat rdfFormat = RDFFormat.TRIG_PRETTY;
-        syncher = new FileSyncGraph(dsg, path, rdfFormat, lockPolicy, this::getVersion);
+        syncer = new FileSyncGraph(dsg, path, rdfFormat, lockPolicy, this::getVersion);
+        preCommitHooks = Collections.synchronizedSet(new HashSet<>());
     }
 
 
@@ -136,13 +181,17 @@ public class DatasetGraphWithSync
     @Override
     public void begin(ReadWrite readWrite) {
         // FIXME - The statement below is wrong: If a read transaction is requested but the data
-        // has not been loaded that we need to lock the in memory model with write for the load phase
+        // has not been loaded than we need to lock the in memory model with write for the load phase
+
+        // Conversely, if we start the syncer first and the graph is not in a transaction
+        // then each triple is added individually
 
         // Prepare the txn on the in memory model first, because we may need to
         // load the data from the file
 
+        //version.set(generation.get());
         version.set(generation.get());
-        syncher.begin(readWrite);
+        syncer.begin(readWrite);
         super.begin(readWrite);
 
 //        try {
@@ -173,11 +222,22 @@ public class DatasetGraphWithSync
                 generation.incrementAndGet() ;
             }
 
-            syncher.commit();
+
+            DatasetGraphDiff dgd = (DatasetGraphDiff)get();
+            for (Consumer<? super DatasetGraphDiff> preCommitHook : preCommitHooks) {
+                preCommitHook.accept(dgd);
+            }
+
+            if (ReadWrite.WRITE.equals(super.transactionMode())) {
+                dgd.materialize();
+            }
+
+            //preCommit.run();
+            syncer.commit();
             super.commit();
 
         } finally {
-            syncher.end();
+            syncer.end();
         }
     }
 
@@ -192,9 +252,9 @@ public class DatasetGraphWithSync
             abort();
         }
 
-        if(syncher instanceof AutoCloseable) {
+        if(syncer instanceof AutoCloseable) {
             try {
-                ((AutoCloseable)syncher).close();
+                ((AutoCloseable)syncer).close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -205,7 +265,7 @@ public class DatasetGraphWithSync
     @Override
     public void end() {
         super.end();
-        syncher.end();
+        syncer.end();
         version.remove();
     }
 
@@ -238,11 +298,13 @@ public class DatasetGraphWithSync
             version.set(-Math.abs(version.get()));
 
             mutator.accept(payload);
-        } else executeWrite(this, () -> {
-            version.set(-Math.abs(version.get()));
-//            System.out.println(version.get());
-            mutator.accept(payload);
-        });
+        } else {
+            executeWrite(this, () -> {
+                version.set(-Math.abs(version.get()));
+    //            System.out.println(version.get());
+                mutator.accept(payload);
+            });
+        }
     }
 
     @Override

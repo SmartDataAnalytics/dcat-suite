@@ -6,17 +6,22 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.http.repository.impl.UriToPathUtils;
+import org.aksw.jena_sparql_api.utils.model.DatasetGraphDiff;
 import org.apache.jena.ext.com.google.common.collect.Maps;
 import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Graph;
@@ -60,6 +65,8 @@ public class DatasetGraphFromFileSystem
 
     protected Graph dftGraph = new GraphReadOnly(GraphFactory.createDefaultGraph());
 
+    protected Set<Consumer<? super DatasetGraphDiff>> preCommitHooks = Collections.synchronizedSet(new HashSet<>());
+
 
     protected Transactional txn;
     protected TxnDataset2Graph2 txnDsg2Graph;
@@ -84,6 +91,19 @@ public class DatasetGraphFromFileSystem
             SystemARQ.sync(this);
         txn.commit() ;
     }
+
+    /**
+     * Register a consumer that can process the dataset graph (including the diff) just before commit.
+     *
+     * @param preCommitHook The pre commit hook to register
+     * @return A runnable that when run removes the pre commit hook
+     */
+    public Runnable addPreCommitHook(Consumer<? super DatasetGraphDiff> preCommitHook) {
+        this.preCommitHooks.add(preCommitHook);
+
+        return () -> preCommitHooks.remove(preCommitHook);
+    }
+
 
     @Override public void begin()                       { txn.begin(); }
     @Override public void begin(TxnType txnType)        { txn.begin(txnType); }
@@ -219,6 +239,25 @@ public class DatasetGraphFromFileSystem
         GraphUtil.addInto(tgt, graph);
     }
 
+    public Path getBasePath() {
+        return basePath;
+    }
+
+    public Path getRelPathForIri(String iri) {
+        Path relPath = UriToPathUtils.resolvePath(iri);
+
+        return relPath;
+    }
+
+
+    public String getFilename() {
+        return "data.trig";
+    }
+//    public Path getRelFileForIri(String iri) {
+//        Path result = getRelPathForIri(iri).resolve("data.trig");
+//        return result;
+//    }
+
 
     public Entry<Path, Dataset> getOrCreateGraph(Node graphName) {
         // Graph named must be a URI
@@ -229,7 +268,8 @@ public class DatasetGraphFromFileSystem
         if (txnDsg2Graph != null) {
             // Ensure that the requested graphName is added to the txn handlers
             DatasetGraph dsg = result.getValue().asDatasetGraph();
-            txnDsg2Graph.addGraph(dsg.getGraph(graphName));
+            Graph graph = dsg.getGraph(graphName);
+            txnDsg2Graph.addGraph(graph);
         }
 
         return result;
@@ -238,14 +278,16 @@ public class DatasetGraphFromFileSystem
     public Entry<Path, Dataset> getOrCreate(Path relPath) {
         Map<Path, Dataset> targetMap = getTargetMap();
 
-        Path fileRelPath = relPath.resolve("data.trig");
+        String filename = getFilename();
+        Path fileRelPath = relPath.resolve(filename);
         Dataset ds = targetMap.get(fileRelPath);
         if (ds == null) {
             Path fullPath = basePath.resolve(fileRelPath);//.resolve("data.trig");
 
-            DatasetGraph dsg;
+            DatasetGraphWithSync dsg;
             try {
                 dsg = new DatasetGraphWithSync(fullPath, LockPolicy.TRANSACTION);
+                dsg.setPreCommitHooks(preCommitHooks);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -272,7 +314,8 @@ public class DatasetGraphFromFileSystem
         String iri = graphName.getURI();
         Path relPath = UriToPathUtils.resolvePath(iri);
 
-        Path fileRelPath = relPath.resolve("data.trig");
+        String filename = getFilename();
+        Path fileRelPath = relPath.resolve(filename);
         Map<Path, Dataset> targetMap = getTargetMap();
         Dataset ds = targetMap.get(fileRelPath);
 
@@ -291,7 +334,14 @@ public class DatasetGraphFromFileSystem
     public static void main(String[] args) throws IOException {
         Path path = Paths.get("/tmp/graphtest");
         Files.createDirectories(path);
-        DatasetGraph raw = DatasetGraphFromFileSystem.createDefault(path);
+        DatasetGraphFromFileSystem raw = DatasetGraphFromFileSystem.createDefault(path);
+
+        raw.addPreCommitHook(dgd -> {
+            System.out.println("Added:");
+            RDFDataMgr.write(System.out, DatasetFactory.wrap(dgd.getAdded()), RDFFormat.TRIG_PRETTY);
+            System.out.println("Removed:");
+            RDFDataMgr.write(System.out, DatasetFactory.wrap(dgd.getRemoved()), RDFFormat.TRIG_PRETTY);
+        });
 
         DatasetGraph dg = raw;
 

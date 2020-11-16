@@ -148,7 +148,7 @@ public abstract class FileSyncBase
         // once we obtained the file lock
         boolean needsDataLoading = false;
 
-        Reference<FileChannel> localFcRef;
+        Reference<FileChannel> localFileChannelRef;
         synchronized (this) {
             if (rootFileChannelRef == null) {
                 // if .isAlive returns false, it means that the close action
@@ -165,7 +165,7 @@ public abstract class FileSyncBase
 
                 // After closing the rootFileChannelRef the open-state of the file channel
                 // depends on the local reference
-                localFcRef = rootFileChannelRef.acquire(null);
+                localFileChannelRef = rootFileChannelRef.acquire(null);
 
                 if (LockPolicy.TRANSACTION.equals(lockPolicy)) {
                     rootFileChannelRef.close();
@@ -179,7 +179,7 @@ public abstract class FileSyncBase
 
             } else {
                 // Acquire may wait for close to finish
-                localFcRef = rootFileChannelRef.acquire(null);
+                localFileChannelRef = rootFileChannelRef.acquire(null);
             }
         }
 
@@ -196,14 +196,14 @@ public abstract class FileSyncBase
                 // Lang lang = Lang.TRIG;
                 // InputStream in = Channels.newInputStream(localFc);
                 // RDFDataMgr.read(getW(), in, lang);
-                localFcRef.get().position(0);
-                deserializeFrom(localFcRef.get());
+                localFileChannelRef.get().position(0);
+                deserializeFrom(localFileChannelRef.get());
 
                 cacheFileTime = Files.getLastModifiedTime(path);
             }
         }
 
-        return localFcRef;
+        return localFileChannelRef;
     }
 
     protected void prepareBegin(ReadWrite readWrite) throws Exception {
