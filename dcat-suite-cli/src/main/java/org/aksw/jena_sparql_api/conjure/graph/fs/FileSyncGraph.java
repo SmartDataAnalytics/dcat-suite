@@ -20,6 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * A class for syncing a dataset graph with the content of a file
+ *
+ * @author raven
+ *
+ */
 public class FileSyncGraph
     extends FileSyncBase {
 

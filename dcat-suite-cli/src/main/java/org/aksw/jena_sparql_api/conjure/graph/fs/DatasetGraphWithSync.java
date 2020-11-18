@@ -4,6 +4,7 @@ import static org.apache.jena.query.ReadWrite.WRITE;
 import static org.apache.jena.system.Txn.calculateRead;
 import static org.apache.jena.system.Txn.executeWrite;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -39,7 +40,6 @@ import org.apache.jena.sparql.core.DatasetGraphWrapper;
 import org.apache.jena.sparql.core.GraphView;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.QuadAction;
-import org.apache.jena.sparql.core.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public class DatasetGraphWithSync
 {
     private static final Logger logger = LoggerFactory.getLogger(DatasetGraphWithSync.class);
 
-    protected Transactional syncer;
+    protected FileSyncBase syncer;
 
     protected AtomicLong generation = new AtomicLong(1l);
 
@@ -77,6 +77,11 @@ public class DatasetGraphWithSync
 
     protected Set<Consumer<? super DatasetGraphDiff>> preCommitHooks;
 
+    protected Set<DatasetGraphIndexPlugin> indexPlugins = Collections.synchronizedSet(new HashSet<>());
+
+    public void setIndexPlugins(Set<DatasetGraphIndexPlugin> indexPlugins) {
+        this.indexPlugins = indexPlugins;
+    }
 
     /**
      * Register a consumer that can process the dataset graph (including the diff) just before commit.
@@ -202,6 +207,7 @@ public class DatasetGraphWithSync
 //        }
     }
 
+
     @Override
     public void commit() {
         try {
@@ -223,7 +229,7 @@ public class DatasetGraphWithSync
             }
 
 
-            DatasetGraphDiff dgd = (DatasetGraphDiff)get();
+            DatasetGraphDiff dgd = get();
             for (Consumer<? super DatasetGraphDiff> preCommitHook : preCommitHooks) {
                 preCommitHook.accept(dgd);
             }
@@ -242,7 +248,23 @@ public class DatasetGraphWithSync
     }
 
     @Override
+    protected DatasetGraphDiff get() {
+        return (DatasetGraphDiff)super.get();
+    }
+
+    @Override
     public void abort() {
+        DatasetGraphDiff dgd = get();
+
+        // Undo the actions on the plugins
+        dgd.getRemoved().find().forEachRemaining(quad -> {
+            indexPlugins.forEach(plugin -> plugin.add(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()));
+        });
+
+        dgd.getAdded().find().forEachRemaining(quad -> {
+            indexPlugins.forEach(plugin -> plugin.delete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()));
+        });
+
         super.abort();
     }
 
@@ -314,22 +336,34 @@ public class DatasetGraphWithSync
         } , null);
     }
 
-
     @Override
     public void add(Quad quad)
-    { mutate(x -> getW().add(quad), null); }
+    { add(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()); }
 
     @Override
     public void delete(Quad quad)
-    { mutate(x -> getW().delete(quad), null); }
+    { delete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()); }
 
     @Override
-    public void add(Node g, Node s, Node p, Node o)
-    { mutate(x -> getW().add(g, s, p, o), null); }
+    public void add(Node g, Node s, Node p, Node o) {
+        mutate(x -> {
+            if (!contains(g, s, p, o)) {
+                indexPlugins.forEach(plugin -> plugin.add(g, s, p, o));
+                getW().add(g, s, p, o);
+            }
+        }, null);
+    }
+
 
     @Override
-    public void delete(Node g, Node s, Node p, Node o)
-    { mutate(x -> getW().delete(g, s, p, o), null); }
+    public void delete(Node g, Node s, Node p, Node o) {
+        mutate(x -> {
+            if (contains(g, s, p, o)) {
+                indexPlugins.forEach(plugin -> plugin.delete(g, s, p, o));
+                getW().delete(g, s, p, o);
+            }
+        }, null);
+    }
 
     @Override
     public void deleteAny(Node g, Node s, Node p, Node o)
@@ -344,6 +378,31 @@ public class DatasetGraphWithSync
         return access(() -> getR().listGraphNodes());
     }
 
+    @Override
+    public boolean contains(Quad quad) {
+        return contains(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject());
+    }
+
+    @Override
+    public boolean contains(Node g, Node s, Node p, Node o) {
+        return access(() -> getR().contains(g, s, p, o));
+    }
+
+
+    /**
+     * Delete the file that backs this DatasetGraph.
+     * Must not be called within a transaction.
+     *
+     */
+    public void deleteFile() throws IOException {
+        if (isInTransaction()) {
+            // TODO This only checks whether the current thread is in a transaction;
+            //		We need to check whether there are any transactions running.
+            throw new RuntimeException("Cannot delete graph file while transactions are running");
+        }
+
+        syncer.deleteFile();
+    }
 
 
     public static void main(String[] args) throws Exception {

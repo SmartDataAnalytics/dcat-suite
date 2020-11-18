@@ -5,28 +5,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.http.repository.impl.UriToPathUtils;
 import org.aksw.jena_sparql_api.utils.model.DatasetGraphDiff;
+import org.apache.jena.atlas.iterator.IteratorConcat;
 import org.apache.jena.ext.com.google.common.collect.Maps;
 import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ReadWrite;
@@ -35,20 +38,20 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.SystemARQ;
-import org.apache.jena.sparql.core.DatasetChanges;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphCollection;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.DatasetGraphFactory.GraphMaker;
-import org.apache.jena.sparql.core.DatasetGraphMonitor;
-import org.apache.jena.sparql.core.QuadAction;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Transactional;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.graph.GraphReadOnly;
 import org.apache.jena.system.Txn;
+import org.apache.jena.vocabulary.DCAT;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+
 
 
 public class DatasetGraphFromFileSystem
@@ -65,7 +68,11 @@ public class DatasetGraphFromFileSystem
 
     protected Graph dftGraph = new GraphReadOnly(GraphFactory.createDefaultGraph());
 
+
     protected Set<Consumer<? super DatasetGraphDiff>> preCommitHooks = Collections.synchronizedSet(new HashSet<>());
+//    protected Set<Function<? super DatasetGraphWithSync, ? extends DatasetGraphIndexPlugin>>
+//        indexPluginFactoriees = Collections.synchronizedSet(new HashSet<>());
+    protected Set<DatasetGraphIndexPlugin> indexPlugins = Collections.synchronizedSet(new HashSet<>());
 
 
     protected Transactional txn;
@@ -103,6 +110,18 @@ public class DatasetGraphFromFileSystem
 
         return () -> preCommitHooks.remove(preCommitHook);
     }
+
+    public Runnable addIndexPlugin(DatasetGraphIndexPlugin indexPlugin) {
+        this.indexPlugins.add(indexPlugin);
+
+        return () -> indexPlugins.remove(indexPlugin);
+    }
+
+//    public Runnable addIndexPluginFactory(Function<? super DatasetGraphWithSync, ? extends DatasetGraphIndexPlugin> indexPluginFactory) {
+//        this.indexPluginFactories.add(indexPluginFactory);
+//
+//        return () -> indexPluginFactories.remove(indexPluginFactory);
+//    }
 
 
     @Override public void begin()                       { txn.begin(); }
@@ -196,6 +215,7 @@ public class DatasetGraphFromFileSystem
                 Stream<Node> r = Streams.stream(it);
                 return r;
             })
+            //.filter(d)
             .distinct()
             .iterator();
 
@@ -259,6 +279,62 @@ public class DatasetGraphFromFileSystem
 //    }
 
 
+    public static <T, S> Entry<T, S> findBestMatchWithScore(
+            Iterator<T> it,
+            Function<? super T, ? extends S> itemToScore, BiPredicate<? super S, ? super S> isLhsBetternThanRhs) {
+
+        T bestItem = null;
+        S bestScore = null;
+
+        while (it.hasNext()) {
+            T item = it.next();
+            S score = itemToScore.apply(item);
+            if (score != null) {
+                if (bestScore == null || isLhsBetternThanRhs.test(score, bestScore)) {
+                    bestItem = item;
+                    bestScore = score;
+                }
+            }
+        }
+
+        Entry<T, S> result = bestItem == null
+                ? null
+                : new SimpleEntry<>(bestItem, bestScore);
+        return result;
+    }
+
+    public static <T, S> T findBestMatch(
+            Iterator<T> it,
+            Function<? super T, ? extends S> itemToScore, BiPredicate<? super S, ? super S> isLhsBetternThanRhs) {
+
+        Entry<T, S> tmp = findBestMatchWithScore(it, itemToScore, isLhsBetternThanRhs);
+        T result = tmp == null ? null : tmp.getKey();
+        return result;
+    }
+
+    @Override
+    protected Iterator<Quad> findInAnyNamedGraphs(Node s, Node p, Node o) {
+        DatasetGraphIndexPlugin bestPlugin = findBestMatch(
+                indexPlugins.iterator(), plugin -> plugin.evaluateFind(s, p, o), (lhs, rhs) -> lhs != null && lhs < rhs);
+
+        Iterator<Node> gnames = bestPlugin != null
+            ? bestPlugin.listGraphNodes(s, p, o)
+            : listGraphNodes();
+
+        IteratorConcat<Quad> iter = new IteratorConcat<>() ;
+
+        // Named graphs
+        for ( ; gnames.hasNext() ; )
+        {
+            Node gn = gnames.next();
+            Iterator<Quad> qIter = findInSpecificNamedGraph(gn, s, p, o) ;
+            if ( qIter != null )
+                iter.add(qIter) ;
+        }
+        return iter ;
+    }
+
+
     public Entry<Path, Dataset> getOrCreateGraph(Node graphName) {
         // Graph named must be a URI
         String iri = graphName.getURI();
@@ -286,8 +362,14 @@ public class DatasetGraphFromFileSystem
 
             DatasetGraphWithSync dsg;
             try {
+                // FIXME Implement file deletion on rollback
+                // If the transaction in which this graph is created is rolled back
+                // then the file that backs the graph must also be deleted again
                 dsg = new DatasetGraphWithSync(fullPath, LockPolicy.TRANSACTION);
+                dsg.setIndexPlugins(indexPlugins);
                 dsg.setPreCommitHooks(preCommitHooks);
+
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -332,7 +414,7 @@ public class DatasetGraphFromFileSystem
 
 
     public static void main(String[] args) throws IOException {
-        Path path = Paths.get("/tmp/graphtest");
+        Path path = Paths.get("/tmp/graphtest/store");
         Files.createDirectories(path);
         DatasetGraphFromFileSystem raw = DatasetGraphFromFileSystem.createDefault(path);
 
@@ -343,7 +425,32 @@ public class DatasetGraphFromFileSystem
             RDFDataMgr.write(System.out, DatasetFactory.wrap(dgd.getRemoved()), RDFFormat.TRIG_PRETTY);
         });
 
+        raw.addIndexPlugin(new DatasetGraphIndexerFromFileSystem(
+                raw, DCTerms.identifier.asNode(),
+                path = Paths.get("/tmp/graphtest/index/by-id"),
+                DatasetGraphIndexerFromFileSystem::mavenStringToToPath
+                ));
+
+        raw.addIndexPlugin(new DatasetGraphIndexerFromFileSystem(
+                raw, DCAT.distribution.asNode(),
+                path = Paths.get("/tmp/graphtest/index/by-distribution"),
+                DatasetGraphIndexerFromFileSystem::uriToPath
+                ));
+
+        raw.addIndexPlugin(new DatasetGraphIndexerFromFileSystem(
+                raw, DCAT.downloadURL.asNode(),
+                path = Paths.get("/tmp/graphtest/index/by-downloadurl"),
+                DatasetGraphIndexerFromFileSystem::uriToPath
+                ));
+
+
         DatasetGraph dg = raw;
+
+//        Node lookupId = RDF.Nodes.type;
+        Node lookupId = NodeFactory.createLiteral("my.test:id:1.0.0");
+        System.out.println("Lookup reseults for id: ");
+        dg.findNG(null, null, DCTerms.identifier.asNode(), lookupId).forEachRemaining(System.out::println);
+        System.out.println("Done");
 
 //        DatasetGraph dg = new DatasetGraphMonitor(raw, new DatasetChanges() {
 //            @Override
@@ -379,6 +486,7 @@ public class DatasetGraphFromFileSystem
             System.out.println("Adding another graph");
     //        Txn.executeWrite(dg, () -> {
                 dg.add(RDFS.Nodes.label, RDFS.Nodes.label, RDFS.Nodes.label, RDFS.Nodes.label);
+                dg.add(RDFS.Nodes.label, RDFS.Nodes.label, DCTerms.identifier.asNode(), lookupId);
     //        });
         }
 
@@ -388,6 +496,7 @@ public class DatasetGraphFromFileSystem
         });
 
         DatasetFactory.wrap(dg).getNamedModel(OWL.Class.getURI()).add(RDF.Bag, RDF.type, RDF.Bag);
+        dg.add(OWL.Class.asNode(), RDFS.Nodes.label, DCTerms.identifier.asNode(), lookupId);
 
         System.out.println("done");
     }

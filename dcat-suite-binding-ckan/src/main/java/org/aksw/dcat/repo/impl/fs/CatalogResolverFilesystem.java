@@ -13,12 +13,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
@@ -39,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.StandardSystemProperty;
+import com.google.common.collect.Maps;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -358,7 +361,7 @@ public class CatalogResolverFilesystem
             } else if(files.size() == 1) {
                 r = files.iterator().next();
 
-                Path resolved = resolveSymbolicLink(r);
+                Path resolved = resolveSymbolicLinkRecursively(r);
                 if(!Files.exists(resolved)) {
                     if(Files.isSymbolicLink(r)) {
                         Files.delete(r);
@@ -377,14 +380,20 @@ public class CatalogResolverFilesystem
         return result;
     }
 
-    public static Path resolveSymbolicLink(Path path) {
+
+    /**
+     *
+     * @param path
+     * @return
+     */
+    public static Path resolveSymbolicLinkRecursively(Path path) {
         Path result = path;
 
         Set<Path> seen = new HashSet<>();
         while(!seen.contains(result) && Files.isSymbolicLink(result)) {
             seen.add(result);
             try {
-                result = Files.readSymbolicLink(result);
+                result = readSymLinkAbsolute(result); // Files.readSymbolicLink(result);
             } catch (IOException e) {
                 logger.warn("Should not happen", e);
             }
@@ -490,7 +499,7 @@ public class CatalogResolverFilesystem
         for(String altId : altIds) {
             Path tgt = datasetByIdFolder.resolve(resolvePath(altId));
             Files.createDirectories(tgt);
-            allocateSymbolicLink(dsFolder, tgt, "_content");
+            allocateSymbolicLink(dsFolder, tgt, "_content", "");
         }
 
 
@@ -505,7 +514,7 @@ public class CatalogResolverFilesystem
                 Path linkSource = distributionIndexFolder.resolve(resolvePath(uri));
                 Files.createDirectories(linkSource);
 
-                allocateSymbolicLink(targetDatasetFolder, linkSource, "_content");
+                allocateSymbolicLink(targetDatasetFolder, linkSource, "_content", "");
             }
         }
     }
@@ -557,6 +566,68 @@ public class CatalogResolverFilesystem
 
 
     /**
+     * Within 'sourceFolder' read all symbolic links with the pattern 'baseName${number}' and return a map
+     * with their targets.
+     * This is the
+     *
+     * @param rawSourceFolder
+     * @param baseName
+     * @return
+     * @throws IOException
+     */
+    public static Map<Path, Path> readSymbolicLinks(Path sourceFolder, String prefix, String suffix) throws IOException {
+        Map<Path, Path> result = Files.list(sourceFolder)
+                .filter(Files::isSymbolicLink)
+                .filter(path -> {
+                    String fileName = path.getFileName().toString();
+
+                    boolean r = fileName.startsWith(prefix) && fileName.endsWith(suffix);
+                    // TODO Check that the string between prefix and suffix is either an empty string
+                    // or corresponds to a number
+                    return r;
+                })
+                .flatMap(path -> {
+                    Stream<Entry<Path, Path>> r;
+                    try {
+                        r = Stream.of(Maps.immutableEntry(path, Files.readSymbolicLink(path)));
+                    } catch (IOException e) {
+                        logger.warn("Error reading symoblic link; skipping", e);
+                        r = Stream.empty();
+                    }
+                    return r;
+                })
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+        return result;
+    }
+
+    public static void deleteEmptyDirectory(Path base, Path subFolder) {
+        // TODO Implement
+    }
+
+    /**
+     * Read a symbolic link and return and absolute path to its target.
+     *
+     * @param symLink
+     * @return
+     * @throws IOException
+     */
+    public static Path readSymLinkAbsolute(Path symLink) throws IOException {
+        if (!Files.isSymbolicLink(symLink)) {
+            throw new IllegalArgumentException("Not a symbolic link: " + symLink);
+        }
+        Path symLinkTgt = Files.readSymbolicLink(symLink);
+
+        Path result = resolveSymLink(symLink, symLinkTgt);
+        return result;
+    }
+
+    public static Path resolveSymLink(Path symLinkSrc, Path symLinkTgt) {
+        Path result = symLinkSrc.getParent().resolve(symLinkTgt).normalize().toAbsolutePath();
+        return result;
+    }
+
+    /**
      * Within 'folder' create a link to 'file' with name 'baseName' if it does not yet exist.
      * Return the new link or or all prior existing link(s)
      *
@@ -566,7 +637,7 @@ public class CatalogResolverFilesystem
      * @return
      * @throws IOException
      */
-    public static Collection<Path> allocateSymbolicLink(Path rawTarget, Path rawSourceFolder, String baseName) throws IOException {
+    public static Collection<Path> allocateSymbolicLink(Path rawTarget, Path rawSourceFolder, String prefix, String suffix) throws IOException {
         Path sourceFolder = rawSourceFolder.normalize();
         Path target = rawTarget.normalize();
 
@@ -578,28 +649,37 @@ public class CatalogResolverFilesystem
 
         //System.out.println("Realtivation: " + file.relativize(folder));
 
-        Collection<Path> result;
+        Map<Path, Path> existingSymLinks = readSymbolicLinks(rawSourceFolder, prefix, suffix);
+
+        Collection<Path> result = existingSymLinks.entrySet().stream()
+                .filter(e -> {
+                    Path absCand = resolveSymLink(e.getKey(), e.getValue()); //e.getKey().getParent().resolve(e.getValue()).normalize().toAbsolutePath();
+                    boolean r = absCand.equals(absTarget);
+                    return r;
+                })
+                .map(Entry::getKey)
+                .collect(Collectors.toSet());
 
         // Check all symlinks in the folder whether any points to target
-        result = Files.list(sourceFolder)
-            .filter(Files::isSymbolicLink)
-            .filter(t -> {
-                Path tgt;
-                try {
-                     tgt = Files.readSymbolicLink(t);
-                     tgt = tgt.toAbsolutePath();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                boolean r = Objects.equals(absTarget, tgt);
-                return r;
-            })
-            .collect(Collectors.toList());
+//        Collection<Path> result = Files.list(sourceFolder)
+//            .filter(Files::isSymbolicLink)
+//            .filter(t -> {
+//                Path tgt;
+//                try {
+//                     tgt = Files.readSymbolicLink(t);
+//                     tgt = tgt.toAbsolutePath();
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                boolean r = Objects.equals(absTarget, tgt);
+//                return r;
+//            })
+//            .collect(Collectors.toList());
 
         if(result.isEmpty()) {
             for(int i = 1; ; ++i) {
-                String cand = baseName + (i == 1 ? "" : i);
+                String cand = prefix + (i == 1 ? "" : i) + suffix;
                 Path c = sourceFolder.resolve(cand);
 
                 //Path relTgt = c.relativize(target);

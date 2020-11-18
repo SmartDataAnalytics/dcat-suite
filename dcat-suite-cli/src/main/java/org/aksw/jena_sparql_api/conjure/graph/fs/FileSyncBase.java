@@ -269,6 +269,10 @@ public abstract class FileSyncBase
         }
     }
 
+    public void deleteFile() throws IOException {
+        Files.delete(path);
+    }
+
     @Override
     public void abort() {
 //        System.out.println("abort " + Thread.currentThread());
