@@ -679,7 +679,9 @@ public class MainCliDcatSuite {
                 }
 
                 // Remove temporary ckan specific attributes
-                UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();;
+                if (false) {
+                    UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
+                }
 
             } catch(Exception e) {
                 logger.warn("Error processing dataset " + s, e);
