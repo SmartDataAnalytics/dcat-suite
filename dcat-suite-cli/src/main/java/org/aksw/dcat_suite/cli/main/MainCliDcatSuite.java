@@ -56,6 +56,9 @@ import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.lang.arq.ParseException;
 import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -656,6 +659,9 @@ public class MainCliDcatSuite {
 
     public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets) {
 
+        // TODO Move this update request to a separate file and/or trigger it using a flag
+        UpdateRequest ur = UpdateFactory.create("PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
+
 
         for (String s : datasets) {
             logger.info("Importing dataset " + s);
@@ -671,6 +677,9 @@ public class MainCliDcatSuite {
                 if(prefix != null) {
                     dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
                 }
+
+                // Remove temporary ckan specific attributes
+                UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();;
 
             } catch(Exception e) {
                 logger.warn("Error processing dataset " + s, e);
