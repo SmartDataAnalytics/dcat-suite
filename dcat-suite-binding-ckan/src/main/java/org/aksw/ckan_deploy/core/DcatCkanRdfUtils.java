@@ -8,11 +8,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import org.aksw.ckan.domain.CkanEntity;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.ap.binding.ckan.rdf_view.CkanPseudoNodeFactory;
 import org.aksw.dcat.ap.binding.ckan.rdf_view.GraphView;
@@ -216,17 +219,28 @@ public class DcatCkanRdfUtils {
      * @return
      */
     public static String generateFallbackIri(DcatDataset dcatDataset, String baseIri) {
-        String result = Optional.ofNullable(dcatDataset.getIdentifier())
-                .map(id -> baseIri + "dataset/" + StringUtils.urlEncode(id)).orElseThrow(
+        CkanEntity ckanEntity = dcatDataset.as(CkanEntity.class);
+        String result = Stream.of(ckanEntity.getCkanName(), dcatDataset.getIdentifier(), ckanEntity.getCkanId(), dcatDataset.getTitle())
+                .filter(Objects::nonNull)
+                .map(id -> baseIri + "dataset/" + StringUtils.urlEncode(id))
+                .findFirst()
+                .orElseThrow(
                         () -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
 
         return result;
     }
 
     public static String generateFallbackIri(DcatDistribution dcatDistribution, String baseIri) {
-        String result = Optional.ofNullable(dcatDistribution.getIdentifier())
-                .map(id -> baseIri + "distribution/" + StringUtils.urlEncode(id)).orElseThrow(
-                        () -> new RuntimeException("Cannot generate a IRI for a dataset without a local identifier"));
+        CkanEntity ckanEntity = dcatDistribution.as(CkanEntity.class);
+
+        // CKAN distributions often (always?) don't have an id but only a title
+//        String result = Stream.of(dcatDistribution.getIdentifier(), dcatDistribution.getTitle())
+        String result = Stream.of(ckanEntity.getCkanName(), dcatDistribution.getIdentifier(), ckanEntity.getCkanId(), dcatDistribution.getTitle())
+                .filter(Objects::nonNull)
+                .map(id -> baseIri + "distribution/" + StringUtils.urlEncode(id))
+                .findFirst()
+                .orElseThrow(
+                        () -> new RuntimeException("Cannot generate a IRI for a distribution without a local identifier"));
 
         return result;
     }
@@ -304,8 +318,8 @@ public class DcatCkanRdfUtils {
                 // TODO r.getURI() should never be null here but it seeps
                 // in through the mapping
                 removeStmt =
-                          r.isAnon() && r.listProperties().toList().isEmpty() ||
-                          r.isResource() && (r.getURI() == null || r.getURI().isEmpty());
+                          (r.isAnon() && r.listProperties().toList().isEmpty()) ||
+                          (r.isURIResource() && (r.getURI() == null || r.getURI().isEmpty()));
             } else if (o.isLiteral()) {
                 Literal l = o.asLiteral();
                 String dtypeUri = l.getDatatypeURI();

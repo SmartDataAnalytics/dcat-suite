@@ -1,5 +1,6 @@
 package org.aksw.dcat_suite.binding.ckan.jena.plugin;
 
+import org.aksw.ckan.domain.CkanEntity;
 import org.aksw.dcat.ckan.config.model.DcatResolverCkan;
 import org.aksw.dcat.ckan.config.model.DcatResolverConfig;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
@@ -23,6 +24,6 @@ public class JenaPluginDcatSuiteCkanBinding
 //				BuiltinPersonalities.model,
 //				PrefixMapping.Extended);
         JenaPluginUtils.registerResourceClasses(
-                DcatResolverCkan.class, DcatResolverConfig.class);
+                DcatResolverCkan.class, DcatResolverConfig.class, CkanEntity.class);
     }
 }

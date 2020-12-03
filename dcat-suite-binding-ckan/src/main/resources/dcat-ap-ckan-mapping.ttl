@@ -11,6 +11,7 @@
 @prefix dataid: <http://dataid.dbpedia.org/ns/core#> .
 @prefix void: <http://rdfs.org/ns/void#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ckan: <http://ckan.aksw.org/ontology/>
 
 @prefix r2rml: <http://www.w3.org/ns/r2rml#>
 
@@ -37,6 +38,8 @@ eg:dcatApMappingCollection
   m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;
               m:target dcat:Dataset      ; m:predicate dcat:theme             ; m:key "extra:theme" ] ;
 #  m:mapping [ m:target dcat:Dataset      ; m:predicate dct:identifier         ; m:key "extra:identifier" ] ;
+  m:mapping [ m:target dcat:Dataset      ; m:predicate ckan:id                ; m:key "id" ] ;
+  m:mapping [ m:target dcat:Dataset      ; m:predicate ckan:name              ; m:key "name" ] ;
   m:mapping [ m:target dcat:Dataset      ; m:predicate adms:identifier        ; m:key "extra:alternate_identifier" ] ;
   m:mapping [ m:type xsd:dateTime ;
               m:target dcat:Dataset      ; m:predicate dct:issued             ; m:key "metadata_created" ] ;

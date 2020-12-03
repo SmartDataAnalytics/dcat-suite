@@ -21,6 +21,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.aksw.dcat.ap.utils.DcatDatasetCreation;
+import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.jena_sparql_api.http.repository.impl.UriToPathUtils;
 import org.aksw.jena_sparql_api.utils.model.DatasetGraphDiff;
 import org.apache.jena.atlas.iterator.IteratorConcat;
@@ -451,6 +453,11 @@ public class DatasetGraphFromFileSystem
         System.out.println("Lookup reseults for id: ");
         dg.findNG(null, null, DCTerms.identifier.asNode(), lookupId).forEachRemaining(System.out::println);
         System.out.println("Done");
+
+
+        DcatDataset dataset = DcatDatasetCreation.fromDownloadUrl("http://my.down.load/url");
+        dg.addGraph(dataset.asNode(), dataset.getModel().getGraph());
+
 
 //        DatasetGraph dg = new DatasetGraphMonitor(raw, new DatasetChanges() {
 //            @Override

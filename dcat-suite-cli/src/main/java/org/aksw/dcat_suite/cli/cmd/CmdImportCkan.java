@@ -31,7 +31,7 @@ public class CmdImportCkan
     public boolean all = false;
 
     @Option(names = "--prefix", description = "Allocate URIs using this prefix")
-    public String prefix;
+    public String prefix = null;
 
     @Override
     public Integer call() throws Exception {
@@ -56,8 +56,16 @@ public class CmdImportCkan
             datasets = cmImportCkan.datasets;
         }
 
+        String effectivePrefix = prefix;
+        if (effectivePrefix == null) {
+            effectivePrefix = ckanUrl.trim();
 
-        MainCliDcatSuite.processCkanImport(ckanClient, cmImportCkan.prefix, datasets);
+            if (!(effectivePrefix.endsWith("/") || effectivePrefix.endsWith("#"))) {
+                effectivePrefix = effectivePrefix + "/";
+            }
+        }
+
+        MainCliDcatSuite.processCkanImport(ckanClient, effectivePrefix, datasets);
 
         return 0;
     }
