@@ -1,6 +1,7 @@
 package org.aksw.dcat_suite.cli.main;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +34,7 @@ import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
+import org.aksw.dcat_suite.clients.DkanClient;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -74,6 +76,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
 
 import eu.trentorise.opendata.jackan.CkanClient;
+import eu.trentorise.opendata.jackan.internal.org.apache.http.client.ClientProtocolException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 import picocli.CommandLine;
@@ -82,7 +85,7 @@ import virtuoso.jdbc4.VirtuosoDataSource;
 public class MainCliDcatSuite {
 
     private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
-
+    private static final String CKAN_UPDATE_QUERY = "PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }";
 
     public static void showCkanDatasets(CkanClient ckanClient) {
         List<String> ds = ckanClient.getDatasetList(10, 0);
@@ -657,39 +660,52 @@ public class MainCliDcatSuite {
     }
 
 
-    public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets) {
-
-        // TODO Move this update request to a separate file and/or trigger it using a flag
-        UpdateRequest ur = UpdateFactory.create("PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
-
-
-        for (String s : datasets) {
+    public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds) throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {
+    	UpdateRequest ur = UpdateFactory.create(CKAN_UPDATE_QUERY);
+    	for (String s : datasetNameOrIds) {
             logger.info("Importing dataset " + s);
-
+            List<CkanDataset> datasets = dkanClient.getDataset(s);
+            for (CkanDataset dataset : datasets) {
+            	DcatDataset dcatDataset = getDcatDataset(dataset, prefix, ur);
+                RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
+            } 
+		  } 
+    	}
+   
+    
+    public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasetNameOrIds) {
+    	UpdateRequest ur = UpdateFactory.create(CKAN_UPDATE_QUERY);
+        for (String s : datasetNameOrIds) {
+            logger.info("Importing dataset " + s);
             CkanDataset ckanDataset = ckanClient.getDataset(s);
-            PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
-
-            DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
-
-            try {
-                // Skolemize the resource first (so we have a reference to the resource)
-                dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
-                if(prefix != null) {
-                    dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
-                }
-
-                // Remove temporary ckan specific attributes
-                if (false) {
-                    UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
-                }
-
-            } catch(Exception e) {
-                logger.warn("Error processing dataset " + s, e);
-            }
-
+            DcatDataset dcatDataset = getDcatDataset(ckanDataset, prefix, ur);
             RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
         }
     }
+    
+    private static DcatDataset getDcatDataset (CkanDataset ckanDataset, String prefix, UpdateRequest ur) {
+    	// TODO Move this update request to a separate file and/or trigger it using a flag
+    	PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
+    	DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm); 
+    	try {
+             // Skolemize the resource first (so we have a reference to the resource)
+             dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
+          
+             if(prefix != null) {
+                 dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
+             }
 
-}
+             // Remove temporary ckan specific attributes
+             if (false) {
+                 UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
+             }
+
+         } catch(Exception e) {
+             logger.warn("Error processing dataset " + ckanDataset.getId(), e);
+         }
+    	
+    	return dcatDataset; 
+      }
+    }
+
 
