@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -44,7 +43,6 @@ public class DkanClient {
 	public static final String PACKAGE_SHOW = "/api/3/action/package_show";
 	public static final String ALT_NAME_ATTRIBUTE = "title";
 	
-	
 	@Nullable
 	private static ObjectMapper objectMapper;
 	
@@ -53,7 +51,6 @@ public class DkanClient {
 		try {
 			this.packagesUrl = concatURI(PACKAGES_PATH);
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -62,16 +59,19 @@ public class DkanClient {
 			String showURI = concatURI(PACKAGE_SHOW, idOrName);
 			List<CkanDataset> dkanDatasets = callPortal(showURI, DatasetsResponse.class).result;
 			for (CkanDataset dkanDataset : dkanDatasets) {
+				if (dkanDataset.getResources() != null) {
 					for (CkanResource cr : dkanDataset.getResources()) {
 			            cr.setPackageId(dkanDataset.getId());
-			            Set<String> othersKeySet = cr.getOthers().keySet();
-			            for (String key : othersKeySet) {
-			            	if (key.equals(ALT_NAME_ATTRIBUTE)) { 
-			            		String altName = cr.getOthers().get(key).toString();
-			            		cr.setName(altName);
-			            	}
+			            if (cr.getOthers() != null) {
+			            	for (String key : cr.getOthers().keySet()) {
+			            		if (key.equals(ALT_NAME_ATTRIBUTE)) { 
+			            			String altName = cr.getOthers().get(key).toString();
+			            			cr.setName(altName);
+			              }
 			            }
-			        }
+			         }
+			      }
+			   }
 			}
 			return dkanDatasets;
 	 }
@@ -102,7 +102,6 @@ public class DkanClient {
         } catch (Exception ex) {
         	throw new DkanException(
                     "Couldn't interpret json returned by the server! Returned text was: " + returnedText,this,  ex);
-        	//throw new RuntimeException("Couldn't interpret json returned by the server! Returned text was: " + returnedText);
         }
 
         if (!ckanResponse.isSuccess()) {
@@ -114,7 +113,6 @@ public class DkanClient {
 	
 	private String concatURI(String relPath, String... params) throws URISyntaxException {
 		URIBuilder uriBuilder = new URIBuilder(this.portalUrl);
-		//uriBuilder.removeQuery();
 		if (params.length > 0) {
 			uriBuilder.addParameter("id", params[0]);
 		}
