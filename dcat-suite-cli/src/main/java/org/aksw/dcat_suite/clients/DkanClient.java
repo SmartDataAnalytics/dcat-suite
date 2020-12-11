@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -37,11 +38,15 @@ public class DkanClient {
 	private String portalUrl;
 	private String packagesUrl;
 	
+	private static final Pattern KB_PATTERN = Pattern.compile("[Kk][Bb]");
+	private static final Pattern MB_PATTERN = Pattern.compile("[Mm][Bb]");
+	private static final Pattern GB_PATTERN = Pattern.compile("[Gg][Bb]");
     public static final String NONE = "None";
     public static final String TIMEZONE_TOKEN = "+";
 	public static final String PACKAGES_PATH = "/api/3/action/package_list";
 	public static final String PACKAGE_SHOW = "/api/3/action/package_show";
 	public static final String ALT_NAME_ATTRIBUTE = "title";
+	public static final String CHAR_SEQUENCE = "[a-zA-Z]"; 
 	
 	@Nullable
 	private static ObjectMapper objectMapper;
@@ -61,7 +66,13 @@ public class DkanClient {
 			for (CkanDataset dkanDataset : dkanDatasets) {
 				if (dkanDataset.getResources() != null) {
 					for (CkanResource cr : dkanDataset.getResources()) {
-			            cr.setPackageId(dkanDataset.getId());
+						if (dkanDataset.getId() != null ) {
+							cr.setPackageId(dkanDataset.getId());
+						}
+			            if (cr.getSize() != null ) {
+			            	cr.setSize(convertBytes(cr.getSize()
+			            			.replaceAll(" ", "")));
+			            }
 			            if (cr.getOthers() != null) {
 			            	for (String key : cr.getOthers().keySet()) {
 			            		if (key.equals(ALT_NAME_ATTRIBUTE)) { 
@@ -152,6 +163,32 @@ public class DkanClient {
         om.setSerializationInclusion(Include.NON_NULL);
         om.registerModule(new DkanMapper());
     }
+	
+	
+	private static String convertBytes (String bytes) {
+		if (bytes.isEmpty()) {
+			return null;
+		}
+		else if (bytes.matches(CHAR_SEQUENCE)) {
+			return bytes.replaceAll(CHAR_SEQUENCE,"");
+		}
+		else {
+			
+			String strippedBytes =  bytes.replaceAll(CHAR_SEQUENCE,"");
+			Double bytesDouble = Double.parseDouble(strippedBytes);
+			if (KB_PATTERN.matcher(bytes).find()) {
+				bytesDouble = bytesDouble*1024; 
+			} 
+			else if (MB_PATTERN.matcher(bytes).find()) {
+				bytesDouble = bytesDouble*1048576;
+			}
+			else if (GB_PATTERN.matcher(bytes).find()) {
+				bytesDouble = bytesDouble*1073741824;
+			}
+			return String.valueOf(bytesDouble);
+		}
+		
+	}
 	
 }
 
