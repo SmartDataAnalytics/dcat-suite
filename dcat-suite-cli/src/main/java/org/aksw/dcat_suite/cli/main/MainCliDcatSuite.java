@@ -35,6 +35,7 @@ import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
 import org.aksw.dcat_suite.clients.DkanClient;
+import org.aksw.dcat_suite.clients.PostProcessor;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -660,12 +661,14 @@ public class MainCliDcatSuite {
     }
 
 
-    public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds) throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {
+    public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds, Boolean altJSON) throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {
     	UpdateRequest ur = UpdateFactory.create(CKAN_UPDATE_QUERY);
     	for (String s : datasetNameOrIds) {
             logger.info("Importing dataset " + s);
-            List<CkanDataset> datasets = dkanClient.getDataset(s);
+            List<CkanDataset> datasets = dkanClient.getDataset(s, altJSON);
+            
             for (CkanDataset dataset : datasets) {
+            	dataset = PostProcessor.process(dataset); 
             	DcatDataset dcatDataset = getDcatDataset(dataset, prefix, ur);
                 RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
             } 
@@ -677,7 +680,7 @@ public class MainCliDcatSuite {
     	UpdateRequest ur = UpdateFactory.create(CKAN_UPDATE_QUERY);
         for (String s : datasetNameOrIds) {
             logger.info("Importing dataset " + s);
-            CkanDataset ckanDataset = ckanClient.getDataset(s);
+            CkanDataset ckanDataset = PostProcessor.process(ckanClient.getDataset(s));
             DcatDataset dcatDataset = getDcatDataset(ckanDataset, prefix, ur);
             RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
         }

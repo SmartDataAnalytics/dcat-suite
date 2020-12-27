@@ -9,7 +9,6 @@ import org.aksw.dcat_suite.clients.DkanClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.trentorise.opendata.jackan.CkanClient;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -28,6 +27,9 @@ public class CmdImportDkan
     @Option(names="--all", description="Import everything")
     public boolean all = false;
     
+    @Option(names="--alt", description="Alternative json response formats")
+    public boolean alt = false;
+    
     @Option(names = "--prefix", description = "Allocate URIs using this prefix")
     public String prefix = null;
 
@@ -36,8 +38,11 @@ public class CmdImportDkan
         CmdImportDkan cmImportDkan = this;
         
         DkanClient dkanClient = new DkanClient(cmImportDkan.dkanUrl);
-
         List<String> datasets;
+        
+        if (cmImportDkan.all) {
+        	 logger.info("Retrieving datasets from a JSON format which is different from CkanResponse");
+        }
 
         if(cmImportDkan.all) {
             if(!cmImportDkan.datasets.isEmpty()) {
@@ -55,7 +60,6 @@ public class CmdImportDkan
             datasets = cmImportDkan.datasets;
         }
 
-        //CkanClient ckanClient = new CkanClient(cmImportDkan.dkanUrl, cmImportDkan.apikey);
         String effectivePrefix = prefix;
         if (effectivePrefix == null) {
             effectivePrefix = dkanUrl.trim();
@@ -65,7 +69,7 @@ public class CmdImportDkan
             }
         }
 
-        MainCliDcatSuite.processDkanImport(dkanClient, effectivePrefix, datasets);
+        MainCliDcatSuite.processDkanImport(dkanClient, effectivePrefix, datasets, cmImportDkan.alt);
 
         return 0;
     }
