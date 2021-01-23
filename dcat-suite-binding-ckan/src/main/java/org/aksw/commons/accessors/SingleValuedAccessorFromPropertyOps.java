@@ -1,6 +1,6 @@
 package org.aksw.commons.accessors;
 
-import org.aksw.jena_sparql_api.beans.model.PropertyOps;
+import org.aksw.commons.beans.model.PropertyOps;
 
 public class SingleValuedAccessorFromPropertyOps<T>
 	implements SingleValuedAccessor<T>

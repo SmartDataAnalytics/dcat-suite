@@ -7,26 +7,26 @@ import org.aksw.commons.accessors.PropertySource;
 import org.aksw.commons.accessors.SingleValuedAccessor;
 import org.aksw.commons.accessors.SingleValuedAccessorFromCollection;
 import org.aksw.commons.accessors.SingleValuedAccessorFromPropertyOps;
+import org.aksw.commons.beans.model.ConversionService;
+import org.aksw.commons.beans.model.EntityModel;
+import org.aksw.commons.beans.model.EntityOps;
+import org.aksw.commons.beans.model.PropertyOps;
 import org.aksw.commons.collections.ConvertingCollection;
 import org.aksw.dcat.ap.binding.ckan.rdf_view.SetFromCkanExtras;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
-import org.aksw.jena_sparql_api.beans.model.EntityModel;
-import org.aksw.jena_sparql_api.beans.model.EntityOps;
-import org.aksw.jena_sparql_api.beans.model.PropertyOps;
+import org.aksw.jena_sparql_api.mapper.impl.type.ConversionServiceSpringAdapter;
 import org.aksw.jena_sparql_api.rdf.collections.ConverterFromObjectToLexicalFormViaRDFDatatype;
 import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.enhanced.BuiltinPersonalities;
-import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.system.JenaSystem;
 import org.springframework.context.support.ConversionServiceFactoryBean;
-import org.springframework.core.convert.ConversionService;
 
 import com.google.common.base.Converter;
 
@@ -243,7 +243,7 @@ public class CkanUtils {
         ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
         bean.afterPropertiesSet();
 
-        ConversionService conversionService = bean.getObject();
+        ConversionService conversionService = new ConversionServiceSpringAdapter(bean.getObject());
         EntityOps eops = EntityModel.createDefaultModel(entityClazz, conversionService);
 
         PropertyOps pops = eops.getProperty(localName);

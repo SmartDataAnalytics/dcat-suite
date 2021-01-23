@@ -2,11 +2,12 @@ package org.aksw.commons.accessors;
 
 import java.util.function.Function;
 
-import org.aksw.jena_sparql_api.beans.model.EntityModel;
-import org.aksw.jena_sparql_api.beans.model.EntityOps;
-import org.aksw.jena_sparql_api.beans.model.PropertyOps;
+import org.aksw.commons.beans.model.ConversionService;
+import org.aksw.commons.beans.model.EntityModel;
+import org.aksw.commons.beans.model.EntityOps;
+import org.aksw.commons.beans.model.PropertyOps;
+import org.aksw.jena_sparql_api.mapper.impl.type.ConversionServiceSpringAdapter;
 import org.springframework.context.support.ConversionServiceFactoryBean;
-import org.springframework.core.convert.ConversionService;
 
 public class AccessorSupplierFactoryClass<S>
 	implements AccessorSupplierFactory<S>
@@ -23,10 +24,14 @@ public class AccessorSupplierFactoryClass<S>
 		Function<S, ? extends SingleValuedAccessor<T>> result;
 
 		PropertyOps propertyOps = entityOps.getProperty(name);
-		if(propertyOps != null && propertyOps.acceptsType(clazz)) {
-			result = obj -> new SingleValuedAccessorFromPropertyOps<T>(propertyOps, obj);
+		if (propertyOps == null) {
+			throw new RuntimeException("No accessor found for " + name);
 		} else {
-			result = null;
+			if(!propertyOps.acceptsType(clazz)) {
+				throw new RuntimeException("Found accessor for " + name + " but argument type" + clazz + " not compatible with its type: " + propertyOps.getType());
+			} else {
+				result = obj -> new SingleValuedAccessorFromPropertyOps<T>(propertyOps, obj);
+			}
 		}
 		
 		return result;
@@ -37,7 +42,17 @@ public class AccessorSupplierFactoryClass<S>
 		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
         bean.afterPropertiesSet();
 
-        ConversionService conversionService = bean.getObject();
+        ConversionService conversionService = new ConversionServiceSpringAdapter(bean.getObject());
+
+        // TODO Add a converter between java.sql.Date and Calendar
+//		Data date;
+//		Calendar cal = Calendar.getInstance();
+//		cal.setTime(date);
+//		
+//		new XSDDateTime(cal)
+
+
+        
 		EntityOps entityOps = EntityModel.createDefaultModel(entityClass, conversionService);
 
 		AccessorSupplierFactoryClass<S> result = new AccessorSupplierFactoryClass<>(entityOps);

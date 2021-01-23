@@ -6,7 +6,6 @@ import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.DatasetGraphFactory.GraphMaker;
 
 public class GraphMakerFromFileSystem

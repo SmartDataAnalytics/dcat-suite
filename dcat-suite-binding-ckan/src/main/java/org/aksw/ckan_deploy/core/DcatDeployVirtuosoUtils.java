@@ -1,7 +1,6 @@
 package org.aksw.ckan_deploy.core;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -17,7 +16,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.DatasetResolver;
