@@ -17,8 +17,10 @@ import org.aksw.commons.accessors.LazyCollection;
 import org.aksw.commons.accessors.PropertySource;
 import org.aksw.commons.accessors.PropertySourcePrefix;
 import org.aksw.commons.accessors.SingleValuedAccessor;
+import org.aksw.commons.beans.model.ConversionService;
 import org.aksw.commons.collections.ConvertingCollection;
 import org.aksw.commons.converters.CastConverter;
+import org.aksw.dcat.ap.binding.ckan.domain.impl.CkanUtils;
 import org.aksw.dcat.ap.playground.main.SetFromJsonListString;
 import org.aksw.dcat.jena.ap.vocab.Spdx;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingUtils;
@@ -84,6 +86,9 @@ public class CkanPseudoNodeFactory {
         viaMap.put("ckanTag", Converter.<String, CkanTag>from(CkanTag::new, CkanTag::getName).reverse());
     }
 
+    /*
+     * Static structure as defined by the CKAN<->DCAT-AP mapping 
+     */
 
     public Map<String, Function<PropertySource, PseudoRdfProperty>> ckanDatasetAccessors = new HashMap<>();
     public Map<String, Function<PropertySource, PseudoRdfProperty>> ckanResourceAccessors = new HashMap<>();
@@ -469,8 +474,10 @@ public class CkanPseudoNodeFactory {
 
     public void initDefaults() {
 
-        AccessorSupplierCkanDataset ckanDatasetAccessor = new AccessorSupplierCkanDataset(AccessorSupplierFactoryClass.create(CkanDataset.class));
-        AccessorSupplierCkanResource ckanResourceAccessor = new AccessorSupplierCkanResource(AccessorSupplierFactoryClass.create(CkanResource.class));
+    	ConversionService conversionService = CkanUtils.createDefaultConversionService();
+    	
+        AccessorSupplierCkanDataset ckanDatasetAccessor = new AccessorSupplierCkanDataset(AccessorSupplierFactoryClass.create(CkanDataset.class, conversionService));
+        AccessorSupplierCkanResource ckanResourceAccessor = new AccessorSupplierCkanResource(AccessorSupplierFactoryClass.create(CkanResource.class, conversionService));
 
         targetToAccessorFactory.put(CkanDataset.class, ckanDatasetAccessor);
         targetToAccessorFactory.put(CkanResource.class, ckanResourceAccessor);

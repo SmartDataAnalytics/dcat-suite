@@ -107,9 +107,9 @@ eg:dcatApMappingCollection
   m:mapping [ m:type xsd:decimal ;
               m:target dcat:Distribution ; m:predicate dcat:byteSize          ; m:key "size" ] ;
   m:mapping [ m:type xsd:dateTime ;
-              m:target dcat:Distribution ; m:predicate dct:issued             ; m:key "created" ] ;
+              m:target dcat:Distribution ; m:predicate dct:issued             ; m:key "issued" ] ;
   m:mapping [ m:type xsd:dateTime ;
-              m:target dcat:Distribution ; m:predicate dct:modified           ; m:key "webstoreLastUpdated" ] ;
+              m:target dcat:Distribution ; m:predicate dct:modified           ; m:key "modified" ] ;
   m:mapping [ # m:type r2rml:IRI ;
               m:target dcat:Distribution ; m:predicate dct:rights             ; m:key "others:rights" ] ;
   m:mapping [ a m:JsonArrayMapping ; m:type r2rml:IRI ;

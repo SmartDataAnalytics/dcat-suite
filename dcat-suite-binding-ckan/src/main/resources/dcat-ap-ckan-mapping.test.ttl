@@ -1,0 +1,40 @@
+@prefix eg: <http://www.example.org/> .
+
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix spdx: <http://spdx.org/rdf/terms#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dataid: <http://dataid.dbpedia.org/ns/core#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ckan: <http://ckan.aksw.org/ontology/>
+
+@prefix r2rml: <http://www.w3.org/ns/r2rml#>
+
+@prefix m: <http://www.example.org/>
+
+#eg:defaultJavaBindings
+#  m:binding [
+#  	m:target dcat:Dataset ;
+#  	m:javaClass "eu.trentorise.opendata.jackan.model.CkanDataset"
+#  ] ;
+#  m:binding [
+#  	m:target dcat:Distribution ;
+#  	m:javaClass "eu.trentorise.opendata.jackan.model.CkanResource"
+#  ] ;
+#  .
+
+
+eg:dcatApMappingCollection
+  a m:MappingCollection ;
+  m:mapping [ m:type xsd:dateTime ;
+              m:target dcat:Dataset      ; m:predicate dct:issued             ; m:key "metadataCreated" ] ;
+  m:mapping [ m:type xsd:dateTime ;
+              m:target dcat:Dataset      ; m:predicate dct:modified           ; m:key "metadataModified" ] ;
+
+  .
+
