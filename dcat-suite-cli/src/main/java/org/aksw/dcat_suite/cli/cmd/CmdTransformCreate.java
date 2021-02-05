@@ -24,6 +24,7 @@ import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl;
 import org.aksw.jena_sparql_api.stmt.SparqlStmtUtils;
 import org.aksw.jena_sparql_api.utils.NodeUtils;
 import org.aksw.jena_sparql_api.utils.transform.NodeTransformCollectNodes;
+import org.apache.jena.query.Syntax;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
@@ -63,7 +64,10 @@ public class CmdTransformCreate
         CmdTransformCreate cmTransformCreate = this;
 
         PrefixMapping prefixMapping = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
-        SparqlScriptProcessor scriptProcessor = new SparqlScriptProcessor(SparqlStmtParserImpl.create(prefixMapping), prefixMapping);
+        SparqlScriptProcessor scriptProcessor = new SparqlScriptProcessor(
+        		prologue -> SparqlStmtParserImpl.create(Syntax.syntaxARQ, prologue, false),
+        		prefixMapping);
+        // new SparqlScriptProcessor(SparqlStmtParserImpl.create(prefixMapping), prefixMapping);
 
         scriptProcessor.process(sparqlStmtRefs);
 
