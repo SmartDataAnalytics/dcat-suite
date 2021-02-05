@@ -40,6 +40,10 @@ import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.aksw.jena_sparql_api.json.RdfJsonUtils;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
+import org.aksw.jena_sparql_api.utils.io.StreamRDFDeferred;
+import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
+import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
 import org.apache.jena.query.Dataset;
@@ -52,6 +56,9 @@ import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.IRIResolver;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFOps;
+import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.lang.arq.ParseException;
@@ -662,6 +669,11 @@ public class MainCliDcatSuite {
         // TODO Move this update request to a separate file and/or trigger it using a flag
         UpdateRequest ur = UpdateFactory.create("PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
 
+        
+        Model pm2 = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
+        StreamRDF streamRdf = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS, null);
+        streamRdf = new StreamRDFDeferred(streamRdf, true, pm2, 10, 1000, null);
+        streamRdf.start();
 
         for (String s : datasets) {
             logger.info("Importing dataset " + s);
@@ -671,6 +683,7 @@ public class MainCliDcatSuite {
 
             DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
 
+            
             try {
                 // Skolemize the resource first (so we have a reference to the resource)
                 dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
@@ -686,9 +699,16 @@ public class MainCliDcatSuite {
             } catch(Exception e) {
                 logger.warn("Error processing dataset " + s, e);
             }
-
-            RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
+            
+            
+//            RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
+            
+            ResourceInDataset resourceInNamedGraph = ResourceInDatasetImpl.createFromCopy(
+            		DatasetFactoryEx.createInsertOrderPreservingDataset(), dcatDataset.getURI(), dcatDataset);
+            StreamRDFOps.sendDatasetToStream(resourceInNamedGraph.getDataset().asDatasetGraph(), streamRdf);
         }
+
+        streamRdf.finish();
     }
 
 }
