@@ -691,10 +691,9 @@ public class MainCliDcatSuite {
 				StreamRDFOps.sendDatasetToStream(resourceInNamedGraph.getDataset().asDatasetGraph(), streamRdf);
 			} else {
 				StreamRDFOps.sendGraphToStream(dcatDataset.getModel().getGraph(), streamRdf);
-			}
-			
-			streamRdf.finish();
+			}			
 		}
+		streamRdf.finish();
 	}
 
 	public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds,
