@@ -232,7 +232,6 @@ public class DcatCkanRdfUtils {
 
     public static String generateFallbackIri(DcatDistribution dcatDistribution, String baseIri) {
         CkanEntity ckanEntity = dcatDistribution.as(CkanEntity.class);
-
         // CKAN distributions often (always?) don't have an id but only a title
 //        String result = Stream.of(dcatDistribution.getIdentifier(), dcatDistribution.getTitle())
         String result = Stream.of(ckanEntity.getCkanName(), dcatDistribution.getIdentifier(), ckanEntity.getCkanId(), dcatDistribution.getTitle())
