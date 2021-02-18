@@ -647,7 +647,7 @@ public class MainCliDcatSuite {
 		DcatExpandUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
 	}
 
-	public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets) {
+	public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets, boolean quads) {
 
 		// TODO Move this update request to a separate file and/or trigger it using a
 		// flag
@@ -685,10 +685,14 @@ public class MainCliDcatSuite {
 
 //            RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
 
-			ResourceInDataset resourceInNamedGraph = ResourceInDatasetImpl.createFromCopy(
-					DatasetFactoryEx.createInsertOrderPreservingDataset(), dcatDataset.getURI(), dcatDataset);
-			StreamRDFOps.sendDatasetToStream(resourceInNamedGraph.getDataset().asDatasetGraph(), streamRdf);
-
+			if (quads) {				
+				ResourceInDataset resourceInNamedGraph = ResourceInDatasetImpl.createFromCopy(
+						DatasetFactoryEx.createInsertOrderPreservingDataset(), dcatDataset.getURI(), dcatDataset);
+				StreamRDFOps.sendDatasetToStream(resourceInNamedGraph.getDataset().asDatasetGraph(), streamRdf);
+			} else {
+				StreamRDFOps.sendGraphToStream(dcatDataset.getModel().getGraph(), streamRdf);
+			}
+			
 			streamRdf.finish();
 		}
 	}

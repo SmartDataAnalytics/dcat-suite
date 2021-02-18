@@ -33,6 +33,11 @@ public class CmdImportCkan
     @Option(names = "--prefix", description = "Allocate URIs using this prefix")
     public String prefix = null;
 
+    @Option(names = "--quads",
+    		description = "Wrap datasets in named graphs with their IRI; default: ${DEFAULT-VALUE}.",
+    		defaultValue = "false")
+    public boolean quads = false;
+
     @Override
     public Integer call() throws Exception {
         CmdImportCkan cmImportCkan = this;
@@ -65,7 +70,7 @@ public class CmdImportCkan
             }
         }
 
-        MainCliDcatSuite.processCkanImport(ckanClient, effectivePrefix, datasets);
+        MainCliDcatSuite.processCkanImport(ckanClient, effectivePrefix, datasets, quads);
 
         return 0;
     }
