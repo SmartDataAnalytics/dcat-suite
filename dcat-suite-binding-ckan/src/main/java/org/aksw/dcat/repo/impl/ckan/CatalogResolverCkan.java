@@ -2,8 +2,8 @@ package org.aksw.dcat.repo.impl.ckan;
 
 import java.net.URL;
 
-import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatCkanRdfUtils;
+import org.aksw.commons.io.util.UrlUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
@@ -111,7 +111,7 @@ public class CatalogResolverCkan
 
     @Override
     public Maybe<URL> resolveDownload(String downloadUri) {
-        URL url = DcatCkanDeployUtils.newURL(downloadUri);
+        URL url = UrlUtils.newURL(downloadUri);
         return Maybe.just(url);
     }
 }

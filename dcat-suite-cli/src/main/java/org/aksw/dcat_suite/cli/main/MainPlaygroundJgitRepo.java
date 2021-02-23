@@ -16,14 +16,13 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aksw.jena_sparql_api.http.repository.impl.UriToPathUtils;
+import org.aksw.commons.io.util.UriToPathUtils;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.ext.com.google.common.base.StandardSystemProperty;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;

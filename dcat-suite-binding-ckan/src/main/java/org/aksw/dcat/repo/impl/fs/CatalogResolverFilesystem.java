@@ -13,17 +13,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.aksw.ckan_deploy.core.DcatCkanDeployUtils;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
+import org.aksw.commons.io.util.SymLinkUtils;
+import org.aksw.commons.io.util.UriToPathUtils;
+import org.aksw.commons.io.util.UriUtils;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -41,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.StandardSystemProperty;
-import com.google.common.collect.Maps;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -111,7 +109,7 @@ public class CatalogResolverFilesystem
 
 
     public Path findExistingDataset(String datasetId) {
-        Path relPath = resolvePath(datasetId);
+        Path relPath = UriToPathUtils.resolvePath(datasetId);
         List<Path> cands = Arrays.asList(
                 datasetDataFolder.resolve(relPath).resolve("_content"),
                 datasetByIdFolder.resolve(relPath).resolve("_content"));
@@ -171,7 +169,7 @@ public class CatalogResolverFilesystem
     }
 
     public Path resolveDistributionPath(String distributionId) {
-        Path relativePath = resolvePath(distributionId);
+        Path relativePath = UriToPathUtils.resolvePath(distributionId);
         Path distributionFolder = distributionIndexFolder.resolve(relativePath);
         return distributionFolder;
     }
@@ -205,7 +203,7 @@ public class CatalogResolverFilesystem
                     // Find the dcat distribution that matches the given ID
                     DcatDistribution dcatDistribution = dcatDataset.getDistributions().stream()
                         .filter(r -> r.getURI().equals(distributionId))
-                        .filter(r -> resolvePath(r.getURI()) != null)
+                        .filter(r -> UriToPathUtils.resolvePath(r.getURI()) != null)
                         .findAny().orElse(null);
 
                     //dcatDataset.getDistributions().contains(distR.getDistribution());
@@ -281,9 +279,9 @@ public class CatalogResolverFilesystem
         Function<String, String> iriResolver = iri -> iri;
         Collection<URL> urls = dr.getDistribution().getDownloadURLs().stream()
                 .map(iriResolver::apply)
-                .map(DcatCkanDeployUtils::newURI)
+                .map(UriUtils::newURI)
                 .filter(x -> x != null)
-                .map(DcatCkanDeployUtils::toURL)
+                .map(UriUtils::toURL)
                 .collect(Collectors.toList());
 
 
@@ -298,7 +296,7 @@ public class CatalogResolverFilesystem
     public Maybe<URL> doCacheDownload(URL downloadUrl) throws IOException {
         String downloadUri = downloadUrl.toString();
         logger.info("Download folder: " + downloadFolder);
-        Path folder = downloadFolder.resolve(resolvePath(downloadUri)).resolve("_file");
+        Path folder = downloadFolder.resolve(UriToPathUtils.resolvePath(downloadUri)).resolve("_file");
 
         // Check if the folder already contains a file
         Collection<Path> files = Files.exists(folder)
@@ -349,7 +347,7 @@ public class CatalogResolverFilesystem
     public Maybe<URL> resolveDownload(String downloadUri) throws Exception {
 //		logger.info("Download folderx: " + downloadFolder);
 
-        Path folder = downloadFolder.resolve(resolvePath(downloadUri)).resolve("_file");
+        Path folder = downloadFolder.resolve(UriToPathUtils.resolvePath(downloadUri)).resolve("_file");
 
         Maybe<URL> result;
         // Check if the folder - if it even exists - already contains a (valid link to the) file
@@ -393,7 +391,7 @@ public class CatalogResolverFilesystem
         while(!seen.contains(result) && Files.isSymbolicLink(result)) {
             seen.add(result);
             try {
-                result = readSymLinkAbsolute(result); // Files.readSymbolicLink(result);
+                result = SymLinkUtils.readSymLinkAbsolute(result); // Files.readSymbolicLink(result);
             } catch (IOException e) {
                 logger.warn("Should not happen", e);
             }
@@ -482,7 +480,7 @@ public class CatalogResolverFilesystem
 
         //Path folder = datasetFolder.resolve(CatalogResolverFilesystem.resolvePath(datasetId));
 
-        Path dsFolder = datasetDataFolder.resolve(resolvePath(datasetId));
+        Path dsFolder = datasetDataFolder.resolve(UriToPathUtils.resolvePath(datasetId));
         // Move to a subfolder to avoid clashes with other ids
         dsFolder = dsFolder.resolve("_content");
 
@@ -497,9 +495,9 @@ public class CatalogResolverFilesystem
         // Index alt ids
         List<String> altIds = Arrays.asList(requestId);
         for(String altId : altIds) {
-            Path tgt = datasetByIdFolder.resolve(resolvePath(altId));
+            Path tgt = datasetByIdFolder.resolve(UriToPathUtils.resolvePath(altId));
             Files.createDirectories(tgt);
-            allocateSymbolicLink(dsFolder, tgt, "_content", "");
+            SymLinkUtils.allocateSymbolicLink(dsFolder, tgt, "_content", "");
         }
 
 
@@ -511,35 +509,14 @@ public class CatalogResolverFilesystem
             if(dcatDistribution.isURIResource()) {
                 String uri = dcatDistribution.getURI();
 
-                Path linkSource = distributionIndexFolder.resolve(resolvePath(uri));
+                Path linkSource = distributionIndexFolder.resolve(UriToPathUtils.resolvePath(uri));
                 Files.createDirectories(linkSource);
 
-                allocateSymbolicLink(targetDatasetFolder, linkSource, "_content", "");
+                SymLinkUtils.allocateSymbolicLink(targetDatasetFolder, linkSource, "_content", "");
             }
         }
     }
 
-
-
-    public static Path resolvePath(String uri)  {
-        URI u = DcatCkanDeployUtils.newURI(uri);
-
-        Path tmp = u == null ?
-            Paths.get(StringUtils.urlEncode(uri))
-            : resolvePath(u);
-
-        // Make absolute paths relative (i.e. remove leading slashes)
-        Path result;
-        if(tmp.isAbsolute()) {
-            Path root = tmp.getRoot();
-            result = root.relativize(tmp);
-        } else {
-            result = tmp;
-        }
-
-        logger.info("Resolved: " + uri + "\n  to: " + result + "\n  via: " + u);
-        return result;
-    }
 
     /**
      * Default mapping of URIs to relative paths
@@ -565,133 +542,8 @@ public class CatalogResolverFilesystem
     }
 
 
-    /**
-     * Within 'sourceFolder' read all symbolic links with the pattern 'baseName${number}' and return a map
-     * with their targets.
-     * This is the
-     *
-     * @param rawSourceFolder
-     * @param baseName
-     * @return
-     * @throws IOException
-     */
-    public static Map<Path, Path> readSymbolicLinks(Path sourceFolder, String prefix, String suffix) throws IOException {
-        Map<Path, Path> result = Files.list(sourceFolder)
-                .filter(Files::isSymbolicLink)
-                .filter(path -> {
-                    String fileName = path.getFileName().toString();
-
-                    boolean r = fileName.startsWith(prefix) && fileName.endsWith(suffix);
-                    // TODO Check that the string between prefix and suffix is either an empty string
-                    // or corresponds to a number
-                    return r;
-                })
-                .flatMap(path -> {
-                    Stream<Entry<Path, Path>> r;
-                    try {
-                        r = Stream.of(Maps.immutableEntry(path, Files.readSymbolicLink(path)));
-                    } catch (IOException e) {
-                        logger.warn("Error reading symoblic link; skipping", e);
-                        r = Stream.empty();
-                    }
-                    return r;
-                })
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-        return result;
-    }
-
     public static void deleteEmptyDirectory(Path base, Path subFolder) {
         // TODO Implement
     }
 
-    /**
-     * Read a symbolic link and return and absolute path to its target.
-     *
-     * @param symLink
-     * @return
-     * @throws IOException
-     */
-    public static Path readSymLinkAbsolute(Path symLink) throws IOException {
-        if (!Files.isSymbolicLink(symLink)) {
-            throw new IllegalArgumentException("Not a symbolic link: " + symLink);
-        }
-        Path symLinkTgt = Files.readSymbolicLink(symLink);
-
-        Path result = resolveSymLink(symLink, symLinkTgt);
-        return result;
-    }
-
-    public static Path resolveSymLink(Path symLinkSrc, Path symLinkTgt) {
-        Path result = symLinkSrc.getParent().resolve(symLinkTgt).normalize().toAbsolutePath();
-        return result;
-    }
-
-    /**
-     * Within 'folder' create a link to 'file' with name 'baseName' if it does not yet exist.
-     * Return the new link or or all prior existing link(s)
-     *
-     * @param file
-     * @param folder
-     * @param baseName
-     * @return
-     * @throws IOException
-     */
-    public static Collection<Path> allocateSymbolicLink(Path rawTarget, Path rawSourceFolder, String prefix, String suffix) throws IOException {
-        Path sourceFolder = rawSourceFolder.normalize();
-        Path target = rawTarget.normalize();
-
-        Path relTgt = sourceFolder.relativize(target);
-
-        Path absTarget = target.toAbsolutePath();
-//		Path folder = rawFolder.normalize();
-//		Path file = rawFile.normalize().relativize(folder);
-
-        //System.out.println("Realtivation: " + file.relativize(folder));
-
-        Map<Path, Path> existingSymLinks = readSymbolicLinks(rawSourceFolder, prefix, suffix);
-
-        Collection<Path> result = existingSymLinks.entrySet().stream()
-                .filter(e -> {
-                    Path absCand = resolveSymLink(e.getKey(), e.getValue()); //e.getKey().getParent().resolve(e.getValue()).normalize().toAbsolutePath();
-                    boolean r = absCand.equals(absTarget);
-                    return r;
-                })
-                .map(Entry::getKey)
-                .collect(Collectors.toSet());
-
-        // Check all symlinks in the folder whether any points to target
-//        Collection<Path> result = Files.list(sourceFolder)
-//            .filter(Files::isSymbolicLink)
-//            .filter(t -> {
-//                Path tgt;
-//                try {
-//                     tgt = Files.readSymbolicLink(t);
-//                     tgt = tgt.toAbsolutePath();
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//
-//                boolean r = Objects.equals(absTarget, tgt);
-//                return r;
-//            })
-//            .collect(Collectors.toList());
-
-        if(result.isEmpty()) {
-            for(int i = 1; ; ++i) {
-                String cand = prefix + (i == 1 ? "" : i) + suffix;
-                Path c = sourceFolder.resolve(cand);
-
-                //Path relTgt = c.relativize(target);
-
-                if(!Files.exists(c)) {
-                    Files.createSymbolicLink(c, relTgt);
-                    result = Collections.singleton(c);
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
 }

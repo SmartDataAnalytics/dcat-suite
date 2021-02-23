@@ -1,10 +1,7 @@
 package org.aksw.ckan_deploy.core;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,40 +13,30 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.dcat.CkanDatasetUtils;
+import org.aksw.commons.io.util.UriUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat.utils.DcatUtils;
-import org.aksw.jena_sparql_api.conjure.utils.FileUtils;
-import org.aksw.jena_sparql_api.http.repository.api.HttpRepository;
 import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
-import org.aksw.jena_sparql_api.io.endpoint.InputStreamSource;
-import org.aksw.jena_sparql_api.io.endpoint.InputStreamSupplier;
-import org.aksw.jena_sparql_api.util.sparql.syntax.path.PathUtils;
-import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.jena.ext.com.google.common.collect.Sets;
-import org.apache.jena.ext.com.google.common.io.MoreFiles;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.riot.WebContent;
 import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.util.SplitIRI;
 import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.cal10n.LocLogger;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -228,44 +215,6 @@ public class DcatCkanDeployUtils {
 //		return result;
 //	}
 
-    public static URL toURL(URI uri) {
-        URL result;
-        try {
-            result = uri.toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
-    }
-
-
-      public static URL newURL(String uri) {
-          // There was some reason why to go from String to URL via URI... but i forgot...
-          URI tmp = newURI(uri);
-          URL result;
-          try {
-            result = tmp.toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-          return result;
-      }
-
-      public static URI newURI(String uri) {
-        URI result;
-        try {
-            result = new URI(uri);
-        } catch (URISyntaxException e) {
-            result = null;
-        }
-        return result;
-    }
-
-    public static Optional<URI> tryNewURI(String uri) {
-        Optional<URI> result = Optional.ofNullable(newURI(uri));
-        return result;
-    }
-
     public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload, String targetOrgaId) throws IOException {
         String rawDatasetName = DcatDataset.getLabel(dataset);
 
@@ -368,7 +317,7 @@ public class DcatCkanDeployUtils {
                     .collect(Collectors.toList());
 
             Set<URI> resolvedValidUrls = resolvedUrls.stream()
-                    .map(str -> DcatCkanDeployUtils.tryNewURI(str).orElse(null))
+                    .map(str -> UriUtils.tryNewURI(str).orElse(null))
                     .filter(r -> r != null)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
 

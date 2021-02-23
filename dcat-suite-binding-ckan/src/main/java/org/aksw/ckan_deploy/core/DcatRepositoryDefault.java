@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.io.util.UriUtils;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
@@ -132,7 +133,7 @@ public class DcatRepositoryDefault
 		
 		Path result;
 		
-		Path path = DcatCkanDeployUtils.tryNewURI(url).flatMap(DcatCkanDeployUtils::pathsGet).orElse(null);
+		Path path = UriUtils.tryNewURI(url).flatMap(DcatCkanDeployUtils::pathsGet).orElse(null);
 		if(path != null && Files.exists(path)) {
 			result = targetPath.resolve(path.getFileName());
 			Files.copy(path, result);
@@ -183,7 +184,7 @@ public class DcatRepositoryDefault
 		    String filename = index >= 0
 		    		? dispositionValue.substring(index + key.length(), dispositionValue.length() - 1)
 		    		//: DcatCkanDeployUtils.newURI(url).map(uri -> Paths.get(uri).getFileName().toString()).orElse(null);
-		    		: DcatCkanDeployUtils.tryNewURI(url).map(uri -> Paths.get(uri.getPath()).getFileName().toString()).orElse(null);
+		    		: UriUtils.tryNewURI(url).map(uri -> Paths.get(uri.getPath()).getFileName().toString()).orElse(null);
 		    		
 			result = filenameToPath.apply(filename);
 
@@ -233,7 +234,7 @@ public class DcatRepositoryDefault
 		
 		String str = dcatDistribution.getURI();
 
-		URI uri = DcatCkanDeployUtils.tryNewURI(str).orElse(null);
+		URI uri = UriUtils.tryNewURI(str).orElse(null);
 		Path relativeDistributionPath;
 		if(uri != null) {
 			// TODO Make uri -> path mapping configurable

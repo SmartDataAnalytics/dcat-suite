@@ -38,6 +38,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-io-utils</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.aksw.dcat-suite</groupId>
 			<artifactId>dcat-api-jena-core</artifactId>
 		</dependency>
