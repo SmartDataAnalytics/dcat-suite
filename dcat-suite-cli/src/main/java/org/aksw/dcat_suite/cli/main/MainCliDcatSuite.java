@@ -662,7 +662,7 @@ public class MainCliDcatSuite {
 		for (String s : datasets) {
 			logger.info("Importing dataset " + s);
 
-			CkanDataset ckanDataset = ckanClient.getDataset(s);
+			CkanDataset ckanDataset = PostProcessor.process(ckanClient.getDataset(s));
 			PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
 
 			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
