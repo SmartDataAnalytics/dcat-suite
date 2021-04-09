@@ -1,7 +1,10 @@
 package org.aksw.dcat_suite.cli.main;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +24,7 @@ import org.aksw.ckan_deploy.core.DcatRepository;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.cache.CatalogResolverCaching;
@@ -34,8 +38,11 @@ import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
+import org.aksw.dcat_suite.cli.cmd.CmdEnrichGTFS;
 import org.aksw.dcat_suite.clients.DkanClient;
 import org.aksw.dcat_suite.clients.PostProcessor;
+import org.aksw.dcat_suite.enrich.GTFSFile;
+import org.aksw.dcat_suite.enrich.GTFSModel;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -43,17 +50,22 @@ import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.aksw.jena_sparql_api.json.RdfJsonUtils;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.aksw.jena_sparql_api.utils.io.StreamRDFDeferred;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
@@ -65,14 +77,20 @@ import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.lang.arq.ParseException;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DCAT;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
+import org.onebusaway.gtfs.model.FeedInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.drew.metadata.Schema;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
@@ -607,6 +625,14 @@ public class MainCliDcatSuite {
 		} else {
 			Files.copy(path, System.out);
 		}
+	}
+	
+	public static void processEnrichGTFS(String gtfsFile, String dsTitle, String prefix) throws IOException {
+
+		GTFSModel gtfsModel = new GTFSModel(gtfsFile, dsTitle, prefix); 
+		gtfsModel.enrichFromFeedInfo();
+		
+		RDFDataMgr.write(System.out, gtfsModel.getModel(), RDFFormat.NTRIPLES);
 	}
 
 	public static Path processExpand(String dcatSource) throws IOException {

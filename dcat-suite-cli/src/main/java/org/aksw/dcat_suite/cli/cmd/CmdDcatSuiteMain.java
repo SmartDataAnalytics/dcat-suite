@@ -8,6 +8,7 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "dcat", separator = "=", description = "Show DCAT information", subcommands = {
     CmdDeploy.class,
+    CmdEnrich.class,
     CmdExpand.class,
     CmdSearch.class,
     CmdData.class,
