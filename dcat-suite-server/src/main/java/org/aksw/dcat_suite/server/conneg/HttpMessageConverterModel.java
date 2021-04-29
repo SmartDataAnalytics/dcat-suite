@@ -64,7 +64,7 @@ public class HttpMessageConverterModel
 				// with only a default graph
 				//.filter(RDFLanguages::isTriples)
 				.flatMap(lang -> Stream.concat(
-						Stream.of(lang.getContentType().getContentType()),
+						Stream.of(lang.getContentType().getContentTypeStr()),
 						lang.getAltContentTypes().stream()))
 				.map(MediaType::valueOf)
 				.collect(Collectors.toList());

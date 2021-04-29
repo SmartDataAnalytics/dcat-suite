@@ -49,6 +49,7 @@ import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
+import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
@@ -58,7 +59,6 @@ import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFOps;
 import org.apache.jena.riot.system.StreamRDFWriter;
@@ -387,9 +387,9 @@ public class MainCliDcatSuite {
 	public static Function<String, String> createIriResolver(String dcatSource) {
 		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
 		String baseIRI = dcatPath.getParent().toUri().toString();
-		IRIResolver iriResolver = IRIResolver.create(baseIRI);
+		IRIxResolver iriResolver = IRIxResolver.create(baseIRI).build();//.create(baseIRI);
 
-		return iriResolver::resolveToStringSilent;
+		return arg -> iriResolver.resolve(arg).str();
 	}
 
 	public static DcatRepository createDcatRepository() throws IOException {
@@ -629,7 +629,7 @@ public class MainCliDcatSuite {
 		Files.createDirectories(targetFolder);
 
 		String baseIRI = targetFolder.toUri().toString();
-		IRIResolver iriResolver = IRIResolver.create(baseIRI);
+		IRIxResolver iriResolver = IRIxResolver.create(baseIRI).build();
 
 		// If the dataset has named graphs, we perform export
 		boolean hasNamedGraphs = Streams.stream(dataset.listNames()).findFirst().isPresent();

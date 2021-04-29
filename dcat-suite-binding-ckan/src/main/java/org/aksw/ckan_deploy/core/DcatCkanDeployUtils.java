@@ -28,10 +28,11 @@ import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.jena.ext.com.google.common.collect.Sets;
+import org.apache.jena.irix.IRIx;
+import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.util.SplitIRI;
 import org.apache.jena.vocabulary.DCAT;
 import org.slf4j.Logger;
@@ -112,7 +113,7 @@ public class DcatCkanDeployUtils {
     public static Model deploy(
             CkanClient ckanClient,
             Model dcatModel,
-            IRIResolver iriResolver,
+            IRIxResolver iriResolver,
             boolean noFileUpload,
             boolean orgaByGroup,
             String organization
@@ -215,8 +216,8 @@ public class DcatCkanDeployUtils {
 //		return result;
 //	}
 
-    public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIResolver iriResolver, boolean noFileUpload, String targetOrgaId) throws IOException {
-        String rawDatasetName = DcatDataset.getLabel(dataset);
+    public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIxResolver iriResolver, boolean noFileUpload, String targetOrgaId) throws IOException {
+    	String rawDatasetName = DcatDataset.getLabel(dataset);
 
         String datasetName = rawDatasetName
                 .replace(":", "-")
@@ -313,7 +314,8 @@ public class DcatCkanDeployUtils {
             List<String> resolvedUrls = downloadUrls.stream()
                     //.filter(Resource::isURIResource)
                     //.map(Resource::getURI)
-                    .map(iriResolver::resolveToStringSilent)
+                    .map(iriResolver::resolve)
+                    .map(IRIx::str)
                     .collect(Collectors.toList());
 
             Set<URI> resolvedValidUrls = resolvedUrls.stream()

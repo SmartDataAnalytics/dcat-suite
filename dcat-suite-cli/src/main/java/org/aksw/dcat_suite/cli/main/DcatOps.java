@@ -134,7 +134,7 @@ public class DcatOps {
 
 
                 if(targetContentType == null) {
-                    targetContentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentType().toString();
+                    targetContentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentTypeStr();
                 }
 
                 List<String> encodings = entityInfo.getContentEncodings();
@@ -222,7 +222,7 @@ public class DcatOps {
 
 
                 if(targetContentType == null) {
-                    targetContentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentType().toString();
+                    targetContentType = RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentTypeStr();
                 }
 
                 List<String> encodings = entityInfo.getContentEncodings();

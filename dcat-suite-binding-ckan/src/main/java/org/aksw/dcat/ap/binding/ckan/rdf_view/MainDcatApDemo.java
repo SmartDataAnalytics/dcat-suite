@@ -2,17 +2,15 @@ package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
 import java.util.Collection;
 
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
-import org.aksw.dcat.ap.domain.api.DcatApDistributionCore;
 import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.apache.jena.enhanced.BuiltinPersonalities;
-import org.apache.jena.graph.Graph;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.system.JenaSystem;
+import org.apache.jena.sys.JenaSystem;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;

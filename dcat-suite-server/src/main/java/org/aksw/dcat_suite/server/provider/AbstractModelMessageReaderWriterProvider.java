@@ -12,7 +12,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFWriter;
+import org.apache.jena.rdf.model.RDFWriterI;
 
 
 public class AbstractModelMessageReaderWriterProvider
@@ -50,7 +50,7 @@ public class AbstractModelMessageReaderWriterProvider
 
     //private static RDFWriter htmlWriter = new RDFWriterHtml();
 
-    public static RDFWriter getWriter(String format)
+    public static RDFWriterI getWriter(String format)
     {
         // FIXME The Jena writer needs to be configurable (e.g. css path)
         // Probably use ApplicationContext for that
@@ -62,7 +62,7 @@ public class AbstractModelMessageReaderWriterProvider
 
 
 
-        RDFWriter writer = ModelFactory.createDefaultModel().getWriter(format);
+        RDFWriterI writer = ModelFactory.createDefaultModel().getWriter(format);
 
         return writer;
     }
