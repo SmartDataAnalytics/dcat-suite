@@ -14,6 +14,7 @@ import picocli.CommandLine.Parameters;
     CmdData.class,
     CmdImport.class,
     CmdInstall.class,
+    CmdIntegrate.class,
     CmdService.class,
     CmdShow.class,
     CmdTransform.class
