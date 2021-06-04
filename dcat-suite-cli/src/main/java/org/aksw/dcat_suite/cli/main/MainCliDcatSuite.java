@@ -39,7 +39,7 @@ import org.aksw.dcat.repo.impl.model.CatalogResolverModel;
 import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.dcat.repo.impl.model.SearchResult;
-import org.aksw.dcat.server.controller.ControllerLookup;
+//import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
@@ -48,6 +48,7 @@ import org.aksw.dcat_suite.clients.DkanClient;
 import org.aksw.dcat_suite.clients.PostProcessor;
 import org.aksw.dcat_suite.enrich.GTFSFile;
 import org.aksw.dcat_suite.enrich.GTFSModel;
+import org.aksw.dcat_suite.integrate.IntegrationFactory;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -123,7 +124,6 @@ import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.internal.org.apache.http.client.ClientProtocolException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
-import integrate.IntegrationFactory;
 import picocli.CommandLine;
 import virtuoso.jdbc4.VirtuosoDataSource;
 
@@ -148,7 +148,6 @@ public class MainCliDcatSuite {
 				System.out.println(" URL: " + r.getUrl());
 			}
 		}
-
 	}
 
 	public static CatalogResolver createEffectiveCatalogResolver(List<String> catalogs)
@@ -605,46 +604,46 @@ public class MainCliDcatSuite {
 		}
 	}
 
-	public static void showData(CatalogResolver catalogResolver, String artifactId, String formatOrContentType,
-			List<String> encodings, boolean link) throws IOException {
-
-		// Try to parse the format
-		RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileExtension("." + formatOrContentType);
-		if (info != null) {
-			if (info.getContentType() != null) {
-				formatOrContentType = info.getContentType();
-			}
-
-			if (!CollectionUtils.isEmpty(info.getContentEncodings())) {
-				encodings = info.getContentEncodings();
-			}
-		}
-
-		catalogResolver.resolveDataset(artifactId).blockingGet();
-		catalogResolver.resolveDistribution(artifactId).toList().blockingGet();
-		// catalogResolver.resolveDataset(artifactId).blockingGet();
-
-		HttpRequest request = HttpResourceRepositoryFromFileSystemImpl.createRequest(artifactId, formatOrContentType,
-				encodings);
-		HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl
-				.createDefault();
-		RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
-
-		if (entity == null) {
-			throw new RuntimeException("Could not obtain an HTTP entity from given arguments " + artifactId + " "
-					+ formatOrContentType + " " + encodings);
-		}
-
-		// RdfHttpEntityFile entity = HttpResourceRepositoryFromFileSystemImpl.get(repo,
-		// artifactId, contentType, encodings);
-		Path path = entity.getAbsolutePath();
-
-		if (link) {
-			System.out.println(path);
-		} else {
-			Files.copy(path, System.out);
-		}
-	}
+//	public static void showData(CatalogResolver catalogResolver, String artifactId, String formatOrContentType,
+//			List<String> encodings, boolean link) throws IOException {
+//
+//		// Try to parse the format
+//		RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileExtension("." + formatOrContentType);
+//		if (info != null) {
+//			if (info.getContentType() != null) {
+//				formatOrContentType = info.getContentType();
+//			}
+//
+//			if (!CollectionUtils.isEmpty(info.getContentEncodings())) {
+//				encodings = info.getContentEncodings();
+//			}
+//		}
+//
+//		catalogResolver.resolveDataset(artifactId).blockingGet();
+//		catalogResolver.resolveDistribution(artifactId).toList().blockingGet();
+//		// catalogResolver.resolveDataset(artifactId).blockingGet();
+//
+//		HttpRequest request = HttpResourceRepositoryFromFileSystemImpl.createRequest(artifactId, formatOrContentType,
+//				encodings);
+//		HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl
+//				.createDefault();
+//		RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
+//
+//		if (entity == null) {
+//			throw new RuntimeException("Could not obtain an HTTP entity from given arguments " + artifactId + " "
+//					+ formatOrContentType + " " + encodings);
+//		}
+//
+//		// RdfHttpEntityFile entity = HttpResourceRepositoryFromFileSystemImpl.get(repo,
+//		// artifactId, contentType, encodings);
+//		Path path = entity.getAbsolutePath();
+//
+//		if (link) {
+//			System.out.println(path);
+//		} else {
+//			Files.copy(path, System.out);
+//		}
+//	}
 	
 	public static void processEnrichGTFS(String gtfsFile, String dsTitle, String prefix, String [] gtfsTypes) throws IOException {
 
@@ -658,6 +657,12 @@ public class MainCliDcatSuite {
 		//RDFDataMgr.write(out, gtfsModel.getModel(), Lang.TURTLE);
 		RDFDataMgr.write(System.out, gtfsModel.getModel(), RDFFormat.NTRIPLES);
 	} 
+	
+	public static GTFSModel processEnrichGTFSWeb (String gtfsFile, String dsTitle, String prefix) throws IOException {
+		GTFSModel gtfsModel = new GTFSModel(gtfsFile, dsTitle, prefix); 
+		gtfsModel.enrichFromFeedInfo();
+		return gtfsModel;
+	}
 	
 	public static void integrate(Model dcatModel, Model linkModel, Model mapModel, RDFConnection conn) {
 		IntegrationFactory.integrate(dcatModel, linkModel, mapModel, conn); 

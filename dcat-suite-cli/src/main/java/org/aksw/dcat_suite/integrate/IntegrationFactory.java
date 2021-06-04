@@ -1,4 +1,4 @@
-package integrate;
+package org.aksw.dcat_suite.integrate;
 
 import java.util.ArrayList;
 import java.util.HashMap;

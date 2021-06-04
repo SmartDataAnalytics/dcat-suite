@@ -35,10 +35,11 @@
 			<artifactId>jena-sparql-api-json</artifactId>
 		</dependency>
 
-		<dependency>
+		<!--  <dependency>
 			<groupId>org.aksw.dcat-suite</groupId>
 			<artifactId>dcat-suite-server</artifactId>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>org.hobbit</groupId>
@@ -51,11 +52,12 @@
 			<artifactId>virt_jena3</artifactId>
 		</dependency>
 
-		<dependency>
+		 <dependency>
 			<groupId>org.aksw.dcat-suite</groupId>
 			<artifactId>dcat-suite-binding-ckan</artifactId>
 		</dependency>
 
+		<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot</artifactId>
@@ -70,7 +72,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader</artifactId>
 		</dependency>
-
+		-->
 
 		<dependency>
 			<groupId>org.slf4j</groupId>

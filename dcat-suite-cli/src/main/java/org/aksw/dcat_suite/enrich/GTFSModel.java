@@ -1,11 +1,13 @@
 package org.aksw.dcat_suite.enrich;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.jena.rdf.model.Model;
@@ -34,11 +36,20 @@ public class GTFSModel {
 	 public static final String GTFS_NS = "http://vocab.gtfs.org/terms#";
 	 public static final String GEO = "http://www.w3.org/2003/01/geo/wgs84_pos#";
 	 
+	 public GTFSModel (String gtfsFile, String title, String prefix, String downloadURL) throws IOException {
+		this.path = Paths.get(downloadURL);
+		initModel(gtfsFile, title, prefix);
+		
+	}
+	 
 	public GTFSModel (String gtfsFile, String title, String prefix) throws IOException {
+		initModel(gtfsFile, title, prefix);
+	}
+	
+	private void initModel (String gtfsFile, String title, String prefix) throws IOException {
 		this.prefix = prefix;
 		this.title = title;
-		this.path = Paths.get(gtfsFile);
-        this.fileName = path.getFileName();
+        this.fileName = Paths.get(gtfsFile).getFileName();
 		this.gtfs = new GTFSFile(gtfsFile);
 		model = ModelFactory.createDefaultModel();
 		String resourceUri = GTFSUtils.createBaseUri(this.prefix,"dataset",this.title);
@@ -52,7 +63,7 @@ public class GTFSModel {
 				if (type.equals(GTFSType.STOP.name())) {
 					Model stopModel = new GTFSStop(dsResource).createModel(this.prefix,this.gtfs.getStore().getAllStops());
 					model.add(stopModel);
-			  }
+				}
 		 }
 	}
 	
@@ -66,9 +77,11 @@ public class GTFSModel {
         String distUri = GTFSUtils.createBaseUri(this.prefix,"distribution",this.title);
         Resource distribution = model.createResource(distUri);
         distribution.addProperty(model.createProperty(EXAMPLE_NS.concat("localId")),fileName.toString());
-        distribution.addProperty(DCAT.downloadURL,this.path.toString());
-        dsResource.addProperty(DCAT.distribution,distribution); 
         
+        if (this.path != null) {
+            distribution.addProperty(DCAT.downloadURL,this.path.toString());
+		}
+        dsResource.addProperty(DCAT.distribution,distribution); 
 		processFeedInfo(dsResource);
 	}
 	
@@ -129,4 +142,5 @@ public class GTFSModel {
 	public Model getModel() {
 		return this.model;
 	}
+
 }
