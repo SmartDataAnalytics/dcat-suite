@@ -10,8 +10,8 @@ public class CrawlView extends VerticalLayout {
 	
 	private static final long serialVersionUID = 1L; 
 	private VerticalLayout content;
-	
 	private MainView mainView; 
+	private CrawlComponent crawlComponent;
 
 	public CrawlView () {
 		mainView = new MainView(); 
@@ -20,10 +20,13 @@ public class CrawlView extends VerticalLayout {
     	content = mainView.getContent();
     	content.add( new H1( "Crawl Remote Open Data Portals" ) );
     	
-        mainView.addUpload();
         mainView.getNameToButtons()
         	.get("DCAT crawl")
         	.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        
+        crawlComponent = new CrawlComponent(); 
+        crawlComponent.addCrawl();
+        content.add(this.crawlComponent);
 	}
 
 }

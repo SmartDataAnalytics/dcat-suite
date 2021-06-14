@@ -78,9 +78,9 @@ public class EnrichComponent extends VerticalLayout {
         transformIcon.addClickListener(clickevent -> { 
         GTFSModel model = null;
         try {
-        		String titleValue = title.getValue() == null ? title.getValue() : title.getPlaceholder();
-        		String namespaceValue = namespace.getValue() == null ? namespace.getValue() : namespace.getPlaceholder();
-        		String downloadValue = downloadURL.getValue() == null ? downloadURL.getValue() : DOWNLOAD;
+        		String titleValue = AppUtils.getTextValue(title);
+        		String namespaceValue = AppUtils.getTextValue(namespace);
+        		String downloadValue = AppUtils.getTextValue(downloadURL);;
 				model = this.provider.processEnrichGTFSWeb(view.getLatestServerPath(), titleValue, namespaceValue, downloadValue);
 				String triplesText = getTriplesText(model,TURTLE); 
 				textArea.setValue(triplesText);

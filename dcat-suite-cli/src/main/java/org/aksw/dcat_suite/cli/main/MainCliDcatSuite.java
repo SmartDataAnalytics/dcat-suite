@@ -772,7 +772,7 @@ public class MainCliDcatSuite {
 		}
 	}
 
-	private static DcatDataset getDcatDataset(CkanDataset ckanDataset, String prefix, UpdateRequest ur) {
+	public static DcatDataset getDcatDataset(CkanDataset ckanDataset, String prefix, UpdateRequest ur) {
 		// TODO Move this update request to a separate file and/or trigger it using a
 		// flag
 		PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
