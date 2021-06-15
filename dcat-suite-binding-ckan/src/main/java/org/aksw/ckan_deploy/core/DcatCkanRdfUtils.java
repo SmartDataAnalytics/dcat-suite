@@ -25,7 +25,7 @@ import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
 import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
-import org.aksw.jena_sparql_api.transform.result_set.QueryExecutionTransformResult;
+import org.aksw.jena_sparql_api.utils.NodeTransformLib2;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Literal;
@@ -384,7 +384,7 @@ public class DcatCkanRdfUtils {
         Model closure = ResourceUtils.reachableClosure(s);
 
         Resource tmp = closure.wrapAsResource(source);
-        Resource newS = QueryExecutionTransformResult.applyNodeTransform(NodeTransformNodeViewToBlankNode.INSTANCE, tmp)
+        Resource newS = NodeTransformLib2.applyNodeTransform(NodeTransformNodeViewToBlankNode.INSTANCE, tmp)
             .asResource();
 
 //        System.out.println("Bnode: " + source.getBlankNode());

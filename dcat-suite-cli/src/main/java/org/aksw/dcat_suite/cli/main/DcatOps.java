@@ -33,7 +33,7 @@ import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
 import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils;
-import org.aksw.jena_sparql_api.transform.result_set.QueryExecutionTransformResult;
+import org.aksw.jena_sparql_api.utils.NodeTransformLib2;
 import org.aksw.jena_sparql_api.utils.NodeTransformRenameMap;
 import org.apache.jena.atlas.lib.IRILib;
 import org.apache.jena.ext.com.google.common.collect.Iterables;
@@ -310,7 +310,7 @@ public class DcatOps {
         Map<Node, Node> remap = allSubjects.stream()
                 .collect(Collectors.toMap(e -> e, e -> NodeFactory.createBlankNode()));
 
-        RDFNode newRoot = QueryExecutionTransformResult.applyNodeTransform(
+        RDFNode newRoot = NodeTransformLib2.applyNodeTransform(
                 new NodeTransformRenameMap(remap), root);
 
         return newRoot;

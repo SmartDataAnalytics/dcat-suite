@@ -24,6 +24,19 @@
 			<artifactId>jena-sparql-api-dcat-api</artifactId>
 		</dependency>
 
+<!--
+		        <dependency>
+                                <groupId>com.fasterxml.jackson.core</groupId>
+                                <artifactId>jackson-annotations</artifactId>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>com.fasterxml.jackson.datatype</groupId>
+                                <artifactId>jackson-datatype-guava</artifactId>
+                        </dependency>
+-->
+
+
 <!-- 		<dependency> -->
 <!-- 			<groupId>org.aksw.jena-sparql-api</groupId> -->
 <!-- 			<artifactId>jena-sparql-api-mapper-proxy</artifactId> -->
