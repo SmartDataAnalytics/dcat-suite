@@ -18,6 +18,7 @@
 		<module>dcat-api-jena-core</module>
 
 		<module>dcat-suite-binding-ckan</module>
+		<module>dcat-suite-core</module>
 		<module>dcat-suite-cli</module>
 		<module>dcat-suite-debian-cli</module>
 
@@ -26,7 +27,7 @@
 		<module>dcat-suite-server</module>
 		<module>dcat-suite-data-client</module>
 		<module>dcat-suite-bundle</module>
-		
+
 		<module>dcat-suite-app</module>
 	</modules>
 
@@ -64,7 +65,7 @@
 		<jena-sparql-api.subversion>1-SNAPSHOT</jena-sparql-api.subversion>
 
 		<jena-sparql-api.version>${jena.version}-${jena-sparql-api.subversion}</jena-sparql-api.version>
-		<aksw-commons.version>0.8.16-SNAPSHOT</aksw-commons.version>
+		<aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
 
 		<jackson.version>2.12.1</jackson.version>
 
@@ -138,6 +139,12 @@
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-api-jena-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.dcat-suite</groupId>
+				<artifactId>dcat-suite-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

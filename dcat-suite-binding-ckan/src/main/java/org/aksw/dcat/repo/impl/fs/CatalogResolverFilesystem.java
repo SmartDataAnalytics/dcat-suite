@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
+import org.aksw.common.io.util.symlink.SymbolicLinkStrategies;
 import org.aksw.commons.io.util.SymLinkUtils;
 import org.aksw.commons.io.util.UriToPathUtils;
 import org.aksw.commons.io.util.UriUtils;
@@ -497,7 +498,7 @@ public class CatalogResolverFilesystem
         for(String altId : altIds) {
             Path tgt = datasetByIdFolder.resolve(UriToPathUtils.resolvePath(altId));
             Files.createDirectories(tgt);
-            SymLinkUtils.allocateSymbolicLink(dsFolder, tgt, "_content", "");
+            SymLinkUtils.allocateSymbolicLink(SymbolicLinkStrategies.STANDARD, dsFolder, tgt, "_content", "");
         }
 
 
@@ -512,7 +513,7 @@ public class CatalogResolverFilesystem
                 Path linkSource = distributionIndexFolder.resolve(UriToPathUtils.resolvePath(uri));
                 Files.createDirectories(linkSource);
 
-                SymLinkUtils.allocateSymbolicLink(targetDatasetFolder, linkSource, "_content", "");
+                SymLinkUtils.allocateSymbolicLink(SymbolicLinkStrategies.STANDARD, targetDatasetFolder, linkSource, "_content", "");
             }
         }
     }

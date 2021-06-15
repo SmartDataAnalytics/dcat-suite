@@ -1,12 +1,7 @@
 package org.aksw.dcat_suite.cli.main;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,10 +9,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,7 +21,6 @@ import org.aksw.ckan_deploy.core.DcatRepository;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
-import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.cache.CatalogResolverCaching;
@@ -43,10 +34,9 @@ import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
-import org.aksw.dcat_suite.cli.cmd.CmdEnrichGTFS;
 import org.aksw.dcat_suite.clients.DkanClient;
 import org.aksw.dcat_suite.clients.PostProcessor;
-import org.aksw.dcat_suite.enrich.GTFSFile;
+import org.aksw.dcat_suite.core.util.CatalogRequestUtils;
 import org.aksw.dcat_suite.enrich.GTFSModel;
 import org.aksw.dcat_suite.integrate.IntegrationFactory;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
@@ -56,36 +46,21 @@ import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.aksw.jena_sparql_api.json.RdfJsonUtils;
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
-import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.aksw.jena_sparql_api.utils.io.StreamRDFDeferred;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpRequest;
-import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.graph.FrontsNode;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.rdfconnection.SparqlQueryConnection;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
@@ -93,23 +68,15 @@ import org.apache.jena.riot.system.StreamRDFOps;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.lang.arq.ParseException;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.RDF;
 import org.hobbit.core.service.docker.impl.docker_client.DockerServiceSystemDockerClient;
-import org.onebusaway.gtfs.model.FeedInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.drew.metadata.Schema;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
@@ -605,6 +572,7 @@ public class MainCliDcatSuite {
     }
 
 
+
     public static void showData(CatalogResolver catalogResolver, String artifactId, String formatOrContentType,
             List<String> encodings, boolean link) throws IOException {
 
@@ -628,8 +596,7 @@ public class MainCliDcatSuite {
                 encodings);
         HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl
                 .createDefault();
-//        RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
-        RdfHttpEntityFile entity = null;
+        RdfHttpEntityFile entity = CatalogRequestUtils.resolveEntity(catalogResolver, datasetRepository, request);
 
         if (entity == null) {
             throw new RuntimeException("Could not obtain an HTTP entity from given arguments " + artifactId + " "
