@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriUtils;
+//import org.springframework.web.util.UriUtils;
+import java.net.URLEncoder;
 
 import eu.trentorise.opendata.jackan.model.CkanDataset; 
 
@@ -78,11 +79,14 @@ public class PostProcessor {
 		try {
 	  			
 				if (parts.length > 1)
-					tobeReplaced = UriUtils
-						.encode(parts[0],StandardCharsets.UTF_8.toString())+"?"+UriUtils
-						.encodeQuery(parts[1],StandardCharsets.UTF_8.toString());
+					//tobeReplaced = UriUtils
+					//	.encode(parts[0],StandardCharsets.UTF_8.toString())+"?"+UriUtils
+					//	.encodeQuery(parts[1],StandardCharsets.UTF_8.toString());
+					tobeReplaced = URLEncoder
+						.encode(parts[0],StandardCharsets.UTF_8.toString())+"?"+URLEncoder
+						.encode(parts[1],StandardCharsets.UTF_8.toString());
 				else {
-					tobeReplaced = UriUtils
+					tobeReplaced = URLEncoder
 							.encode(subStr,StandardCharsets.UTF_8.toString());
 				}
 				processedUrl = new URL (rawUrl.replace(subStr, tobeReplaced))

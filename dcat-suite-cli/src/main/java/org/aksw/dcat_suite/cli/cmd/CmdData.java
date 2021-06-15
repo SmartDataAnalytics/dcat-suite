@@ -48,7 +48,7 @@ public class CmdData
         String artifactId = noas.get(0);
 
         CatalogResolver effectiveCatalogResolver = MainCliDcatSuite.createEffectiveCatalogResolver(cmData.catalogs);
-        MainCliDcatSuite.showData(effectiveCatalogResolver, artifactId, cmData.contentType, cmData.encodings, cmData.link);
+      //  MainCliDcatSuite.showData(effectiveCatalogResolver, artifactId, cmData.contentType, cmData.encodings, cmData.link);
 
         return 0;
     }

@@ -26,6 +26,8 @@
 		<module>dcat-suite-server</module>
 		<module>dcat-suite-data-client</module>
 		<module>dcat-suite-bundle</module>
+		
+		<module>dcat-suite-app</module>
 	</modules>
 
 	<issueManagement>
@@ -82,11 +84,11 @@
 	<dependencyManagement>
 		<dependencies>
 
-		<dependency>
-			<groupId>org.aksw.commons</groupId>
-			<artifactId>aksw-commons-io-utils</artifactId>
-			<version>${aksw-commons.version}</version>
-		</dependency>
+			<dependency>
+				<groupId>org.aksw.commons</groupId>
+				<artifactId>aksw-commons-io-utils</artifactId>
+				<version>${aksw-commons.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.hobbit</groupId>
@@ -306,6 +308,19 @@
 
 	<build>
 		<plugins>
+
+			<!--Maven Compiler Plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<!-- <source>${maven.compiler.source}</source> <target>${maven.compiler.target}</target> -->
+					<release>11</release>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>com.amashchenko.maven.plugin</groupId>
 				<artifactId>gitflow-maven-plugin</artifactId>

@@ -39,7 +39,7 @@ import org.aksw.dcat.repo.impl.model.CatalogResolverModel;
 import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.dcat.repo.impl.model.SearchResult;
-import org.aksw.dcat.server.controller.ControllerLookup;
+//import org.aksw.dcat.server.controller.ControllerLookup;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
@@ -48,6 +48,7 @@ import org.aksw.dcat_suite.clients.DkanClient;
 import org.aksw.dcat_suite.clients.PostProcessor;
 import org.aksw.dcat_suite.enrich.GTFSFile;
 import org.aksw.dcat_suite.enrich.GTFSModel;
+import org.aksw.dcat_suite.integrate.IntegrationFactory;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.ext.virtuoso.VirtuosoBulkLoad;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -123,92 +124,90 @@ import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.internal.org.apache.http.client.ClientProtocolException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
-import integrate.IntegrationFactory;
 import picocli.CommandLine;
 import virtuoso.jdbc4.VirtuosoDataSource;
 
 public class MainCliDcatSuite {
 
-	private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
-	private static final String CKAN_UPDATE_QUERY = "PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }";
+    private static final Logger logger = LoggerFactory.getLogger(MainCliDcatSuite.class);
+    private static final String CKAN_UPDATE_QUERY = "PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }";
 
-	public static void showCkanDatasets(CkanClient ckanClient) {
-		List<String> ds = ckanClient.getDatasetList(10, 0);
+    public static void showCkanDatasets(CkanClient ckanClient) {
+        List<String> ds = ckanClient.getDatasetList(10, 0);
 
-		for (String s : ds) {
-			System.out.println();
-			System.out.println("DATASET: " + s);
-			CkanDataset d = ckanClient.getDataset(s);
-			System.out.println(" RESOURCES:");
-			for (CkanResource r : d.getResources()) {
-				System.out.println(" " + r.getName());
-				System.out.println(" FORMAT: " + r.getMimetype());
-				System.out.println(" FORMAT: " + r.getMimetypeInner());
-				System.out.println(" FORMAT: " + r.getFormat());
-				System.out.println(" URL: " + r.getUrl());
-			}
-		}
+        for (String s : ds) {
+            System.out.println();
+            System.out.println("DATASET: " + s);
+            CkanDataset d = ckanClient.getDataset(s);
+            System.out.println(" RESOURCES:");
+            for (CkanResource r : d.getResources()) {
+                System.out.println(" " + r.getName());
+                System.out.println(" FORMAT: " + r.getMimetype());
+                System.out.println(" FORMAT: " + r.getMimetypeInner());
+                System.out.println(" FORMAT: " + r.getFormat());
+                System.out.println(" URL: " + r.getUrl());
+            }
+        }
+    }
 
-	}
+    public static CatalogResolver createEffectiveCatalogResolver(List<String> catalogs)
+            throws IOException, ParseException {
 
-	public static CatalogResolver createEffectiveCatalogResolver(List<String> catalogs)
-			throws IOException, ParseException {
+        List<CatalogResolver> catalogResolvers = new ArrayList<>();
 
-		List<CatalogResolver> catalogResolvers = new ArrayList<>();
+        CatalogResolver defaultResolver = CatalogResolverUtils.createCatalogResolverDefault();
+        catalogResolvers.add(defaultResolver);
+        // catalogResolvers.addAll((defaultResolver));
 
-		CatalogResolver defaultResolver = CatalogResolverUtils.createCatalogResolverDefault();
-		catalogResolvers.add(defaultResolver);
-		// catalogResolvers.addAll((defaultResolver));
+        for (String catalog : catalogs) {
+            Model model = RDFDataMgr.loadModel(catalog);
 
-		for (String catalog : catalogs) {
-			Model model = RDFDataMgr.loadModel(catalog);
+            logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
 
-			logger.info("Loaded " + model.size() + " triples for catalog at " + catalog);
+            SparqlQueryConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
 
-			SparqlQueryConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(model));
+            catalogResolvers.add(CatalogResolverUtils.createCatalogResolver(conn, Collections.emptyList()));
+            // catalogResolvers.add(new CatalogResolverModel(model));
+        }
 
-			catalogResolvers.add(CatalogResolverUtils.createCatalogResolver(conn, Collections.emptyList()));
-			// catalogResolvers.add(new CatalogResolverModel(model));
-		}
+        CatalogResolver result = CatalogResolverMulti.wrapIfNeeded(catalogResolvers);
 
-		CatalogResolver result = CatalogResolverMulti.wrapIfNeeded(catalogResolvers);
+        return result;
+    }
 
-		return result;
-	}
+    public static void createEffectiveConfigModel() {
+        // TBD
+    }
 
-	public static void createEffectiveConfigModel() {
-		// TBD
-	}
+    public static void main(String[] args) throws Exception {
+        JenaSystem.init();
 
-	public static void main(String[] args) throws Exception {
-		JenaSystem.init();
+        // TODO Move to a plugin
+        JenaPluginUtils.registerResourceClasses(SearchResult.class);
+        JenaPluginUtils.registerResourceClasses(DcatResolver.class);
 
-		// TODO Move to a plugin
-		JenaPluginUtils.registerResourceClasses(SearchResult.class);
-		JenaPluginUtils.registerResourceClasses(DcatResolver.class);
+        int exitCode = mainCore(args);
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
+    }
 
-		int exitCode = mainCore(args);
-		if (exitCode != 0) {
-			System.exit(exitCode);
-		}
-	}
+    public static int mainCore(String[] args) throws Exception {
 
-	public static int mainCore(String[] args) throws Exception {
+        int result = new CommandLine(new CmdDcatSuiteMain())
+                .setExecutionExceptionHandler((ex, commandLine, parseResult) -> {
+                    boolean debugMode = true;
+                    if (debugMode) {
+                        ExceptionUtilsAksw.rethrowIfNotBrokenPipe(ex);
+                    } else {
+                        ExceptionUtilsAksw.forwardRootCauseMessageUnless(ex, logger::error,
+                                ExceptionUtilsAksw::isBrokenPipeException);
+                    }
+                    return 0;
+                }).execute(args);
+        return result;
 
-		int result = new CommandLine(new CmdDcatSuiteMain())
-				.setExecutionExceptionHandler((ex, commandLine, parseResult) -> {
-					boolean debugMode = true;
-					if (debugMode) {
-						ExceptionUtilsAksw.rethrowIfNotBrokenPipe(ex);
-					} else {
-						ExceptionUtilsAksw.forwardRootCauseMessageUnless(ex, logger::error,
-								ExceptionUtilsAksw::isBrokenPipeException);
-					}
-					return 0;
-				}).execute(args);
-		return result;
-
-	}
+    }
 
 //
 //        CmdMain cm = new CmdMain();
@@ -421,375 +420,384 @@ public class MainCliDcatSuite {
 //        }
 //    }
 
-	public static Function<String, String> createIriResolver(String dcatSource) {
-		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
-		String baseIRI = dcatPath.getParent().toUri().toString();
-		IRIxResolver iriResolver = IRIxResolver.create(baseIRI).build();//.create(baseIRI);
+    public static Function<String, String> createIriResolver(String dcatSource) {
+        Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
+        String baseIRI = dcatPath.getParent().toUri().toString();
+        IRIxResolver iriResolver = IRIxResolver.create(baseIRI).build();//.create(baseIRI);
 
-		return arg -> iriResolver.resolve(arg).str();
-	}
+        return arg -> iriResolver.resolve(arg).str();
+    }
 
-	public static DcatRepository createDcatRepository() throws IOException {
-		String userDirStr = StandardSystemProperty.USER_HOME.value();
-		Path userFolder = Paths.get(userDirStr);
-		if (!Files.exists(userFolder)) {
-			throw new RuntimeException("Failed to find user directory");
-		}
+    public static DcatRepository createDcatRepository() throws IOException {
+        String userDirStr = StandardSystemProperty.USER_HOME.value();
+        Path userFolder = Paths.get(userDirStr);
+        if (!Files.exists(userFolder)) {
+            throw new RuntimeException("Failed to find user directory");
+        }
 
-		Path repoFolder = userFolder.resolve(".dcat").resolve("repository");
-		Files.createDirectories(repoFolder);
+        Path repoFolder = userFolder.resolve(".dcat").resolve("repository");
+        Files.createDirectories(repoFolder);
 
-		DcatRepository result = new DcatRepositoryDefault(repoFolder);
+        DcatRepository result = new DcatRepositoryDefault(repoFolder);
 
-		return result;
-	}
+        return result;
+    }
 
-	public static void processDeployVirtuoso(CmdDeployVirtuoso cmDeployVirtuoso) throws Exception {
+    public static void processDeployVirtuoso(CmdDeployVirtuoso cmDeployVirtuoso) throws Exception {
 
-		String dcatSource = cmDeployVirtuoso.file;
+        String dcatSource = cmDeployVirtuoso.file;
 
-		Collection<String> datasetIds;
-		CatalogResolver catalogResolver;
+        Collection<String> datasetIds;
+        CatalogResolver catalogResolver;
 
-		Path tempDir = Paths.get(cmDeployVirtuoso.tmpFolder);
+        Path tempDir = Paths.get(cmDeployVirtuoso.tmpFolder);
 
-		Function<String, String> iriResolver = null;
-		if (dcatSource != null) {
-			iriResolver = createIriResolver(dcatSource);
-			Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(dcatSource);
-			Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
-			datasetIds = dcatDatasets.stream().map(Resource::getURI).collect(Collectors.toList());
+        Function<String, String> iriResolver = null;
+        if (dcatSource != null) {
+            iriResolver = createIriResolver(dcatSource);
+            Model dcatModel = DcatCkanRdfUtils.createModelWithNormalizedDcatFragment(dcatSource);
+            Collection<DcatDataset> dcatDatasets = DcatUtils.listDcatDatasets(dcatModel);
+            datasetIds = dcatDatasets.stream().map(Resource::getURI).collect(Collectors.toList());
 
-			catalogResolver = CatalogResolverUtils.wrapWithDiskCache(new CatalogResolverModel(dcatModel));
-		} else {
-			catalogResolver = CatalogResolverUtils.createCatalogResolverDefault();
+            catalogResolver = CatalogResolverUtils.wrapWithDiskCache(new CatalogResolverModel(dcatModel));
+        } else {
+            catalogResolver = CatalogResolverUtils.createCatalogResolverDefault();
 
-			datasetIds = cmDeployVirtuoso.datasets;
+            datasetIds = cmDeployVirtuoso.datasets;
 //
 //			catalogResolver.resolveDataset(datasetId)
 //
 //
 //			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
-		}
+        }
 
-		logger.info("Detected datasets:");
-		for (String dcatDataset : datasetIds) {
-			logger.info("  " + dcatDataset);
-		}
-		logger.info(datasetIds.size() + " datasets enqueued");
+        logger.info("Detected datasets:");
+        for (String dcatDataset : datasetIds) {
+            logger.info("  " + dcatDataset);
+        }
+        logger.info(datasetIds.size() + " datasets enqueued");
 
-		Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
+        Path allowedFolder = Paths.get(cmDeployVirtuoso.allowed);
 
-		String dockerContainerId = cmDeployVirtuoso.docker;
-		DockerClient dockerClient = null;
+        String dockerContainerId = cmDeployVirtuoso.docker;
+        DockerClient dockerClient = null;
 
-		String hostName = cmDeployVirtuoso.host;
-		if (dockerContainerId != null) {
-			dockerClient = DockerServiceSystemDockerClient.create(true, Collections.emptyMap(), Collections.emptySet())
-					.getDockerClient();
+        String hostName = cmDeployVirtuoso.host;
+        if (dockerContainerId != null) {
+            dockerClient = DockerServiceSystemDockerClient.create(true, Collections.emptyMap(), Collections.emptySet())
+                    .getDockerClient();
 
-			if (hostName == null) {
-				ContainerInfo containerInfo = dockerClient.inspectContainer(dockerContainerId);
-				hostName = containerInfo.networkSettings().ipAddress();
-			}
-		}
+            if (hostName == null) {
+                ContainerInfo containerInfo = dockerClient.inspectContainer(dockerContainerId);
+                hostName = containerInfo.networkSettings().ipAddress();
+            }
+        }
 
-		if (Strings.isNullOrEmpty(hostName)) {// || hostName.equals("127.0.0.1")) {
-			hostName = "localhost";
-		}
+        if (Strings.isNullOrEmpty(hostName)) {// || hostName.equals("127.0.0.1")) {
+            hostName = "localhost";
+        }
 
-		VirtuosoDataSource dataSource = new VirtuosoDataSource();
-		dataSource.setPassword(cmDeployVirtuoso.pass);
-		dataSource.setUser(cmDeployVirtuoso.user);
-		dataSource.setPortNumber(cmDeployVirtuoso.port);
-		dataSource.setServerName(hostName);
+        VirtuosoDataSource dataSource = new VirtuosoDataSource();
+        dataSource.setPassword(cmDeployVirtuoso.pass);
+        dataSource.setUser(cmDeployVirtuoso.user);
+        dataSource.setPortNumber(cmDeployVirtuoso.port);
+        dataSource.setServerName(hostName);
 
-		try {
-			try (Connection conn = dataSource.getConnection()) {
+        try {
+            try (Connection conn = dataSource.getConnection()) {
 
-				VirtuosoBulkLoad.logEnable(conn, 2, 0);
+                VirtuosoBulkLoad.logEnable(conn, 2, 0);
 
-				// for(DcatDataset dcatDataset : dcatDatasets) {
-				for (String datasetId : datasetIds) {
-					// String datasetId = dcatDataset.getURI();
-					DatasetResolver datasetResolver = catalogResolver.resolveDataset(datasetId).blockingGet();
+                // for(DcatDataset dcatDataset : dcatDatasets) {
+                for (String datasetId : datasetIds) {
+                    // String datasetId = dcatDataset.getURI();
+                    DatasetResolver datasetResolver = catalogResolver.resolveDataset(datasetId).blockingGet();
 
-					DcatDeployVirtuosoUtils.deploy(datasetResolver, iriResolver, dockerClient, dockerContainerId,
-							tempDir, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
-				}
+                    DcatDeployVirtuosoUtils.deploy(datasetResolver, iriResolver, dockerClient, dockerContainerId,
+                            tempDir, allowedFolder, cmDeployVirtuoso.nosymlinks, conn);
+                }
 
-				conn.commit();
-			}
+                conn.commit();
+            }
 
-			// TODO rollback on error
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-			// conn.rollback();
-		}
-	}
+            // TODO rollback on error
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+            // conn.rollback();
+        }
+    }
 
-	/**
-	 * Search catalogs for a given keyword pattern Applies a generic yet powerful
-	 * search strategy to SPARQL-able catalogs, whereas uses the search() method
-	 * otherwise. Note, that in the future we may want to add a flag for whether to
-	 * override a provided search() method
-	 *
-	 * @param acc
-	 * @param catalogResolver
-	 * @param pattern
-	 * @throws IOException
-	 */
-	public static void searchDcat(Collection<SearchResult> acc, CatalogResolver catalogResolver, String pattern)
-			throws IOException {
-		if (catalogResolver instanceof CatalogResolverCaching) {
+    /**
+     * Search catalogs for a given keyword pattern Applies a generic yet powerful
+     * search strategy to SPARQL-able catalogs, whereas uses the search() method
+     * otherwise. Note, that in the future we may want to add a flag for whether to
+     * override a provided search() method
+     *
+     * @param acc
+     * @param catalogResolver
+     * @param pattern
+     * @throws IOException
+     */
+    public static void searchDcat(Collection<SearchResult> acc, CatalogResolver catalogResolver, String pattern)
+            throws IOException {
+        if (catalogResolver instanceof CatalogResolverCaching) {
 
-		} else if (catalogResolver instanceof CatalogResolverMulti) {
-			Collection<CatalogResolver> subResolvers = ((CatalogResolverMulti) catalogResolver).getResolvers();
-			for (CatalogResolver subResolver : subResolvers) {
-				searchDcat(acc, subResolver, pattern);
-			}
-		} else if (catalogResolver instanceof CatalogResolverSparql) {
-			CatalogResolverSparql crs = (CatalogResolverSparql) catalogResolver;
-			SparqlQueryConnection conn = crs.getConnection();
-			Query shapeQuery = crs.getDcatShape();
+        } else if (catalogResolver instanceof CatalogResolverMulti) {
+            Collection<CatalogResolver> subResolvers = ((CatalogResolverMulti) catalogResolver).getResolvers();
+            for (CatalogResolver subResolver : subResolvers) {
+                searchDcat(acc, subResolver, pattern);
+            }
+        } else if (catalogResolver instanceof CatalogResolverSparql) {
+            CatalogResolverSparql crs = (CatalogResolverSparql) catalogResolver;
+            SparqlQueryConnection conn = crs.getConnection();
+            Query shapeQuery = crs.getDcatShape();
 
-			Query patternQuery = crs.getPatternToQuery().apply(pattern);
-			List<SearchResult> matches = CatalogResolverSparql.searchDcat(conn, patternQuery, shapeQuery);
-			logger.info(matches.size() + " matches from sparql-based resolver " + catalogResolver);
-			acc.addAll(matches);
+            Query patternQuery = crs.getPatternToQuery().apply(pattern);
+            List<SearchResult> matches = CatalogResolverSparql.searchDcat(conn, patternQuery, shapeQuery);
+            logger.info(matches.size() + " matches from sparql-based resolver " + catalogResolver);
+            acc.addAll(matches);
 
-		} else {
-			List<Resource> matches = catalogResolver.search(pattern).toList().blockingGet();
-			logger.info(matches.size() + " matches from generic resolver " + catalogResolver);
-			acc.addAll(matches.stream().map(x -> x.as(SearchResult.class)).collect(Collectors.toList()));
-		}
-	}
+        } else {
+            List<Resource> matches = catalogResolver.search(pattern).toList().blockingGet();
+            logger.info(matches.size() + " matches from generic resolver " + catalogResolver);
+            acc.addAll(matches.stream().map(x -> x.as(SearchResult.class)).collect(Collectors.toList()));
+        }
+    }
 
-	public static List<CatalogResolver> unnestResolvers(List<CatalogResolver> acc, CatalogResolver resolver) {
-		if (resolver instanceof CatalogResolverCaching) {
-			CatalogResolver subResolver = ((CatalogResolverCaching) resolver).getBackend();
-			unnestResolvers(acc, subResolver);
-		} else if (resolver instanceof CatalogResolverMulti) {
-			Collection<CatalogResolver> subResolvers = ((CatalogResolverMulti) resolver).getResolvers();
-			for (CatalogResolver subResolver : subResolvers) {
-				unnestResolvers(acc, subResolver);
-			}
-		} else {
-			acc.add(resolver);
-		}
-		return acc;
-	}
+    public static List<CatalogResolver> unnestResolvers(List<CatalogResolver> acc, CatalogResolver resolver) {
+        if (resolver instanceof CatalogResolverCaching) {
+            CatalogResolver subResolver = ((CatalogResolverCaching) resolver).getBackend();
+            unnestResolvers(acc, subResolver);
+        } else if (resolver instanceof CatalogResolverMulti) {
+            Collection<CatalogResolver> subResolvers = ((CatalogResolverMulti) resolver).getResolvers();
+            for (CatalogResolver subResolver : subResolvers) {
+                unnestResolvers(acc, subResolver);
+            }
+        } else {
+            acc.add(resolver);
+        }
+        return acc;
+    }
 
-	public static void searchDcat(CatalogResolver catalogResolver, String pattern, boolean json) throws IOException {
-		List<CatalogResolver> catalogs = unnestResolvers(new ArrayList<>(), catalogResolver);
-		logger.info("Searching " + catalogs.size() + " catalogs for '" + pattern + "'");
-		List<SearchResult> items = new ArrayList<SearchResult>();
-		for (int i = 0; i < catalogs.size(); ++i) {
-			CatalogResolver catalog = catalogs.get(i);
-			try {
-				searchDcat(items, catalog, pattern);
-			} catch (Exception e) {
-				logger.info("Lookup failed for resolver " + catalog);
-			}
-		}
+    public static void searchDcat(CatalogResolver catalogResolver, String pattern, boolean json) throws IOException {
+        List<CatalogResolver> catalogs = unnestResolvers(new ArrayList<>(), catalogResolver);
+        logger.info("Searching " + catalogs.size() + " catalogs for '" + pattern + "'");
+        List<SearchResult> items = new ArrayList<SearchResult>();
+        for (int i = 0; i < catalogs.size(); ++i) {
+            CatalogResolver catalog = catalogs.get(i);
+            try {
+                searchDcat(items, catalog, pattern);
+            } catch (Exception e) {
+                logger.info("Lookup failed for resolver " + catalog);
+            }
+        }
 
-		Collections.sort(items, Ordering.from(SearchResult::defaultCompare).reversed());
+        Collections.sort(items, Ordering.from(SearchResult::defaultCompare).reversed());
 
-		if (json) {
-			JsonArray j = RdfJsonUtils.toJson(items, 3, false);
-			Gson gson = new GsonBuilder().setLenient().setPrettyPrinting().create();
-			String str = gson.toJson(j);
-			System.out.println(str);
-		} else {
-			MainDeleteme.print(items);
-		}
-	}
+        if (json) {
+            JsonArray j = RdfJsonUtils.toJson(items, 3, false);
+            Gson gson = new GsonBuilder().setLenient().setPrettyPrinting().create();
+            String str = gson.toJson(j);
+            System.out.println(str);
+        } else {
+            MainDeleteme.print(items);
+        }
+    }
 
-	public static void showData(CatalogResolver catalogResolver, String artifactId, String formatOrContentType,
-			List<String> encodings, boolean link) throws IOException {
 
-		// Try to parse the format
-		RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileExtension("." + formatOrContentType);
-		if (info != null) {
-			if (info.getContentType() != null) {
-				formatOrContentType = info.getContentType();
-			}
+    public static void showData(CatalogResolver catalogResolver, String artifactId, String formatOrContentType,
+            List<String> encodings, boolean link) throws IOException {
 
-			if (!CollectionUtils.isEmpty(info.getContentEncodings())) {
-				encodings = info.getContentEncodings();
-			}
-		}
+        // Try to parse the format
+        RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileExtension("." + formatOrContentType);
+        if (info != null) {
+            if (info.getContentType() != null) {
+                formatOrContentType = info.getContentType();
+            }
 
-		catalogResolver.resolveDataset(artifactId).blockingGet();
-		catalogResolver.resolveDistribution(artifactId).toList().blockingGet();
-		// catalogResolver.resolveDataset(artifactId).blockingGet();
+            if (!CollectionUtils.isEmpty(info.getContentEncodings())) {
+                encodings = info.getContentEncodings();
+            }
+        }
 
-		HttpRequest request = HttpResourceRepositoryFromFileSystemImpl.createRequest(artifactId, formatOrContentType,
-				encodings);
-		HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl
-				.createDefault();
-		RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
+        catalogResolver.resolveDataset(artifactId).blockingGet();
+        catalogResolver.resolveDistribution(artifactId).toList().blockingGet();
+        // catalogResolver.resolveDataset(artifactId).blockingGet();
 
-		if (entity == null) {
-			throw new RuntimeException("Could not obtain an HTTP entity from given arguments " + artifactId + " "
-					+ formatOrContentType + " " + encodings);
-		}
+        HttpRequest request = HttpResourceRepositoryFromFileSystemImpl.createRequest(artifactId, formatOrContentType,
+                encodings);
+        HttpResourceRepositoryFromFileSystemImpl datasetRepository = HttpResourceRepositoryFromFileSystemImpl
+                .createDefault();
+//        RdfHttpEntityFile entity = ControllerLookup.resolveEntity(catalogResolver, datasetRepository, request);
+        RdfHttpEntityFile entity = null;
 
-		// RdfHttpEntityFile entity = HttpResourceRepositoryFromFileSystemImpl.get(repo,
-		// artifactId, contentType, encodings);
-		Path path = entity.getAbsolutePath();
+        if (entity == null) {
+            throw new RuntimeException("Could not obtain an HTTP entity from given arguments " + artifactId + " "
+                    + formatOrContentType + " " + encodings);
+        }
 
-		if (link) {
-			System.out.println(path);
-		} else {
-			Files.copy(path, System.out);
-		}
-	}
+        // RdfHttpEntityFile entity = HttpResourceRepositoryFromFileSystemImpl.get(repo,
+        // artifactId, contentType, encodings);
+        Path path = entity.getAbsolutePath();
 
-	public static void processEnrichGTFS(String gtfsFile, String dsTitle, String prefix, String [] gtfsTypes) throws IOException {
+        if (link) {
+            System.out.println(path);
+        } else {
+            Files.copy(path, System.out);
+        }
+    }
 
-		GTFSModel gtfsModel = new GTFSModel(gtfsFile, dsTitle, prefix);
-		gtfsModel.enrichFromFeedInfo();
-		if (gtfsTypes != null) {
-			gtfsModel.enrichFromType(gtfsTypes);
-		}
 
-		//OutputStream out = new FileOutputStream("src/stops.ttl");
-		//RDFDataMgr.write(out, gtfsModel.getModel(), Lang.TURTLE);
-		RDFDataMgr.write(System.out, gtfsModel.getModel(), RDFFormat.NTRIPLES);
-	}
+    public static void processEnrichGTFS(String gtfsFile, String dsTitle, String prefix, String [] gtfsTypes) throws IOException {
 
-	public static void integrate(Model dcatModel, Model linkModel, Model mapModel, RDFConnection conn) {
-		IntegrationFactory.integrate(dcatModel, linkModel, mapModel, conn);
-		RDFDataMgr.write(System.out, dcatModel, RDFFormat.NTRIPLES);
-	}
+        GTFSModel gtfsModel = new GTFSModel(gtfsFile, dsTitle, prefix);
+        gtfsModel.enrichFromFeedInfo();
+        if (gtfsTypes != null) {
+            gtfsModel.enrichFromType(gtfsTypes);
+        }
 
-	public static Path processExpand(String dcatSource) throws IOException {
-		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
-		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
-		Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
-		Files.createDirectories(targetFolder);
+        //OutputStream out = new FileOutputStream("src/stops.ttl");
+        //RDFDataMgr.write(out, gtfsModel.getModel(), Lang.TURTLE);
+        RDFDataMgr.write(System.out, gtfsModel.getModel(), RDFFormat.NTRIPLES);
+    }
 
-		Model model = DcatExpandUtils.export(dataset, targetFolder);
-		Path result = targetFolder.resolve("dcat.nt");
-		DcatExpandUtils.writeSortedNtriples(model, result);
-		return result;
-	}
+    public static GTFSModel processEnrichGTFSWeb (String gtfsFile, String dsTitle, String prefix) throws IOException {
+        GTFSModel gtfsModel = new GTFSModel(gtfsFile, dsTitle, prefix);
+        gtfsModel.enrichFromFeedInfo();
+        return gtfsModel;
+    }
 
-	public static void processDeploy(CkanClient ckanClient, String dcatSource, boolean noFileUpload, boolean mapByGroup,
-			String organization) throws IOException {
-		Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
-		Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
-		Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
-		Files.createDirectories(targetFolder);
+    public static void integrate(Model dcatModel, Model linkModel, Model mapModel, RDFConnection conn) {
+        IntegrationFactory.integrate(dcatModel, linkModel, mapModel, conn);
+        RDFDataMgr.write(System.out, dcatModel, RDFFormat.NTRIPLES);
+    }
 
-		String baseIRI = targetFolder.toUri().toString();
-		IRIxResolver iriResolver = IRIxResolver.create(baseIRI).build();
+    public static Path processExpand(String dcatSource) throws IOException {
+        Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
+        Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
+        Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
+        Files.createDirectories(targetFolder);
 
-		// If the dataset has named graphs, we perform export
-		boolean hasNamedGraphs = Streams.stream(dataset.listNames()).findFirst().isPresent();
+        Model model = DcatExpandUtils.export(dataset, targetFolder);
+        Path result = targetFolder.resolve("dcat.nt");
+        DcatExpandUtils.writeSortedNtriples(model, result);
+        return result;
+    }
 
-		Model exportDcatModel;
-		if (hasNamedGraphs) {
-			exportDcatModel = DcatExpandUtils.export(dataset, targetFolder);
-			DcatExpandUtils.writeSortedNtriples(exportDcatModel, targetFolder.resolve("dcat.nt"));
-		} else {
-			exportDcatModel = dataset.getDefaultModel();
-		}
+    public static void processDeploy(CkanClient ckanClient, String dcatSource, boolean noFileUpload, boolean mapByGroup,
+            String organization) throws IOException {
+        Dataset dataset = RDFDataMgr.loadDataset(dcatSource);
+        Path dcatPath = Paths.get(dcatSource).toAbsolutePath();
+        Path targetFolder = dcatPath.getParent().resolve("target").resolve("dcat");
+        Files.createDirectories(targetFolder);
 
-		Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel, iriResolver, noFileUpload,
-				mapByGroup, organization);
-		DcatExpandUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
-	}
+        String baseIRI = targetFolder.toUri().toString();
+        IRIxResolver iriResolver = IRIxResolver.create(baseIRI).build();
 
-	public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets, boolean quads) {
+        // If the dataset has named graphs, we perform export
+        boolean hasNamedGraphs = Streams.stream(dataset.listNames()).findFirst().isPresent();
 
-		// TODO Move this update request to a separate file and/or trigger it using a
-		// flag
-		UpdateRequest ur = UpdateFactory.create(
-				"PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
+        Model exportDcatModel;
+        if (hasNamedGraphs) {
+            exportDcatModel = DcatExpandUtils.export(dataset, targetFolder);
+            DcatExpandUtils.writeSortedNtriples(exportDcatModel, targetFolder.resolve("dcat.nt"));
+        } else {
+            exportDcatModel = dataset.getDefaultModel();
+        }
 
-		Model pm2 = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
-		StreamRDF streamRdf = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS, null);
-		streamRdf = new StreamRDFDeferred(streamRdf, true, pm2, 10, 1000, null);
-		streamRdf.start();
+        Model deployDcatModel = DcatCkanDeployUtils.deploy(ckanClient, exportDcatModel, iriResolver, noFileUpload,
+                mapByGroup, organization);
+        DcatExpandUtils.writeSortedNtriples(deployDcatModel, targetFolder.resolve("deploy-dcat.nt"));
+    }
 
-		for (String s : datasets) {
-			logger.info("Importing dataset " + s);
+    public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets, boolean quads) {
 
-			CkanDataset ckanDataset = PostProcessor.process(ckanClient.getDataset(s));
-			PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
+        // TODO Move this update request to a separate file and/or trigger it using a
+        // flag
+        UpdateRequest ur = UpdateFactory.create(
+                "PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
 
-			DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
+        Model pm2 = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
+        StreamRDF streamRdf = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS, null);
+        streamRdf = new StreamRDFDeferred(streamRdf, true, pm2, 10, 1000, null);
+        streamRdf.start();
 
-			try {
-				// Skolemize the resource first (so we have a reference to the resource)
-				dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
-				if (prefix != null) {
-					dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
-				}
+        for (String s : datasets) {
+            logger.info("Importing dataset " + s);
 
-				// Remove temporary ckan specific attributes
-				if (false) {
-					UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
-				}
+            CkanDataset ckanDataset = PostProcessor.process(ckanClient.getDataset(s));
+            PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
 
-			} catch (Exception e) {
-				logger.warn("Error processing dataset " + s, e);
-			}
+            DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
+
+            try {
+                // Skolemize the resource first (so we have a reference to the resource)
+                dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
+                if (prefix != null) {
+                    dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
+                }
+
+                // Remove temporary ckan specific attributes
+                if (false) {
+                    UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
+                }
+
+            } catch (Exception e) {
+                logger.warn("Error processing dataset " + s, e);
+            }
 
 //            RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
 
-			if (quads) {
-				ResourceInDataset resourceInNamedGraph = ResourceInDatasetImpl.createFromCopy(
-						DatasetFactoryEx.createInsertOrderPreservingDataset(), dcatDataset.getURI(), dcatDataset);
-				StreamRDFOps.sendDatasetToStream(resourceInNamedGraph.getDataset().asDatasetGraph(), streamRdf);
-			} else {
-				StreamRDFOps.sendGraphToStream(dcatDataset.getModel().getGraph(), streamRdf);
-			}
-		}
-		streamRdf.finish();
-	}
+            if (quads) {
+                ResourceInDataset resourceInNamedGraph = ResourceInDatasetImpl.createFromCopy(
+                        DatasetFactoryEx.createInsertOrderPreservingDataset(), dcatDataset.getURI(), dcatDataset);
+                StreamRDFOps.sendDatasetToStream(resourceInNamedGraph.getDataset().asDatasetGraph(), streamRdf);
+            } else {
+                StreamRDFOps.sendGraphToStream(dcatDataset.getModel().getGraph(), streamRdf);
+            }
+        }
+        streamRdf.finish();
+    }
 
-	public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds,
-			Boolean altJSON)
-			throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {
-		UpdateRequest ur = UpdateFactory.create(CKAN_UPDATE_QUERY);
-		for (String s : datasetNameOrIds) {
-			logger.info("Importing dataset " + s);
-			List<CkanDataset> datasets = dkanClient.getDataset(s, altJSON);
+    public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds,
+            Boolean altJSON)
+            throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {
+        UpdateRequest ur = UpdateFactory.create(CKAN_UPDATE_QUERY);
+        for (String s : datasetNameOrIds) {
+            logger.info("Importing dataset " + s);
+            List<CkanDataset> datasets = dkanClient.getDataset(s, altJSON);
 
-			for (CkanDataset dataset : datasets) {
-				dataset = PostProcessor.process(dataset);
-				DcatDataset dcatDataset = getDcatDataset(dataset, prefix, ur);
-				RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
-			}
-		}
-	}
+            for (CkanDataset dataset : datasets) {
+                dataset = PostProcessor.process(dataset);
+                DcatDataset dcatDataset = getDcatDataset(dataset, prefix, ur);
+                RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
+            }
+        }
+    }
 
-	private static DcatDataset getDcatDataset(CkanDataset ckanDataset, String prefix, UpdateRequest ur) {
-		// TODO Move this update request to a separate file and/or trigger it using a
-		// flag
-		PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
-		DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
+    public static DcatDataset getDcatDataset(CkanDataset ckanDataset, String prefix, UpdateRequest ur) {
+        // TODO Move this update request to a separate file and/or trigger it using a
+        // flag
+        PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
+        DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
 
-		try {
-			// Skolemize the resource first (so we have a reference to the resource)
-			dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
+        try {
+            // Skolemize the resource first (so we have a reference to the resource)
+            dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
 
-			if (prefix != null) {
-				dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
-			}
+            if (prefix != null) {
+                dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
+            }
 
-			// Remove temporary ckan specific attributes
-			if (false) {
-				UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
-			}
+            // Remove temporary ckan specific attributes
+            if (false) {
+                UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
+            }
 
-		} catch (Exception e) {
-			logger.warn("Error processing dataset " + ckanDataset.getId(), e);
-		}
+        } catch (Exception e) {
+            logger.warn("Error processing dataset " + ckanDataset.getId(), e);
+        }
 
-		return dcatDataset;
-	}
+        return dcatDataset;
+    }
 }
