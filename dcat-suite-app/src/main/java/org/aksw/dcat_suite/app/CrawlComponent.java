@@ -30,7 +30,6 @@ public class CrawlComponent extends VerticalLayout {
 
 	public void addCrawl() {
 		
-		
 		Select<String> select = new Select<>();
 		select.setLabel("Portal Type");
 		select.setItems("ckan", "dkan");

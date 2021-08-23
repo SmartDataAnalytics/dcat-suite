@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,11 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.ClientProtocolException;
 
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.charts.model.style.ButtonTheme;
@@ -23,9 +28,12 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
+import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.shared.Registration;
 
 public class MainView extends VerticalLayout {
 	/**
@@ -41,13 +49,14 @@ public class MainView extends VerticalLayout {
 	private Upload upload;
 	private List<String[]> enrichList;
 	private Map<String,Button> nameToButtons;
+	private QACProvider validationProvider = new QACProvider(); 
 	MenuBar menuBar;
 	
 	
 	public MainView () {
 		buffer = new MemoryBuffer();
-		upload = new Upload();
-    	upload = new Upload(buffer);
+		upload = new MyUpload();
+    	upload = new MyUpload(buffer);
     	enrichList = new ArrayList<String[]>();
 		// Instantiate layouts
     	header = new HorizontalLayout();
@@ -81,7 +90,7 @@ public class MainView extends VerticalLayout {
 	
 	public void addUpload() {
     	upload.setMinWidth("300px");
-        upload.setUploadButton(new Button("Upload your GTFS zip", VaadinIcon.UPLOAD.create()));
+        upload.setUploadButton(new Button("Upload your file", VaadinIcon.UPLOAD.create()));
         upload.setMaxFiles(1);
         upload.setDropAllowed(false);
         upload.addSucceededListener(event -> {
@@ -115,9 +124,60 @@ public class MainView extends VerticalLayout {
         upload.addFailedListener(event -> {
             Notification.show(String.format("Upload failed. Filename: %s", event.getFileName()));
         });
+        upload.getElement()
+        .addEventListener(
+        	    "file-remove",
+        	    event -> {
+        	      enrichList.clear();
+        	    });
         content.add(upload);
         
     }
+	
+public void addGTFSValidate() throws ClientProtocolException, URISyntaxException, IOException {
+		
+		ProgressBar progressBar = new ProgressBar();
+        progressBar.setIndeterminate(true);
+		//Icon validateIcon = new Icon(VaadinIcon.CHECK_SQUARE);
+        Button validateButton = new Button("Validate your GTFS zip", VaadinIcon.CHECK_SQUARE.create());
+        validateButton.addClickListener(clickevent -> {   
+    		try {
+				this.validationProvider.startJob(getLatestServerPath());
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+
+    		try {
+    			String currentStatus = this.validationProvider.getStatus();
+    			System.out.println(this.validationProvider.getStatus()); 
+				while (currentStatus.equals(StatusCodes.NEW) || 
+					currentStatus.equals(StatusCodes.UPLOADED) || 
+					currentStatus.equals(StatusCodes.PROCESSING)) {
+					currentStatus = this.validationProvider.getStatus();
+					progressBar.setVisible(true); 
+					
+				}
+				if (currentStatus.equals(StatusCodes.READY)) {
+					progressBar.setVisible(false); 
+					System.out.println(this.validationProvider.getResult()); 
+				}
+			} catch (URISyntaxException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        });
+        content.add(validateButton); 
+        content.add(progressBar);
+        progressBar.setVisible(false); 
+
+	}
     
     private ServletContext getServletContext() {
 
@@ -131,7 +191,7 @@ public class MainView extends VerticalLayout {
     	Anchor enrichAnchor = createMenuAnchor("DCAT enrich","/enrich"); 
     	Anchor crawlAnchor = createMenuAnchor("DCAT crawl","/crawl"); 
     	Anchor deployAnchor = createMenuAnchor("DCAT deploy",""); 
-    	Anchor validateAnchor = createMenuAnchor("DCAT validate",""); 
+    	Anchor validateAnchor = createMenuAnchor("DCAT validate","/validate"); 
     
     	Stream.of(homeAnchor, enrichAnchor, crawlAnchor, deployAnchor, validateAnchor)
     	        .forEach(menuBar::addItem);
@@ -173,5 +233,36 @@ public class MainView extends VerticalLayout {
 	public Map<String, Button> getNameToButtons () {
 		return nameToButtons; 
 	}
+	
+	class MyUpload extends Upload {
+        /**
+		 * 
+		 */
+		public MyUpload() {
+			super();
+		}
+		
+		public MyUpload(Receiver receiver) {
+			super(receiver);
+		}
+		
+		private static final long serialVersionUID = 1L;
+
+		Registration addFileRemoveListener(ComponentEventListener<FileRemoveEvent> listener) {
+            return super.addListener(FileRemoveEvent.class, listener);
+        }
+    }
+
+    @DomEvent("file-remove")
+    public static class FileRemoveEvent extends ComponentEvent<Upload> {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public FileRemoveEvent(Upload source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
 	
 }

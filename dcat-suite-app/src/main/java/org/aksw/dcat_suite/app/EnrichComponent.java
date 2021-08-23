@@ -5,11 +5,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.aksw.dcat_suite.enrich.GTFSModel;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFFormat;
 
@@ -30,24 +32,22 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 
 public class EnrichComponent extends VerticalLayout {
-
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private MainView view; 
-	private DCATProvider provider; 
+	private GTFSProvider gtfsProvider; 
 	private static final String DOWNLOAD = "/home/user/file.zip";
 	private static final String TURTLE = "TURTLE";
 	private static final String RDFXML = "RDF/XML";
 	private static final String NTRIPLES = "NTRIPLES";
 
-
-	public EnrichComponent(MainView view, DCATProvider provider)  {
+	public EnrichComponent(MainView view)  {
 		this.view = view; 
-		this.provider = provider; 
+		this.gtfsProvider = new GTFSProvider(); 
 	}
-	
+
 	public void addTransform() {
 		Icon transformIcon = new Icon(VaadinIcon.CARET_SQUARE_RIGHT_O);
 		Button clearButton = new Button("Clear");
@@ -68,7 +68,6 @@ public class EnrichComponent extends VerticalLayout {
 		Button button = new Button(new Icon(VaadinIcon.PLUS));
 		button.addClickListener(clickevent -> { 
 			downloadURL.setVisible(true);
-		      
 		});
 		
 		TextArea textArea = new TextArea();
@@ -81,7 +80,7 @@ public class EnrichComponent extends VerticalLayout {
         		String titleValue = AppUtils.getTextValue(title);
         		String namespaceValue = AppUtils.getTextValue(namespace);
         		String downloadValue = AppUtils.getTextValue(downloadURL);;
-				model = this.provider.processEnrichGTFSWeb(view.getLatestServerPath(), titleValue, namespaceValue, downloadValue);
+				model = this.gtfsProvider.processEnrichGTFSWeb(view.getLatestServerPath(), titleValue, namespaceValue, downloadValue);
 				String triplesText = getTriplesText(model,TURTLE); 
 				textArea.setValue(triplesText);
 				Anchor ttlAnchor = getAnchor(model, triplesText, TURTLE,"Download TURTLE");
@@ -91,10 +90,8 @@ public class EnrichComponent extends VerticalLayout {
 		        layout.setVisible(true);
 				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			// Serialize to text and put it in a text block
 			
 		});
         clearButton.addClickListener(buttonEvent -> { 
@@ -113,7 +110,6 @@ public class EnrichComponent extends VerticalLayout {
  
 	}
 	
-
 	private StreamResource getStreamResource(String triplesText, String format) {
 		String fileSuffix =""; 
 		switch(format){
