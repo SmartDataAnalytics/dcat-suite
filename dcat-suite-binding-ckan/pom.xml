@@ -32,6 +32,12 @@
 	        <artifactId>facete3-impl</artifactId>
 		</dependency>
 
+		<!-- Only used for spring's conversion service of spring-core; try to remove this dep -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.aksw.jena-sparql-api</groupId>
 			<artifactId>jena-sparql-api-conjure</artifactId>

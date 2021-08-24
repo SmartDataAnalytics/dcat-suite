@@ -1,4 +1,4 @@
-package org.aksw.dcat_suite.app;
+package org.aksw.dcat_suite.app.vaadin.layout;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,15 +13,16 @@ import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 
+import org.aksw.dcat_suite.app.QACProvider;
+import org.aksw.dcat_suite.app.StatusCodes;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.ClientProtocolException;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.charts.model.style.ButtonTheme;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -35,7 +36,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.shared.Registration;
 
-public class MainView extends VerticalLayout {
+public class MClientMainLayout extends AppLayout {
     /**
      *
      */
@@ -53,7 +54,7 @@ public class MainView extends VerticalLayout {
     MenuBar menuBar;
 
 
-    public MainView () {
+    public MClientMainLayout () {
         buffer = new MemoryBuffer();
         upload = new MyUpload();
         upload = new MyUpload(buffer);
@@ -70,9 +71,10 @@ public class MainView extends VerticalLayout {
         header.add(menuBar);
 
         // Configure layouts
-        setSizeFull();
-        setPadding(false);
-        setSpacing(false);
+//        setSizeFull();
+//        setPadding(false);
+//        setSpacing(false);
+
         header.setWidth("100%");
         header.setPadding(true);
         center.setWidth("100%");
@@ -84,8 +86,8 @@ public class MainView extends VerticalLayout {
         // compose layout
           center.add(navBar, content);
         center.setFlexGrow(1, navBar);
-        add(header, center, footer);
-        expand(center);
+        //add(header, center, footer);
+        // expand(center);
     }
 
     public void addUpload() {

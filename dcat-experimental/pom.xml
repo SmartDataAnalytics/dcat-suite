@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -14,10 +15,10 @@
 
 
 	<dependencies>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.topbraid</groupId> -->
-<!-- 			<artifactId>shacl</artifactId> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.topbraid</groupId> -->
+		<!-- <artifactId>shacl</artifactId> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>org.hobbit</groupId>
@@ -25,16 +26,21 @@
 			<!-- <scope>runtime</scope> -->
 		</dependency>
 
+
+		<!-- Only used for spring's conversion service of spring-core; try to remove this dep -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.aksw.jena-sparql-api</groupId>
 			<artifactId>jena-sparql-api-utils</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-mapper-core</artifactId>
-		</dependency>
-
+		<!-- <dependency> <groupId>org.aksw.jena-sparql-api</groupId> <artifactId>jena-sparql-api-mapper-core</artifactId> 
+			</dependency> -->
 		<dependency>
 			<groupId>org.hobbit</groupId>
 			<artifactId>virt_jena3</artifactId>
@@ -50,12 +56,8 @@
 			<artifactId>dcat-suite-binding-ckan</artifactId>
 		</dependency>
 
-<!--
-		<dependency>
-			<groupId>com.beust</groupId>
-			<artifactId>jcommander</artifactId>
-		</dependency>
--->
+		<!-- <dependency> <groupId>com.beust</groupId> <artifactId>jcommander</artifactId> 
+			</dependency> -->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
