@@ -5,21 +5,39 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import org.aksw.commons.io.util.FileUtils;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
+
+import io.reactivex.rxjava3.core.Flowable;
 
 public class HierarchicalDataProviderForPath
     extends AbstractBackEndHierarchicalDataProvider<Path, String>
 {
     protected Path basePath;
 
-    public HierarchicalDataProviderForPath(Path basePath) {
+    protected boolean includeBasePath;
+    // protected boolean foldersOnly;
+    protected Predicate<Path> folderItemFilter;
+
+    /** Whether to only show the folder structure */
+    public HierarchicalDataProviderForPath(Path basePath, boolean includeBasePath, Predicate<Path> folderItemFilter) {
         super();
         this.basePath = basePath;
+        // this.foldersOnly = foldersOnly;
+        this.includeBasePath = includeBasePath;
+        this.folderItemFilter = folderItemFilter;
+    }
+
+    public static HierarchicalDataProviderForPath createForFolderStructure(Path basePath) {
+        return new HierarchicalDataProviderForPath(basePath, true, Files::isDirectory);
     }
 
 
@@ -35,34 +53,56 @@ public class HierarchicalDataProviderForPath
 
     @Override
     public boolean hasChildren(Path item) {
+        boolean result;
         try {
-            Path path = nullToRoot(item);
-            boolean result = Files.isDirectory(path) ? Files.list(path).count() > 0 : false;
-            return result;
+            if (item == null && includeBasePath) {
+                result = true;
+            } else {
+                Path path = nullToRoot(item);
+                result = Files.isDirectory(path)
+                    ? !Flowable.fromStream(Files.list(path))
+                            .filter(folderItemFilter::test).isEmpty().blockingGet()
+                    : false;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return result;
     }
 
     @Override
     protected Stream<Path> fetchChildrenFromBackEnd(HierarchicalQuery<Path, String> query) {
-        Path parent = nullToRoot(query.getParent());
-        FileSystem fs = parent.getFileSystem();
-        String filterStr = Optional.ofNullable(query.getFilter().orElse(null)).orElse("");
+        Stream<Path> result;
 
-//        String filterStr = Optional.ofNullable(query.getFilter().orElse(null)).orElse("*");
+        Path parent = query.getParent();
+        if (parent == null && includeBasePath) {
+            result = Collections.singleton(basePath).stream();
+        } else {
 
-        PathMatcher pathMatcher = filterStr.isBlank() ? path -> true : fs.getPathMatcher(filterStr);
+            parent = nullToRoot(query.getParent());
+            FileSystem fs = parent.getFileSystem();
+            String filterStr = Optional.ofNullable(query.getFilter().orElse(null)).orElse("");
+
+    //        String filterStr = Optional.ofNullable(query.getFilter().orElse(null)).orElse("*");
+
+            PathMatcher pathMatcher = filterStr.isBlank() ? path -> true : fs.getPathMatcher(filterStr);
 
 
-        try {
-            return Files.list(parent)
-                .filter(pathMatcher::matches);
+            try {
+                result = Flowable.fromStream(Files.list(parent))
+                    .filter(folderItemFilter::test)
+                    .filter(pathMatcher::matches)
+                    .toList()
+                    .blockingGet() // Materialize and implicitly close the stream before returning
+                    .stream();
 
-//            return FileUtils.listPaths(parent, filterStr).stream();
+    //            return FileUtils.listPaths(parent, filterStr).stream();
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        return result;
     }
 }
