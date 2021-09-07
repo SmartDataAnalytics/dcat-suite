@@ -146,6 +146,7 @@ public class HierarchicalDataProviderForPathPE
         Query qp = QueryUtils.applyOpTransform(q, AlgebraUtils.createDefaultRewriter()::rewrite);
         // conn.querySelect(qp, row -> System.out.println(row));
 
+        System.out.println(qp);
 
         // FIXME unbound var is null and null is not allowed in rx...
         result = SparqlRx.execConceptRaw(() -> conn.query(qp), urv)
