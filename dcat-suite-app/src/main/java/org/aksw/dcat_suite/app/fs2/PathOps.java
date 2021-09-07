@@ -11,5 +11,6 @@ public interface PathOps {
     URI toUri(List<String> components);
     Path newPath(boolean isAbsolute, List<String> components);
 
+
     FileSystem getFileSystem();
 }

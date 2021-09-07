@@ -1,0 +1,610 @@
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-boundary>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type boundary" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-boundary" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-boundary/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/5d61d955-df75-4251-b7eb-2ceb924a79e0/download/osm-bremen-2018-04-04-ways-boundary.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-aeroway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type aeroway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-aeroway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-aeroway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/77c33b00-c101-4ed4-9e86-2fbef172cde8/download/osm-bremen-2018-04-04-ways-aeroway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-tourism-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type tourism-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-tourism-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-tourism-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/e1be2ffb-a38a-4403-88c4-f8829d2becf4/download/osm-bremen-2018-04-04-nodes-tourism-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-shop>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type shop" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-shop" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-shop/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/66865369-be92-452e-9394-93e476265ed4/download/osm-bremen-2018-04-04-nodes-shop.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-place>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type place" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-place" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-place/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/5d691ce9-22ce-4d97-b34b-3434284df798/download/osm-bremen-2018-04-04-nodes-place.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-aerialway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type aerialway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-aerialway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-aerialway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/1c35abd5-5966-4935-b55b-6d8f8402a12f/download/osm-bremen-2018-04-04-nodes-aerialway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-shop>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type shop" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-shop" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-shop/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/bc1117ca-d27b-42b1-8cc5-d0a46e4f92c4/download/osm-bremen-2018-04-04-ways-shop.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-historic-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type historic-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-historic-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-historic-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/4b40bf3f-c43e-4799-90af-8031a890f543/download/osm-bremen-2018-04-04-nodes-historic-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-boundary>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type boundary" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-boundary" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-boundary/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/1b4ffe5c-cdae-4303-aea8-92fcac29db34/download/osm-bremen-2018-04-04-nodes-boundary.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-cycleway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type cycleway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-cycleway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-cycleway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/cb92ad66-06bb-45da-8289-0b82abaf0ba7/download/osm-bremen-2018-04-04-ways-cycleway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-emergency-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type emergency-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-emergency-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-emergency-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/80ff5644-c448-4093-9315-7d446879034e/download/osm-bremen-2018-04-04-nodes-emergency-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-barrier-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type barrier-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-barrier-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-barrier-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/3ff109c2-3b2f-43d7-847d-6cf9bd4bb4b5/download/osm-bremen-2018-04-04-nodes-barrier-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-man-made-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type man-made-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-man-made-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-man-made-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/b9985f27-ef59-4aa4-b671-82ee5bdd748d/download/osm-bremen-2018-04-04-ways-man-made-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-craft>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type craft" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-craft" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-craft/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/36217fb9-a72b-4a61-b00d-9b6fd7010607/download/osm-bremen-2018-04-04-nodes-craft.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-tourism-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type tourism-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-tourism-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-tourism-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/2d969141-1ffc-4d53-9714-2d57d23837a9/download/osm-bremen-2018-04-04-ways-tourism-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-sport-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type sport-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-sport-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-sport-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/e12e17d8-3704-449d-a0c5-57ef129c55c3/download/osm-bremen-2018-04-04-nodes-sport-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-abutters>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type abutters" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-abutters" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-abutters/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/fcc18ef6-c823-4464-b852-a04326898a1b/download/osm-bremen-2018-04-04-ways-abutters.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-public-transport-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type public-transport-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-public-transport-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-public-transport-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/0023ca1e-aa32-45c6-a1f3-bab7a74b5619/download/osm-bremen-2018-04-04-ways-public-transport-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-route-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type route-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-route-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-route-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/37168a21-4e13-4b3d-ab15-6d2e56b63ba3/download/osm-bremen-2018-04-04-nodes-route-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-place>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type place" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-place" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-place/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/eb912338-5016-43da-9f82-5697aa818f23/download/osm-bremen-2018-04-04-ways-place.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-military-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type military-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-military-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-military-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/ff75593f-1482-4679-9871-86e2428f026d/download/osm-bremen-2018-04-04-ways-military-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-railway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type railway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-railway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-railway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/1c1b71d6-ad7b-4a7d-a450-c8b32adc5c4c/download/osm-bremen-2018-04-04-nodes-railway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-man-made-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type man-made-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-man-made-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-man-made-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/0f6cae9f-7522-46eb-a94e-968181eef43c/download/osm-bremen-2018-04-04-nodes-man-made-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-abutters>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type abutters" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-abutters" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-abutters/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/d5873b78-a854-4ce0-b6ba-aacd8f63167a/download/osm-bremen-2018-04-04-nodes-abutters.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-sport-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type sport-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-sport-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-sport-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/b14942d9-5a2d-4660-b2b0-fa905dd50c67/download/osm-bremen-2018-04-04-ways-sport-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-leisure>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type leisure" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-leisure" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-leisure/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/b5fce1dc-e0c5-4919-86d4-497489115bd0/download/osm-bremen-2018-04-04-ways-leisure.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-aeroway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type aeroway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-aeroway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-aeroway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/d4017270-2c8b-41c6-8d24-8635ee8c2f34/download/osm-bremen-2018-04-04-nodes-aeroway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-lock-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type lock-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-lock-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-lock-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/277119a7-448f-4338-9a3d-9cffff7f1c5c/download/osm-bremen-2018-04-04-ways-lock-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-barrier-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type barrier-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-barrier-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-barrier-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/e63b3293-7b74-4376-98c4-689b99813a1e/download/osm-bremen-2018-04-04-ways-barrier-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-route-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type route-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-route-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-route-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/49ec5058-551d-4c89-98f1-6eaef425211e/download/osm-bremen-2018-04-04-ways-route-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-power-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type power-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-power-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-power-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/7464842e-d662-4e9b-b517-70a8c5cfb63d/download/osm-bremen-2018-04-04-nodes-power-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-cycleway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type cycleway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-cycleway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-cycleway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/f5e57bff-1e81-42b6-84b9-fa7b5b14c034/download/osm-bremen-2018-04-04-nodes-cycleway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type amenity" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-amenity" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-amenity/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/fb3fed1f-cc9a-4232-a876-b185d8e002c8/download/osm-bremen-2018-04-04-ways-amenity.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-military-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type military-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-military-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-military-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/a6a4647f-3d28-4511-ad7a-1849771a6f42/download/osm-bremen-2018-04-04-nodes-military-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-craft>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type craft" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-craft" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-craft/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/bc6db2eb-82e4-4477-a132-bf379f1b402a/download/osm-bremen-2018-04-04-ways-craft.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-office>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type office" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-office" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-office/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/f90a37e3-949a-401f-b3b8-d3c93b0428a4/download/osm-bremen-2018-04-04-nodes-office.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-leisure>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type leisure" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-leisure" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-leisure/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/545f32c2-2824-4be8-8122-6850b01c2f56/download/osm-bremen-2018-04-04-nodes-leisure.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-office>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type office" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-office" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-office/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/bddc12ab-2cbd-4635-9f10-d78acaf3a746/download/osm-bremen-2018-04-04-ways-office.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-lock-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type lock-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-lock-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-lock-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/49d774cc-58f6-4067-9dce-49fe9f8435d1/download/osm-bremen-2018-04-04-nodes-lock-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-emergency-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type emergency-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-emergency-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-emergency-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/e892ac97-a7a4-407e-a352-340e75cc1c90/download/osm-bremen-2018-04-04-ways-emergency-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-railway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type railway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-railway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-railway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/afe0c65e-3b17-4569-b68b-f08730740ebf/download/osm-bremen-2018-04-04-ways-railway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-power-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type power-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-power-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-power-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/6210ee18-26c5-4ab9-853c-4c60dc590807/download/osm-bremen-2018-04-04-ways-power-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-amenity>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type amenity" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-amenity" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-amenity/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/d592b088-7c1d-4397-b50c-ead66c2b6946/download/osm-bremen-2018-04-04-nodes-amenity.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-aerialway-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type aerialway-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-aerialway-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-aerialway-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/772619e8-cde3-4bac-a750-b372508326c1/download/osm-bremen-2018-04-04-ways-aerialway-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-historic-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM ways of type historic-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-ways-historic-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-ways-historic-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/2eddee12-ad6a-4329-9181-60574556515b/download/osm-bremen-2018-04-04-ways-historic-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-public-transport-thing>
+        a       <http://www.w3.org/ns/dcat#Distribution> ;
+        <http://purl.org/dc/terms/description>
+                "RDF dataset containing OSM nodes of type public-transport-thing" ;
+        <http://purl.org/dc/terms/format>
+                "RDF" ;
+        <http://purl.org/dc/terms/title>
+                "osm-bremen-2018-04-04-nodes-public-transport-thing" ;
+        <http://www.w3.org/ns/dcat#defaultGraph>
+                <http://linkedgeodata.org/osm-bremen-2018-04-04-nodes-public-transport-thing/> ;
+        <http://www.w3.org/ns/dcat#downloadURL>
+                <http://ckan.qrowd.aksw.org/dataset/8bbb915a-f476-4749-b441-5790b368c38b/resource/dd924826-7070-447f-8c79-4bdfce1968bf/download/osm-bremen-2018-04-04-nodes-public-transport-thing.sorted.nt.bz2> .
+
+<http://dcat.linkedgeodata.org/dataset/osm-bremen-2018-04-04>
+        a       <http://www.w3.org/ns/dcat#Dataset> ;
+        <http://purl.org/dc/terms/description>
+                "LinkedGeoData RDF dump of bremen as of 2018-04-04" ;
+        <http://purl.org/dc/terms/identifier>
+                "org-linkedgeodata-osm-bremen-2018-04-04" ;
+        <http://purl.org/dc/terms/title>
+                "LinkedGeoData bremen 2018-04-04" ;
+        <http://www.w3.org/ns/dcat#defaultGraphGroup>
+                <http://linkedgeodata.org/osm-bremen/2018-04-04/> ;
+        <http://www.w3.org/ns/dcat#distribution>
+                <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-amenity> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-cycleway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-military-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-place> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-aerialway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-aeroway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-sport-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-shop> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-office> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-public-transport-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-power-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-place> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-boundary> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-amenity> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-railway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-emergency-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-sport-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-tourism-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-lock-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-abutters> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-craft> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-cycleway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-public-transport-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-lock-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-route-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-shop> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-leisure> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-aerialway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-office> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-craft> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-man-made-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-emergency-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-boundary> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-tourism-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-leisure> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-power-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-barrier-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-historic-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-railway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-aeroway-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-abutters> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-historic-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-man-made-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-route-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-ways-military-thing> , <http://dcat.linkedgeodata.org/distribution/osm-bremen-2018-04-04-nodes-barrier-thing> .

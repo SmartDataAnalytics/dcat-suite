@@ -21,8 +21,11 @@ import io.reactivex.rxjava3.core.Flowable;
 public class HierarchicalDataProviderForPath
     extends AbstractBackEndHierarchicalDataProvider<Path, String>
 {
+
     protected Path basePath;
 
+    // If includeBasePath is true (default), then null has basePath as its only child
+    // Otherwise the children of null are the children of basePath
     protected boolean includeBasePath;
     // protected boolean foldersOnly;
     protected Predicate<Path> folderItemFilter;

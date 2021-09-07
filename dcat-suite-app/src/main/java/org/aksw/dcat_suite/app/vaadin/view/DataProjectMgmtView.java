@@ -20,7 +20,8 @@ import org.aksw.commons.collection.observable.ObservableValueImpl;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.app.vaadin.layout.MClientMainLayout;
-import org.aksw.jena_sparql_api.core.QueryExecutionDecoratorTxn;
+import org.aksw.jena_sparql_api.arq.core.query.QueryExecutionDecoratorTxn;
+import org.aksw.jena_sparql_api.path.core.PathPE;
 import org.aksw.jena_sparql_api.stmt.SparqlParserConfig;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
@@ -40,9 +41,7 @@ import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog.ConfirmEvent;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
@@ -373,6 +372,25 @@ public class DataProjectMgmtView
         // updateFileSearch(treeData, treeDataProvider, "");
 
         add(heading);
+
+
+        TreeGrid<PathPE> dataGrid = new TreeGrid<>();
+        {
+            Column<?> hierarchyColumn = dataGrid.addHierarchyColumn(path -> {
+
+                PathPE fn = path.getFileName();
+                String str = fn == null ? "/" : fn.toSegment().tryGetConstant()
+                        .map(Object::toString).orElse(fn.toString());
+
+                return str;
+            });
+            hierarchyColumn.setResizable(true);
+            hierarchyColumn.setFrozen(true);
+        }
+        dataGrid.setDataProvider(HierarchicalDataProviderForPathPE.createTest());
+
+        add(dataGrid);
+
 
 
         add(datasetGrid);

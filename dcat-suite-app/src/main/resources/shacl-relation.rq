@@ -1,0 +1,20 @@
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+SELECT ?src ?dir ?p ?tgt {
+    {
+      {
+        BIND (<urn:fwd> AS ?dir)
+        ?src sh:property ?ps .
+        ?ps sh:path ?p .
+        FILTER NOT EXISTS { ?p sh:inversePath [] }
+      }
+      OPTIONAL { ?ps sh:class ?c . ?tgt sh:targetClass ?c }
+    }
+  UNION
+    {
+      BIND (<urn:bwd> AS ?dir)
+      ?src sh:property ?ps .
+      ?ps sh:path [ sh:inversePath ?p ] .
+      ?tgt sh:targetClass ?c
+      OPTIONAL { ?ps sh:class ?c . ?tgt sh:targetClass ?c }
+    }
+}
