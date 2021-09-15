@@ -53,11 +53,7 @@ public class HierarchicalDataProviderForPathPE
     public static Relation createShaclRelation() {
 
         Query query;
-        try {
-            query = SparqlStmtMgr.loadQuery("shacl-relation.rq");
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        query = SparqlStmtMgr.loadQuery("shacl-relation.rq");
         Relation result = RelationUtils.fromQuery(query);
 
         return result;
