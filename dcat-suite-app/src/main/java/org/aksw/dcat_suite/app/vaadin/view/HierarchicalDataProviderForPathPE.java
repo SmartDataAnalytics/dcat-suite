@@ -1,20 +1,19 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
-import org.aksw.jena_sparql_api.concepts.Relation;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
-import org.aksw.jena_sparql_api.concepts.UnaryRelation;
-import org.aksw.jena_sparql_api.path.core.PathOpsPE;
-import org.aksw.jena_sparql_api.path.core.PathPE;
-import org.aksw.jena_sparql_api.path.relgen.RelationGeneratorSimple;
 import org.aksw.jena_sparql_api.rx.SparqlRx;
 import org.aksw.jena_sparql_api.stmt.SparqlStmtMgr;
 import org.aksw.jena_sparql_api.utils.QueryUtils;
+import org.aksw.jenax.path.core.PathOpsPE;
+import org.aksw.jenax.path.core.PathPE;
+import org.aksw.jenax.path.relgen.RelationGeneratorSimple;
+import org.aksw.jenax.sparql.relation.api.Relation;
+import org.aksw.jenax.sparql.relation.api.UnaryRelation;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
@@ -26,7 +25,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_Bound;
 import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.lang.arq.ParseException;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;

@@ -21,18 +21,23 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-conjure</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-conjure-core</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-resources</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-resources-prefixes</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-json</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-rdfnode-in-dataset</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-json</artifactId>
 		</dependency>
 
 

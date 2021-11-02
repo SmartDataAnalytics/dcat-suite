@@ -18,12 +18,12 @@ import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
-import org.aksw.jena_sparql_api.rx.SparqlScriptProcessor;
-import org.aksw.jena_sparql_api.stmt.SparqlStmt;
-import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl;
-import org.aksw.jena_sparql_api.stmt.SparqlStmtUtils;
-import org.aksw.jena_sparql_api.utils.NodeUtils;
-import org.aksw.jena_sparql_api.utils.transform.NodeTransformCollectNodes;
+import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
+import org.aksw.jenax.arq.util.node.NodeEnvsubst;
+import org.aksw.jenax.arq.util.node.NodeTransformCollectNodes;
+import org.aksw.jenax.stmt.core.SparqlStmt;
+import org.aksw.jenax.stmt.core.SparqlStmtParserImpl;
+import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.apache.jena.query.Syntax;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
@@ -65,8 +65,8 @@ public class CmdTransformCreate
 
         PrefixMapping prefixMapping = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
         SparqlScriptProcessor scriptProcessor = new SparqlScriptProcessor(
-        		prologue -> SparqlStmtParserImpl.create(Syntax.syntaxARQ, prologue, false),
-        		prefixMapping);
+                prologue -> SparqlStmtParserImpl.create(Syntax.syntaxARQ, prologue, false),
+                prefixMapping);
         // new SparqlScriptProcessor(SparqlStmtParserImpl.create(prefixMapping), prefixMapping);
 
         scriptProcessor.process(sparqlStmtRefs);
@@ -106,7 +106,7 @@ public class CmdTransformCreate
         // Get all environment references
         // TODO Make this a util function
         Set<String> usedEnvVarNames = collector.getNodes().stream()
-            .map(NodeUtils::getEnvKey)
+            .map(NodeEnvsubst::getEnvKey)
             .filter(Objects::nonNull)
             .map(Entry::getKey)
             .distinct()

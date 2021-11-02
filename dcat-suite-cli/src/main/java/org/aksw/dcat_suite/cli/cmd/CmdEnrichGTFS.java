@@ -1,7 +1,9 @@
 package org.aksw.dcat_suite.cli.cmd;
 
 import java.util.concurrent.Callable;
+
 import org.aksw.dcat_suite.cli.main.MainCliDcatSuite;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

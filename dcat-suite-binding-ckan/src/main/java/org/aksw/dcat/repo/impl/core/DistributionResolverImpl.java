@@ -17,7 +17,7 @@ import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdfconnection.RDFConnection;

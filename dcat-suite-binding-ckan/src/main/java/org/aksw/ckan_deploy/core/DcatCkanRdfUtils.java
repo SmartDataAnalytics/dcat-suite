@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.aksw.ckan.domain.CkanEntity;
-import org.aksw.commons.util.strings.StringUtils;
+import org.aksw.commons.util.string.StringUtils;
 import org.aksw.dcat.ap.binding.ckan.rdf_view.CkanPseudoNodeFactory;
 import org.aksw.dcat.ap.binding.ckan.rdf_view.GraphView;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
@@ -25,7 +25,7 @@ import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
 import org.aksw.jena_sparql_api.pseudo_rdf.MappingVocab;
 import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
-import org.aksw.jena_sparql_api.utils.NodeTransformLib2;
+import org.aksw.jenax.arq.util.node.NodeTransformLib2;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Literal;

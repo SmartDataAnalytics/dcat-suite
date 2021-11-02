@@ -1,0 +1,11 @@
+SELECT ?src ?dir ?p ?tgt {
+    {
+      BIND (<urn:fwd> AS ?dir)
+      ?src ?p ?tgt
+    }
+  UNION
+    {
+      BIND (<urn:bwd> AS ?dir)
+      ?tgt ?p ?src
+    }
+}

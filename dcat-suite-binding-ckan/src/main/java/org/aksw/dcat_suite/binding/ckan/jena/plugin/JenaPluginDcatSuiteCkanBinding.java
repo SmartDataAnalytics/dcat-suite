@@ -3,7 +3,7 @@ package org.aksw.dcat_suite.binding.ckan.jena.plugin;
 import org.aksw.ckan.domain.CkanEntity;
 import org.aksw.dcat.ckan.config.model.DcatResolverCkan;
 import org.aksw.dcat.ckan.config.model.DcatResolverConfig;
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
+import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.apache.jena.sys.JenaSubsystemLifecycle;
 
 public class JenaPluginDcatSuiteCkanBinding

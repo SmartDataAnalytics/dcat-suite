@@ -1,5 +1,5 @@
 PREFIX sh: <http://www.w3.org/ns/shacl#>
-SELECT ?src ?dir ?p ?tgt {
+SELECT ?src ?p ?dir ?tgt {
     {
       {
         BIND (<urn:fwd> AS ?dir)

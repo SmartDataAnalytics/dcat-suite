@@ -18,15 +18,15 @@ import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
 import org.aksw.jena_sparql_api.algebra.utils.VirtualPartitionedQuery;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
-import org.aksw.jena_sparql_api.concepts.TernaryRelation;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureContext;
-import org.aksw.jena_sparql_api.core.connection.RDFConnectionBuilder;
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils;
-import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
-import org.aksw.jena_sparql_api.utils.PrefixUtils;
-import org.aksw.jena_sparql_api.utils.QueryUtils;
+import org.aksw.jenax.arq.connection.core.RDFConnectionBuilder;
+import org.aksw.jenax.arq.util.prefix.PrefixUtils;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.jenax.reprogen.core.JenaPluginUtils;
+import org.aksw.jenax.sparql.relation.api.TernaryRelation;
+import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
@@ -66,7 +66,7 @@ public class MainDeleteme {
             id = item.getURI();
         }
 
-        PrefixMapping pm = DefaultPrefixes.prefixes;
+        PrefixMapping pm = DefaultPrefixes.get();
 
         String types = item.getTypes().stream()
                 .filter(RDFNode::isURIResource)
@@ -165,7 +165,7 @@ public class MainDeleteme {
         if(true) { return; }
 
 
-        SparqlQueryParserImpl parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
+        SparqlQueryParserImpl parser = SparqlQueryParserImpl.create(DefaultPrefixes.get());
 
 //		Query userQuery = parser.apply(
 //				"SELECT ?s {\n" +
@@ -204,7 +204,7 @@ public class MainDeleteme {
 
         ConjureContext ctx = new ConjureContext();
         Model xmodel = ctx.getModel();
-        xmodel.setNsPrefix("rpif", DefaultPrefixes.prefixes.getNsPrefixURI("rpif"));
+        xmodel.setNsPrefix("rpif", DefaultPrefixes.get().getNsPrefixURI("rpif"));
 
         ConjureBuilder cj = new ConjureBuilderImpl(ctx);
         cj.union(

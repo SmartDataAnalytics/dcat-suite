@@ -20,7 +20,7 @@ import org.aksw.dcat.ap.binding.ckan.rdf_view.SetFromCkanExtras;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.jena_sparql_api.rdf.collections.ConverterFromObjectToLexicalFormViaRDFDatatype;
-import org.aksw.jena_sparql_api.utils.model.SimpleImplementation;
+import org.aksw.jenax.arq.util.implementation.SimpleImplementation;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
@@ -240,37 +240,37 @@ public class CkanUtils {
         return result;
     }
 
-    
-	/**
-	 * Create a conversion service for datatypes used by the CKAN API.
-	 * Date/time conversions are of particular relevance.
-	 * 
-	 * @return
-	 */
-	public static ConversionService createDefaultConversionService() {
-		DefaultConversionService dcs = new DefaultConversionService();
-		// GenericConversionService gcs = new GenericConversionService();
-		dcs.addConverter(XSDDateTime.class, Timestamp.class, (XSDDateTime dateTime) -> {
-			Calendar cal = dateTime.asCalendar();
-			Instant instant = cal.toInstant();
+
+    /**
+     * Create a conversion service for datatypes used by the CKAN API.
+     * Date/time conversions are of particular relevance.
+     *
+     * @return
+     */
+    public static ConversionService createDefaultConversionService() {
+        DefaultConversionService dcs = new DefaultConversionService();
+        // GenericConversionService gcs = new GenericConversionService();
+        dcs.addConverter(XSDDateTime.class, Timestamp.class, (XSDDateTime dateTime) -> {
+            Calendar cal = dateTime.asCalendar();
+            Instant instant = cal.toInstant();
 //			Calendar cal = Calendar.getInstance();
-			// cal.setTime(date);					
-			Timestamp r = Timestamp.from(instant);
-			//new XSDDateTime(cal);
-			return r;
-		});
+            // cal.setTime(date);
+            Timestamp r = Timestamp.from(instant);
+            //new XSDDateTime(cal);
+            return r;
+        });
 
 //		gcs.addConverter(java.sql.Date.class, Calendar.class, (java.sql.Date date) -> {
 //			Calendar cal = Calendar.getInstance();
-//			cal.setTime(date);					
+//			cal.setTime(date);
 //			//new XSDDateTime(cal);
 //			return cal;
 //		});
-		
+
         ConversionService result = ConversionServiceAdapter.wrap(dcs, dcs::canConvert, dcs::convert);
 
         return result;
-	}
+    }
 
 
     public static <S, T> Function<S, SingleValuedAccessor<T>> getSingleValuedAccessorSupplierViaReflection(Class<? extends S> entityClazz, String localName, Class<T> clazz) {

@@ -1,13 +1,9 @@
 package org.aksw.dcat_suite.enrich;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.jena.rdf.model.Model;
@@ -19,7 +15,6 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.onebusaway.gtfs.model.FeedInfo;
-import org.onebusaway.gtfs.model.Stop;
 
 public class GTFSModel {
 

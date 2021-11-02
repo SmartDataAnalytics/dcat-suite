@@ -1,19 +1,17 @@
 package org.aksw.dcat_suite.clients;
 
 import java.net.URL;
+//import org.springframework.web.util.UriUtils;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import eu.trentorise.opendata.jackan.model.CkanResource;
-
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import org.springframework.web.util.UriUtils;
-import java.net.URLEncoder;
 
-import eu.trentorise.opendata.jackan.model.CkanDataset; 
+import eu.trentorise.opendata.jackan.model.CkanDataset;
+import eu.trentorise.opendata.jackan.model.CkanResource; 
 
 public class PostProcessor {
 	

@@ -23,25 +23,25 @@ import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.jena_sparql_api.algebra.utils.VirtualPartitionedQuery;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
-import org.aksw.jena_sparql_api.concepts.TernaryRelation;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPods;
 import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRef;
 import org.aksw.jena_sparql_api.conjure.resourcespec.ResourceSpecUtils;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
-import org.aksw.jena_sparql_api.core.connection.QueryExecutionFactorySparqlQueryConnection;
-import org.aksw.jena_sparql_api.core.connection.RDFConnectionBuilder;
-import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa;
-import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
-import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
-import org.aksw.jena_sparql_api.stmt.SparqlStmtMgr;
-import org.aksw.jena_sparql_api.utils.NodeUtils;
-import org.aksw.jena_sparql_api.utils.QueryUtils;
+import org.aksw.jenax.arq.connection.RDFConnectionModular;
+import org.aksw.jenax.arq.connection.core.QueryExecutionFactorySparqlQueryConnection;
+import org.aksw.jenax.arq.connection.core.RDFConnectionBuilder;
+import org.aksw.jenax.arq.connection.core.SparqlQueryConnectionJsa;
+import org.aksw.jenax.arq.util.node.NodeEnvsubst;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.jenax.sparql.relation.api.TernaryRelation;
+import org.aksw.jenax.stmt.core.SparqlStmtMgr;
+import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
+import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionModular;
 import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.lang.arq.ParseException;
@@ -73,7 +73,7 @@ public class CatalogResolverUtils {
 
         Function<String, Query> result = value -> {
             Map<String, String> map = Collections.singletonMap(templateArgName, value);
-            Query r = QueryUtils.applyNodeTransform(templateQuery, x -> NodeUtils.substWithLookup(x, map::get));
+            Query r = QueryUtils.applyNodeTransform(templateQuery, x -> NodeEnvsubst.subst(x, map::get));
             return r;
         };
         return result;
@@ -91,7 +91,7 @@ public class CatalogResolverUtils {
         views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
         views.addAll(VirtualPartitionedQuery.toViews(relatedDataset));
 
-        SparqlQueryParser parser = SparqlQueryParserImpl.create(DefaultPrefixes.prefixes);
+        SparqlQueryParser parser = SparqlQueryParserImpl.create(DefaultPrefixes.get());
 
         for(String extraView : extraViews) {
             Query query = parser.apply(extraView);

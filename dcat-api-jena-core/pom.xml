@@ -20,8 +20,8 @@
 		<!-- </dependency> -->
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-dcat-api</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-models-dcat-api</artifactId>
 		</dependency>
 
 <!--
@@ -43,8 +43,8 @@
 <!-- 		</dependency> -->
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-utils</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-utils</artifactId>
 		</dependency>
 
 		<dependency>
