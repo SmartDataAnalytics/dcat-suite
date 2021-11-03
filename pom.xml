@@ -198,7 +198,7 @@
 			<dependency>
 				<groupId>org.aksw.scaseco.vaadin</groupId>
 				<artifactId>vaadin-jena-core</artifactId>
-				<version>4.2.0-1-SNAPSHOT</version>
+				<version>4.3.0-1-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
