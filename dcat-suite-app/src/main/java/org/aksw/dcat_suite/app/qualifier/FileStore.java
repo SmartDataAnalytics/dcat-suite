@@ -4,11 +4,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * Qualifier for 'complete' views
+ * Qualifier for {@link Path} instances (folders) that act as storage for files
  *
  * @author raven
  *

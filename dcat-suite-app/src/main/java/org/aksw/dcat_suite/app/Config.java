@@ -35,6 +35,7 @@ public class Config {
     @Autowired
     public ConfigurableApplicationContext context;
 
+/*
     @Bean
     @FileStore
     public Path localFileStore() {
@@ -114,6 +115,6 @@ public class Config {
 
         return result;
     }
-
+*/
 
 }
