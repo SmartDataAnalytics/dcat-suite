@@ -217,7 +217,7 @@ public class DcatCkanDeployUtils {
 //	}
 
     public static void deploy(CkanClient ckanClient, DcatDataset dataset, IRIxResolver iriResolver, boolean noFileUpload, String targetOrgaId) throws IOException {
-    	String rawDatasetName = DcatDataset.getLabel(dataset);
+        String rawDatasetName = DcatDataset.getLabel(dataset);
 
         String datasetName = rawDatasetName
                 .replace(":", "-")
@@ -345,6 +345,7 @@ public class DcatCkanDeployUtils {
                 pathReference = DcatCkanDeployUtils.pathsGet(fileUrl);
                 downloadFilename = pathReference.get().getFileName().toString();
             } else {
+                // TODO This should go through the conjure http cache
                 root = Files.createTempDirectory("http-cache-");
                 URI webUrl = webUrls.iterator().next();
                 String webUrlPathStr = webUrl.getPath();
