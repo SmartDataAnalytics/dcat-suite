@@ -3,7 +3,6 @@ package org.aksw.dcat_suite.app;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -28,8 +27,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 import com.google.gson.JsonObject;
-
-
 
 public class DCATProvider {
 	//private static final String DCAT_AP_API = "http://localhost:8080/shacl/dcatapde/api/validate";

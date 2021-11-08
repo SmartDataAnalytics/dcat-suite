@@ -13,7 +13,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -44,20 +43,15 @@ public class DCATValidateComponent extends VerticalLayout {
         	List<ResultItem> resultItems = null;
         	Model model = RDFDataMgr.loadModel(view.getLatestServerPath());
         	StringWriter out = new StringWriter();
-    		//System.out.println(model.write(out, "RDF/XML").toString());
     		model.write(out, "TURTLE");
     		String modelText = out.toString(); 
     		try {
-				//this.provider.getTestReport(model.write(out, "TURTLE").toString());
     			resultItems = this.provider.getTestReport(modelText);
 			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     		grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);

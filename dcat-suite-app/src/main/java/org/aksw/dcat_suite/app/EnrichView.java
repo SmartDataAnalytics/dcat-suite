@@ -19,7 +19,6 @@ public class EnrichView extends VerticalLayout {
 	 */
 	private static final long serialVersionUID = 1L;
 	private EnrichComponent enrichComponent; 
-	private DCATValidateComponent validateComponent; 
 	private VerticalLayout content;
 	
 	private MainView mainView; 
@@ -37,9 +36,8 @@ public class EnrichView extends VerticalLayout {
     	content = mainView.getContent();
     	content.add( new H1( "Generate DCAT descriptions for GTFS files" ) );
         mainView.addUpload();
-        mainView.addGTFSValidate();
-    	//content.add(this.validateComponent);
     	enrichComponent = new EnrichComponent(mainView); 
+    	enrichComponent.addGTFSValidate();
     	enrichComponent.addTransform();
         content.add(this.enrichComponent);
         mainView.getNameToButtons()

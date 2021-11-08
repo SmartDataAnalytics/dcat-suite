@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 
-import org.aksw.dcat_suite.enrich.GTFSModel;
 import org.apache.jena.rdf.model.Model;
 import org.json.simple.parser.ParseException;
 
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;

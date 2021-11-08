@@ -36,8 +36,6 @@ public class QACProvider {
     		CloseableHttpResponse response = httpClient.execute(postRequest(jobID, serverPath));
     		String json = EntityUtils.toString(response.getEntity());
         	JSONObject obj = new JSONObject(json);
-        	String msg = obj.getString("msg");
-        	System.out.println(msg); 
     	}
     	
     }

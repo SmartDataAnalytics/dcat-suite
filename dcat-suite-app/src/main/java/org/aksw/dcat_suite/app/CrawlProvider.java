@@ -96,6 +96,4 @@ public class CrawlProvider {
             return model;
     }
 
-
-
 }

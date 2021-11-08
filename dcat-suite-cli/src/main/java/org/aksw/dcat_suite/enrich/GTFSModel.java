@@ -23,7 +23,7 @@ public class GTFSModel {
 	private GTFSFile gtfs; 
 	private Model model; 
 	private Resource dsResource;
-	private Path path; 
+	private String path; 
 	
 	 public static final String EUROVOC_TRANSPORT_THEME = "http://publications.europa.eu/resource/authority/eurovoc/2015";
 	 public static final String EXAMPLE_NS = "http://www.example.org/";
@@ -32,7 +32,7 @@ public class GTFSModel {
 	 public static final String GEO = "http://www.w3.org/2003/01/geo/wgs84_pos#";
 	 
 	 public GTFSModel (String gtfsFile, String title, String prefix, String downloadURL) throws IOException {
-		this.path = Paths.get(downloadURL);
+		this.path = downloadURL;
 		initModel(gtfsFile, title, prefix);
 		
 	}
@@ -43,7 +43,7 @@ public class GTFSModel {
 	
 	private void initModel (String gtfsFile, String title, String prefix) throws IOException {
 		this.prefix = prefix;
-		this.title = title;
+		this.title = title.toLowerCase().replace(" ","-");;
         this.fileName = Paths.get(gtfsFile).getFileName();
 		this.gtfs = new GTFSFile(gtfsFile);
 		model = ModelFactory.createDefaultModel();
@@ -73,9 +73,12 @@ public class GTFSModel {
         Resource distribution = model.createResource(distUri);
         distribution.addProperty(model.createProperty(EXAMPLE_NS.concat("localId")),fileName.toString());
         
-        if (this.path != null) {
-            distribution.addProperty(DCAT.downloadURL,this.path.toString());
+        if (this.path.equals("")) {
+            distribution.addProperty(DCAT.downloadURL,model.createResource(EXAMPLE_NS.concat(fileName.toString())));
 		}
+        else {
+        	distribution.addProperty(DCAT.downloadURL,model.createResource(this.path));
+        }
         dsResource.addProperty(DCAT.distribution,distribution); 
 		processFeedInfo(dsResource);
 	}
@@ -106,9 +109,9 @@ public class GTFSModel {
 					periodOfTime.addProperty(endDateProperty, endDate);
 				}
 			}
-			if (feedinfo.getLang() != null) {
-				dsResource.addProperty(DCTerms.language,feedinfo.getLang());
-			}
+			//if (feedinfo.getLang() != null) {
+			//	dsResource.addProperty(DCTerms.language,feedinfo.getLang());
+			//}
 			
 			Resource publisherResource = null;
 			if (feedinfo.getPublisherUrl() != null) {

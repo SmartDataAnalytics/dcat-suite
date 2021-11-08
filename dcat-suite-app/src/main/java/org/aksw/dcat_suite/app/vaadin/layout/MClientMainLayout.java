@@ -192,7 +192,7 @@ public void addGTFSValidate() throws ClientProtocolException, URISyntaxException
         Anchor homeAnchor = createMenuAnchor("HOME","");
         Anchor enrichAnchor = createMenuAnchor("DCAT enrich","/enrich");
         Anchor crawlAnchor = createMenuAnchor("DCAT crawl","/crawl");
-        Anchor deployAnchor = createMenuAnchor("DCAT deploy","");
+        Anchor deployAnchor = createMenuAnchor("DCAT deploy","/deploy");
         Anchor validateAnchor = createMenuAnchor("DCAT validate","/validate");
 
         Stream.of(homeAnchor, enrichAnchor, crawlAnchor, deployAnchor, validateAnchor)

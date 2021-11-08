@@ -4,31 +4,24 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.ClientProtocolException;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.charts.model.style.ButtonTheme;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -47,9 +40,8 @@ public class MainView extends VerticalLayout {
     private HorizontalLayout footer;
     private final MemoryBuffer buffer;
     private Upload upload;
-    private List<String[]> enrichList;
+    private String enrichFile;
     private Map<String,Button> nameToButtons;
-    private QACProvider validationProvider = new QACProvider();
     MenuBar menuBar;
 
 
@@ -57,7 +49,6 @@ public class MainView extends VerticalLayout {
         buffer = new MemoryBuffer();
         upload = new MyUpload();
         upload = new MyUpload(buffer);
-        enrichList = new ArrayList<String[]>();
         // Instantiate layouts
         header = new HorizontalLayout();
         navBar = new VerticalLayout();
@@ -95,30 +86,23 @@ public class MainView extends VerticalLayout {
         upload.setDropAllowed(false);
         upload.addSucceededListener(event -> {
             Notification.show(String.format("Upload succeeded. Filename: '%s'", event.getFileName()));
-            File file1 = new File(event.getFileName());
             ServletContext sCtx = getServletContext();
-            String dirName = sCtx.getRealPath("upload"); //$NON-NLS-1$
+            String dirName = sCtx.getRealPath("upload"); 
             File dir = new File(dirName);
             if (!dir.exists()) dir.mkdirs();
             File longPath = new File(event.getFileName());
             String filename = longPath.getName();
-            File file2 = new File(dir, filename);
+            File file = new File(dir, filename);
 
-            // Open the file for writing.
             try {
-                FileOutputStream fos = new FileOutputStream(file2);
-                //fos.write(in);
+                FileOutputStream fos = new FileOutputStream(file);
                 IOUtils.copy(buffer.getInputStream(),fos);
-                //fos.close();
             } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            String [] paths = {file2.getAbsoluteFile().getAbsolutePath(), file1.getAbsoluteFile().getAbsolutePath()};
-            enrichList.add(paths);
+            this.enrichFile = file.getAbsoluteFile().getAbsolutePath();
 
         });
         upload.addFailedListener(event -> {
@@ -128,56 +112,13 @@ public class MainView extends VerticalLayout {
         .addEventListener(
                 "file-remove",
                 event -> {
-                  enrichList.clear();
+                  this.enrichFile="";
                 });
         content.add(upload);
 
     }
 
-public void addGTFSValidate() throws ClientProtocolException, URISyntaxException, IOException {
 
-        ProgressBar progressBar = new ProgressBar();
-        progressBar.setIndeterminate(true);
-        //Icon validateIcon = new Icon(VaadinIcon.CHECK_SQUARE);
-        Button validateButton = new Button("Validate your GTFS zip", VaadinIcon.CHECK_SQUARE.create());
-        validateButton.addClickListener(clickevent -> {
-            try {
-                this.validationProvider.startJob(getLatestServerPath());
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            try {
-                String currentStatus = this.validationProvider.getStatus();
-                System.out.println(this.validationProvider.getStatus());
-                while (currentStatus.equals(StatusCodes.NEW) ||
-                    currentStatus.equals(StatusCodes.UPLOADED) ||
-                    currentStatus.equals(StatusCodes.PROCESSING)) {
-                    currentStatus = this.validationProvider.getStatus();
-                    progressBar.setVisible(true);
-
-                }
-                if (currentStatus.equals(StatusCodes.READY)) {
-                    progressBar.setVisible(false);
-                    System.out.println(this.validationProvider.getResult());
-                }
-            } catch (URISyntaxException | IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        });
-        content.add(validateButton);
-        content.add(progressBar);
-        progressBar.setVisible(false);
-
-    }
 
     private ServletContext getServletContext() {
 
@@ -190,7 +131,7 @@ public void addGTFSValidate() throws ClientProtocolException, URISyntaxException
         Anchor homeAnchor = createMenuAnchor("HOME","");
         Anchor enrichAnchor = createMenuAnchor("DCAT enrich","/enrich");
         Anchor crawlAnchor = createMenuAnchor("DCAT crawl","/crawl");
-        Anchor deployAnchor = createMenuAnchor("DCAT deploy","");
+        Anchor deployAnchor = createMenuAnchor("DCAT deploy","/deploy");
         Anchor validateAnchor = createMenuAnchor("DCAT validate","/validate");
 
         Stream.of(homeAnchor, enrichAnchor, crawlAnchor, deployAnchor, validateAnchor)
@@ -206,20 +147,8 @@ public void addGTFSValidate() throws ClientProtocolException, URISyntaxException
         return anchor;
     }
 
-    public String getLatestLocalPath () {
-        String localPath = "";
-        if (enrichList != null && !enrichList.isEmpty()) {
-              localPath = enrichList.get(enrichList.size()-1)[1];
-        }
-        return localPath;
-    }
-
     public String getLatestServerPath () {
-        String serverPath = "";
-        if (enrichList != null && !enrichList.isEmpty()) {
-              serverPath = enrichList.get(enrichList.size()-1)[0];
-        }
-        return serverPath;
+    	return this.enrichFile;
     }
 
     public VerticalLayout getContent() {
