@@ -498,7 +498,7 @@ public class CatalogResolverFilesystem
         for(String altId : altIds) {
             Path tgt = datasetByIdFolder.resolve(UriToPathUtils.resolvePath(altId));
             Files.createDirectories(tgt);
-            SymLinkUtils.allocateSymbolicLink(SymbolicLinkStrategies.STANDARD, dsFolder, tgt, "_content", "");
+            SymLinkUtils.allocateSymbolicLink(SymbolicLinkStrategies.STANDARD, dsFolder, tgt, Function.identity(), "_content", "");
         }
 
 
@@ -513,7 +513,7 @@ public class CatalogResolverFilesystem
                 Path linkSource = distributionIndexFolder.resolve(UriToPathUtils.resolvePath(uri));
                 Files.createDirectories(linkSource);
 
-                SymLinkUtils.allocateSymbolicLink(SymbolicLinkStrategies.STANDARD, targetDatasetFolder, linkSource, "_content", "");
+                SymLinkUtils.allocateSymbolicLink(SymbolicLinkStrategies.STANDARD, targetDatasetFolder, linkSource, Function.identity(), "_content", "");
             }
         }
     }

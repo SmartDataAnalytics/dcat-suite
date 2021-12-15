@@ -15,24 +15,26 @@
 
 
 	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
 		<!-- <dependency> -->
 		<!-- <groupId>org.aksw.jenax</groupId> -->
 		<!-- <artifactId>jenax-core</artifactId> -->
 		<!-- </dependency> -->
 
-<!--
-		<dependency>
-			<groupId>org.apache.beam</groupId>
-			<artifactId>beam-sdks-java-core</artifactId>
-		</dependency>
--->
+		<!-- <dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-sdks-java-core</artifactId> 
+			</dependency> -->
 
 		<dependency>
-	        <groupId>org.aksw.jenax</groupId>
-	        <artifactId>jenax-facete-impl</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-facete-impl</artifactId>
 		</dependency>
 
-		<!-- Only used for spring's conversion service of spring-core; try to remove this dep -->
+		<!-- Only used for spring's conversion service of spring-core; try to remove 
+			this dep -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot</artifactId>
@@ -97,10 +99,6 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>

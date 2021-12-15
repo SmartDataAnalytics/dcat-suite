@@ -299,94 +299,97 @@ public class DcatCkanDeployUtils {
             remoteCkanDataset = ckanClient.updateDataset(remoteCkanDataset);
         }
 
+
         for(DcatDistribution dcatDistribution : dataset.getDistributions()) {
 
 
             CkanResource remoteCkanResource = createOrUpdateResource(ckanClient, remoteCkanDataset, dataset, dcatDistribution);
 
-            // Check if there is a graph in the dataset that matches the distribution
-            String distributionName = dcatDistribution.getTitle();
+            if (!noFileUpload) {
 
-            logger.info("Deploying distribution " + distributionName);
+                // Check if there is a graph in the dataset that matches the distribution
+                String distributionName = dcatDistribution.getTitle();
 
-            Set<String> downloadUrls = dcatDistribution.getDownloadURLs();
+                logger.info("Deploying distribution " + distributionName);
 
-            List<String> resolvedUrls = downloadUrls.stream()
-                    //.filter(Resource::isURIResource)
-                    //.map(Resource::getURI)
-                    .map(iriResolver::resolve)
-                    .map(IRIx::str)
-                    .collect(Collectors.toList());
+                Set<String> downloadUrls = dcatDistribution.getDownloadURLs();
 
-            Set<URI> resolvedValidUrls = resolvedUrls.stream()
-                    .map(str -> UriUtils.tryNewURI(str).orElse(null))
-                    .filter(r -> r != null)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                List<String> resolvedUrls = downloadUrls.stream()
+                        //.filter(Resource::isURIResource)
+                        //.map(Resource::getURI)
+                        .map(iriResolver::resolve)
+                        .map(IRIx::str)
+                        .collect(Collectors.toList());
 
-            if (resolvedUrls.size() > 1) {
-                logger.warn("Multiple URLs associated with a distribution; assuming they mirror content and choosing one from " + resolvedUrls);
-            }
+                Set<URI> resolvedValidUrls = resolvedUrls.stream()
+                        .map(str -> UriUtils.tryNewURI(str).orElse(null))
+                        .filter(r -> r != null)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            Set<URI> urlsToExistingPaths = resolvedValidUrls.stream()
-                    .filter(uri ->
-                            DcatCkanDeployUtils.pathsGet(uri)
-                            .filter(Files::exists)
-                            .filter(Files::isRegularFile)
-                            .isPresent())
-                    .collect(Collectors.toSet());
-
-            Set<URI> webUrls = Sets.difference(resolvedValidUrls, urlsToExistingPaths);
-
-            String downloadFilename;
-            Optional<Path> pathReference = Optional.empty();
-            Path root = null;
-            if (urlsToExistingPaths.size() > 0) {
-                URI fileUrl = urlsToExistingPaths.iterator().next();
-                pathReference = DcatCkanDeployUtils.pathsGet(fileUrl);
-                downloadFilename = pathReference.get().getFileName().toString();
-            } else {
-                // TODO This should go through the conjure http cache
-                root = Files.createTempDirectory("http-cache-");
-                URI webUrl = webUrls.iterator().next();
-                String webUrlPathStr = webUrl.getPath();
-                Path tmp =  Paths.get(webUrlPathStr);
-                downloadFilename = tmp.getFileName().toString();
-
-                HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
-
-                BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
-//                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
-//                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
-
-                RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
-                pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
-            }
-
-            // TODO This breaks if the downloadURLs are web urls.
-            // We need a flag whether to do a file upload for web urls, or whether to just update metadata
-
-//            Optional<Path> pathReference = resolvedValidUrls.stream()
-//                .map(DcatCkanDeployUtils::pathsGet)
-//                .filter(Optional::isPresent)
-//                .map(Optional::get)
-//                .filter(Files::exists)
-//                .findFirst();
-//
-
-            if(pathReference.isPresent()) {
-                Path path = pathReference.get();
-
-                //String filename = distributionName + ".nt";
-                String probedContentType = null;
-                try {
-                    probedContentType = Files.probeContentType(path);
-                } catch (IOException e) {
-                    logger.warn("Failed to probe content type of " + path, e);
+                if (resolvedUrls.size() > 1) {
+                    logger.warn("Multiple URLs associated with a distribution; assuming they mirror content and choosing one from " + resolvedUrls);
                 }
 
-                String contentType = Optional.ofNullable(probedContentType).orElse(ContentType.APPLICATION_OCTET_STREAM.toString());
+                Set<URI> urlsToExistingPaths = resolvedValidUrls.stream()
+                        .filter(uri ->
+                                DcatCkanDeployUtils.pathsGet(uri)
+                                .filter(Files::exists)
+                                .filter(Files::isRegularFile)
+                                .isPresent())
+                        .collect(Collectors.toSet());
 
-                if (!noFileUpload) {
+                Set<URI> webUrls = Sets.difference(resolvedValidUrls, urlsToExistingPaths);
+
+                String downloadFilename;
+                Optional<Path> pathReference = Optional.empty();
+                Path root = null;
+                if (urlsToExistingPaths.size() > 0) {
+                    URI fileUrl = urlsToExistingPaths.iterator().next();
+                    pathReference = DcatCkanDeployUtils.pathsGet(fileUrl);
+                    downloadFilename = pathReference.get().getFileName().toString();
+                } else {
+                    // TODO This should go through the conjure resource cache
+                    root = Files.createTempDirectory("http-cache-");
+                    URI webUrl = webUrls.iterator().next();
+                    String webUrlPathStr = webUrl.getPath();
+                    Path tmp =  Paths.get(webUrlPathStr);
+                    downloadFilename = tmp.getFileName().toString();
+
+                    HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
+
+                    BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
+    //                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
+    //                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
+
+                    RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
+                    pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
+                }
+
+                // TODO This breaks if the downloadURLs are web urls.
+                // We need a flag whether to do a file upload for web urls, or whether to just update metadata
+
+    //            Optional<Path> pathReference = resolvedValidUrls.stream()
+    //                .map(DcatCkanDeployUtils::pathsGet)
+    //                .filter(Optional::isPresent)
+    //                .map(Optional::get)
+    //                .filter(Files::exists)
+    //                .findFirst();
+    //
+
+                if (pathReference.isPresent()) {
+                    Path path = pathReference.get();
+
+                    //String filename = distributionName + ".nt";
+                    String probedContentType = null;
+                    try {
+                        probedContentType = Files.probeContentType(path);
+                    } catch (IOException e) {
+                        logger.warn("Failed to probe content type of " + path, e);
+                    }
+
+                    String contentType = Optional.ofNullable(probedContentType).orElse(ContentType.APPLICATION_OCTET_STREAM.toString());
+
+//	                if (!noFileUpload) {
 
                     logger.info("Uploading file " + path);
                     CkanResource tmp = CkanClientUtils.uploadFile(
@@ -431,18 +434,19 @@ public class DcatCkanDeployUtils {
                     //remoteCkanResource = ckanClient.updateResource(remoteCkanResource);
 
 
-                } else {
-                    logger.info("File upload disabled. Skipping " + path);
+//	                } else {
+//	                    logger.info("File upload disabled. Skipping " + path);
+//	                }
                 }
-            }
 
-            Resource newDownloadUrl = ResourceFactory.createResource(remoteCkanResource.getUrl());
+                Resource newDownloadUrl = ResourceFactory.createResource(remoteCkanResource.getUrl());
 
-            org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
+                org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.setProperty(dcatDistribution, DCAT.downloadURL, newDownloadUrl);
 
-            if (root != null) {
-                logger.info("Removing directory recursively: " + root);
-                // MoreFiles.deleteRecursively(root);
+                if (root != null) {
+                    logger.info("Removing directory recursively: " + root);
+                    // MoreFiles.deleteRecursively(root);
+                }
             }
         }
     }
