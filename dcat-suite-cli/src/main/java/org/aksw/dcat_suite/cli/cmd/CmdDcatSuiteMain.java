@@ -2,6 +2,9 @@ package org.aksw.dcat_suite.cli.cmd;
 
 import java.util.List;
 
+import org.aksw.dcat_suite.cli.cmd.catalog.CmdDcatCatalogEnrich;
+import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileParent;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -17,7 +20,9 @@ import picocli.CommandLine.Parameters;
     CmdIntegrate.class,
     CmdService.class,
     CmdShow.class,
-    CmdTransform.class
+    CmdTransform.class,
+    CmdDcatCatalogEnrich.class,
+    CmdDcatFileParent.class
 })
 public class CmdDcatSuiteMain {
     @Parameters(description = "Non option args")

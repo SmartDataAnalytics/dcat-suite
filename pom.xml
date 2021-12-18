@@ -61,17 +61,21 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.3.0-SNAPSHOT</jena.version>
+		<jena.version>4.3.1</jena.version>
 		<!-- <jenax.subversion>1-SNAPSHOT</jenax.subversion> -->
 
-		<jenax.version>4.3.0-1-SNAPSHOT</jenax.version>
+		<jenax.version>4.3.1-1-SNAPSHOT</jenax.version>
 		<aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
+		<gson.version>2.8.5</gson.version>
+
+		<conjure.version>1.0.1-SNAPSHOT</conjure.version>
 
 		<slf4j.version>1.8.0-beta4</slf4j.version>
 		<log4j.version>2.16.0</log4j.version>
 
 		<jackson.version>2.12.1</jackson.version>
 		<junit.version>4.13</junit.version>
+		<apache-http.version>4.5.10</apache-http.version>
 
 		<spring-boot.version>2.3.3.RELEASE</spring-boot.version>
 
@@ -87,6 +91,25 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>${gson.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.conjure</groupId>
+				<artifactId>conjure-datasources</artifactId>
+				<version>${conjure.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpmime</artifactId>
+				<version>${apache-http.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-slf4j18-impl</artifactId>
@@ -138,7 +161,7 @@
 			<dependency>
 				<groupId>info.picocli</groupId>
 				<artifactId>picocli</artifactId>
-				<version>4.4.0</version>
+				<version>4.6.2</version>
 			</dependency>
 			<!-- <dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-sdks-java-core</artifactId> 
 				<version>2.8.0</version> </dependency> -->

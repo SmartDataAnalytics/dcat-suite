@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.io.util.StdIo;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
@@ -173,7 +174,7 @@ public class CmdTransformApply
             targetDataset = tmp;
         }
 
-        RDFDataMgr.write(System.out, targetDataset.getModel(), RDFFormat.TURTLE_PRETTY);
+        RDFDataMgr.write(StdIo.openStdOutWithCloseShield(), targetDataset.getModel(), RDFFormat.TURTLE_PRETTY);
         return 0;
     }
 }
