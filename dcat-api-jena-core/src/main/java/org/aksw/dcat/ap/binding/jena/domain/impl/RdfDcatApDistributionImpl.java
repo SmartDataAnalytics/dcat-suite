@@ -3,96 +3,82 @@ package org.aksw.dcat.ap.binding.jena.domain.impl;
 import java.time.Instant;
 import java.util.Set;
 
-import org.aksw.commons.accessors.SingleValuedAccessor;
-import org.aksw.dcat.ap.domain.accessors.DcatApDistributionCoreAccessor;
-import org.aksw.dcat.jena.domain.api.Adms;
-import org.aksw.jena_sparql_api.rdf.collections.NodeMappers;
-import org.apache.jena.enhanced.EnhGraph;
-import org.apache.jena.graph.Node;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.DCTerms;
+import org.aksw.jena_sparql_api.mapper.annotation.Iri;
+import org.aksw.jena_sparql_api.mapper.annotation.IriNs;
+import org.aksw.jena_sparql_api.mapper.annotation.IriType;
 
-public class RdfDcatApDistributionImpl
-	extends RdfDcatApResourceImpl
-	implements DcatApDistribution, DcatApDistributionCoreAccessor
+public interface RdfDcatApDistributionImpl
+    extends DcatApDistribution
 {
-	public RdfDcatApDistributionImpl(Node node, EnhGraph graph) {
-		super(node, graph);
-	}
+    @IriNs("dcterms")
+    @Override
+    RdfDcatApDistributionImpl setTitle(String title);
 
-	@Override
-	public SingleValuedAccessor<String> title() {
-		return create(this, DCTerms.title, NodeMappers.string);
-	}
+    @IriNs("dcterms")
+    @Override
+    RdfDcatApDistributionImpl setDescription(String description);
 
-	@Override
-	public SingleValuedAccessor<String> description() {
-		return create(this, DCTerms.description, NodeMappers.string);
-	}
+    @Iri("dcat:accessURL")
+    @IriType
+    @Override
+    Set<String> getAccessUrls();
 
-	@Override
-	public SingleValuedAccessor<Set<String>> accessUrls() {
-		return createSet(this, DCAT.accessURL, NodeMappers.uriString);
-	}
+    @Iri("dcat:downloadURL")
+    @IriType
+    @Override
+    Set<String> getDownloadUrls();
 
-	@Override
-	public SingleValuedAccessor<Set<String>> downloadUrls() {
-		return createSet(this, DCAT.downloadURL, NodeMappers.uriString);
-	}
+    @IriNs("dcat")
+    @Override
+    RdfDcatApDistributionImpl setMediaType(String mediaType);
 
-	@Override
-	public SingleValuedAccessor<String> mediaType() {
-		return create(this, DCAT.mediaType, NodeMappers.string);
-	}
+    @IriNs("dcterms")
+    @Override
+    RdfDcatApDistributionImpl setFormat(String format);
 
-	@Override
-	public SingleValuedAccessor<String> format() {
-		return create(this, DCTerms.format, NodeMappers.string);
-	}
+    @IriNs("dcterms")
+    @IriType
+    @Override
+    RdfDcatApDistributionImpl setLicense(String iri);
 
-	@Override
-	public SingleValuedAccessor<String> license() {
-		return create(this, DCTerms.license, NodeMappers.uriString);
-	}
+    @IriNs("adms")
+    @IriType
+    @Override
+    RdfDcatApDistributionImpl setStatus(String iri);
 
-	@Override
-	public SingleValuedAccessor<String> status() {
-		return create(this, Adms.status, NodeMappers.uriString);
-	}
+    @IriNs("dcat")
+    @Override
+    RdfDcatApDistributionImpl setByteSize(Long byteSize);
 
-	@Override
-	public SingleValuedAccessor<Long> byteSize() {
-		return create(this, DCAT.byteSize, NodeMappers.from(Long.class));
-	}
+    @IriNs("dcterms")
+    @Override
+    RdfDcatApDistributionImpl setIssued(Instant timestamp);
+    // return create(this, DCTerms.issued, NodeMappers.from(Instant.class));
 
-	@Override
-	public SingleValuedAccessor<Instant> issued() {
-		return create(this, DCTerms.issued, NodeMappers.from(Instant.class));
-	}
 
-	@Override
-	public SingleValuedAccessor<Instant> modified() {
-		return create(this, DCTerms.modified, NodeMappers.from(Instant.class));
-	}
+    @IriNs("dcterms")
+    @Override
+    RdfDcatApDistributionImpl setModified(Instant timestamp);
+    // return create(this, DCTerms.modified, NodeMappers.from(Instant.class));
 
-	@Override
-	public SingleValuedAccessor<String> rights() {
-		return create(this, DCTerms.rights, NodeMappers.uriString);
-	}
 
-	@Override
-	public SingleValuedAccessor<Set<String>> pages() {
-		return createSet(this, FOAF.page, NodeMappers.uriString);
-	}
+    @IriNs("dcterms")
+    @IriType
+    @Override
+    RdfDcatApDistributionImpl setRights(String iri);
 
-	@Override
-	public SingleValuedAccessor<Set<String>> conformsTo() {
-		return createSet(this, DCTerms.conformsTo, NodeMappers.uriString);
-	}
+    @IriNs("foaf")
+    @IriType
+    @Override
+    Set<String> getPages();
 
-	@Override
-	public SingleValuedAccessor<Set<String>> languages() {
-		return createSet(this, DCTerms.language, NodeMappers.uriString);
-	}	
+    @IriNs("dcterms")
+    @IriType
+    @Override
+    Set<String> getConformsTo();
+
+    @IriNs("dcterms")
+    @IriType
+    @Override
+    Set<String> getLanguages();
 }

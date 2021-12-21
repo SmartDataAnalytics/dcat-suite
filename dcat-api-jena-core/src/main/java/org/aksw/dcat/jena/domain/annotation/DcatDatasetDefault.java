@@ -8,25 +8,25 @@ import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.RdfType;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.jena_sparql_api.vocab.DCAT;
+import org.aksw.jena_sparql_api.vocab.DcatTerms;
 import org.apache.jena.rdf.model.Resource;
 
 @ResourceView(DcatDataset.class)
-@RdfType(DCAT.Strs.Dataset)
+@RdfType(DcatTerms.Dataset)
 public interface DcatDatasetDefault
-	extends DcatEntityDefault, DcatDataset
+    extends DcatEntityDefault, DcatDataset
 {
-	@Override
-	default DcatDistribution createDistribution() {
-		return getModel().createResource().as(DcatDistribution.class);
-	}
-	
-	@Override
-	@Iri(DCAT.Strs.distribution)
-	//@PolymorphicOnly
-	<T extends Resource> Set<T> getDistributions(Class<T> clazz);
+    @Override
+    default DcatDistribution createDistribution() {
+        return getModel().createResource().as(DcatDistribution.class);
+    }
 
-	@Override
-	@Iri(DCAT.Strs.keyword)
-	Collection<String> getKeywords();
+    @Override
+    @Iri(DcatTerms.distribution)
+    //@PolymorphicOnly
+    <T extends Resource> Set<T> getDistributions(Class<T> clazz);
+
+    @Override
+    @Iri(DcatTerms.keyword)
+    Collection<String> getKeywords();
 }

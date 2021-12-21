@@ -1,0 +1,574 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dataid: <http://dataid.dbpedia.org/ns/core#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix cat: <http://www.w3.org/ns/dcat#> .
+
+<#dataset/org.simba.lsq:bench-affymetrix-lsq2:2.0.0>
+        dataid:artifactId  "bench-affymetrix-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-affymetrix-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-biomedels-lsq2:2.0.0>
+        dataid:artifactId  "bench-biomedels-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-biomedels-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-bioportal-lsq2:2.0.0>
+        dataid:artifactId  "bench-bioportal-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-bioportal-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-ctd-lsq2:2.0.0>
+        dataid:artifactId  "bench-ctd-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-ctd-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20151025-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20151025-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20151025-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20151124-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20151124-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20151124-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20151126-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20151126-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20151126-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20151213-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20151213-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20151213-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20151230-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20151230-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20151230-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160117-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160117-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160117-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160212-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160212-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160212-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160222-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160222-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160222-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160301-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160301-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160301-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160303-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160303-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160303-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160304-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160304-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160304-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160314-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160314-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160314-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia-20160411-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia-20160411-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia-20160411-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbpedia.3.5.1.log-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbpedia.3.5.1.log-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbpedia.3.5.1.log-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-dbsnp-lsq2:2.0.0>
+        dataid:artifactId  "bench-dbsnp-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-dbsnp-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-drugbank-lsq2:2.0.0>
+        dataid:artifactId  "bench-drugbank-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-drugbank-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-genage-lsq2:2.0.0>
+        dataid:artifactId  "bench-genage-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-genage-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-gendr-lsq2:2.0.0>
+        dataid:artifactId  "bench-gendr-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-gendr-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-gene-lsq2:2.0.0>
+        dataid:artifactId  "bench-gene-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-gene-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-goa-lsq2:2.0.0>
+        dataid:artifactId  "bench-goa-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-goa-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-hgnc-lsq2:2.0.0>
+        dataid:artifactId  "bench-hgnc-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-hgnc-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-homologene-lsq2:2.0.0>
+        dataid:artifactId  "bench-homologene-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-homologene-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-irefindex-lsq2:2.0.0>
+        dataid:artifactId  "bench-irefindex-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-irefindex-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-kegg-lsq2:2.0.0>
+        dataid:artifactId  "bench-kegg-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-kegg-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-linkedGeoData-lsq2:2.0.0>
+        dataid:artifactId  "bench-linkedGeoData-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-linkedGeoData-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-linkedspl-lsq2:2.0.0>
+        dataid:artifactId  "bench-linkedspl-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-linkedspl-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-mgi-lsq2:2.0.0>
+        dataid:artifactId  "bench-mgi-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-mgi-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-ncbigene-lsq2:2.0.0>
+        dataid:artifactId  "bench-ncbigene-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-ncbigene-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-omim-lsq2:2.0.0>
+        dataid:artifactId  "bench-omim-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-omim-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-pharmgkb-lsq2:2.0.0>
+        dataid:artifactId  "bench-pharmgkb-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-pharmgkb-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-sabiork-lsq2:2.0.0>
+        dataid:artifactId  "bench-sabiork-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-sabiork-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-sgd-lsq2:2.0.0>
+        dataid:artifactId  "bench-sgd-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-sgd-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-sidr-lsq2:2.0.0>
+        dataid:artifactId  "bench-sidr-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-sidr-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-swdf-lsq2:2.0.0>
+        dataid:artifactId  "bench-swdf-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-swdf-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-taxonomy-lsq2:2.0.0>
+        dataid:artifactId  "bench-taxonomy-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-taxonomy-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval1-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval1-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval1-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval2-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval2-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval2-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval3-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval3-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval3-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval4-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval4-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval4-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval5-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval5-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval5-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval6-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval6-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval6-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wikidata-interval7-organic-lsq2:2.0.0>
+        dataid:artifactId  "bench-wikidata-interval7-organic-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wikidata-interval7-organic-lsq2:2.0.0:nt.bz2> .
+
+<#dataset/org.simba.lsq:bench-wormbase-lsq2:2.0.0>
+        dataid:artifactId  "bench-wormbase-lsq2" ;
+        dataid:groupId     "org.simba.lsq" ;
+        dataid:version     "2.0.0" ;
+        rdf:type           cat:Dataset ;
+        cat:distribution   <#distribution/org.simba.lsq:bench-wormbase-lsq2:2.0.0:nt.bz2> .
+
+<#distribution/org.simba.lsq:bench-affymetrix-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        410227588 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-biomedels-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        847497322 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-bioportal-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        329623031 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-ctd-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        352071085 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20151025-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1294503749 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20151124-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        612683684 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20151126-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1188500607 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20151213-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1989775559 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20151230-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        3963919959 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160117-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1145951953 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160212-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        2961367728 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160222-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1267547833 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160301-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        2806631745 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160303-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        3252646842 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160304-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1650583718 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160314-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1751103797 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia-20160411-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1652591247 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbpedia.3.5.1.log-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        2161718046 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-dbsnp-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        290646185 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-drugbank-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1275539820 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-genage-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        291060994 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-gendr-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        313543850 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-gene-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        335094049 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-goa-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        562792484 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-hgnc-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        657660540 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-homologene-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        58375225 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-irefindex-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        593545905 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-kegg-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        44489367 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-linkedGeoData-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        749723227 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-linkedspl-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        186504331 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-mgi-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        437205886 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-ncbigene-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        246685924 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-omim-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        578802279 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-pharmgkb-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        88766199 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-sabiork-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        314720709 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-sgd-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        801338300 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-sidr-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        290061751 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-swdf-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        641345735 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-taxonomy-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        784272744 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval1-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        391438912 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval2-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        385438926 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval3-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        499355921 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval4-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        561223455 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval5-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        702428679 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval6-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1292119319 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wikidata-interval7-organic-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        701404799 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<#distribution/org.simba.lsq:bench-wormbase-lsq2:2.0.0:nt.bz2>
+        cat:byteSize        1495487652 ;
+        cat:compressFormat  <http://www.iana.org/assignments/media-types/application/x-bzip2> ;
+        cat:mediaType       <http://www.iana.org/assignments/media-types/application/n-triples> .
+
+<http://www.iana.org/assignments/media-types/application/n-triples>
+        <http://www.w3.org/2000/01/rdf-schema#label>  "application/n-triples" .
+
+<http://www.iana.org/assignments/media-types/application/x-bzip2>
+        <http://www.w3.org/2000/01/rdf-schema#label>  "application/x-bzip2" .

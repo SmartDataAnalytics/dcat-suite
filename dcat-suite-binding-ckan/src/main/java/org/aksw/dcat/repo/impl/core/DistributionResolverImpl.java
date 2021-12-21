@@ -138,7 +138,7 @@ public class DistributionResolverImpl
 
     @Override
     public InputStream open() throws Exception {
-        InputStream result = open(Optional.ofNullable(dcatDistribution.getDownloadURL())
+        InputStream result = open(Optional.ofNullable(dcatDistribution.getDownloadUrl())
                 .orElseThrow(() -> new RuntimeException("no download urls on distribution")));
         return result;
     }
@@ -147,7 +147,7 @@ public class DistributionResolverImpl
     public InputStream open(String url) throws Exception {
         // Ensure that the url is among the downloadURLs of the distributions
 
-        boolean isValid = dcatDistribution.getDownloadURLs().contains(url);
+        boolean isValid = dcatDistribution.getDownloadUrls().contains(url);
         if(!isValid) {
             throw new RuntimeException("no such download url");
         }
@@ -174,7 +174,7 @@ public class DistributionResolverImpl
 //				.blockingGet();
         //dr.get
         try {
-            String downloadUrl = dr.getDistribution().getDownloadURL();
+            String downloadUrl = dr.getDistribution().getDownloadUrl();
             URL url = crf.resolveDownload(downloadUrl).blockingGet();
             URI uri = url.toURI();
             result = Paths.get(uri);

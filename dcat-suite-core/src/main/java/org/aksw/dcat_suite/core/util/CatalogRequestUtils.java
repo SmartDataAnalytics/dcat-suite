@@ -49,7 +49,7 @@ public class CatalogRequestUtils {
 
             if (!dists.isEmpty()) {
                 DistributionResolver dist = dists.iterator().next();
-                String downloadUrl = dist.getDistribution().getDownloadURL();
+                String downloadUrl = dist.getDistribution().getDownloadUrl();
 
                 if (downloadUrl != null) {
                     // Header[] apacheHeaders = springToApache(springHeaders);

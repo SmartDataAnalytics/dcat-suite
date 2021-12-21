@@ -478,54 +478,6 @@
 					</configuration>
 				</plugin>
 
-				<plugin>
-					<artifactId>jdeb</artifactId>
-					<groupId>org.vafer</groupId>
-					<version>1.5</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-shade-plugin</artifactId>
-					<version>2.4.3</version>
-					<executions>
-						<!-- Run shade goal on package phase -->
-						<execution>
-							<phase>package</phase>
-							<goals>
-								<goal>shade</goal>
-							</goals>
-							<configuration>
-								<!-- TODO Shading is currently needed for the debian packages, which 
-									is slow and causes huge deployments -->
-								<!-- The deb packaging should be modified to work similar to the 
-									dockerfile maven plugin: -->
-								<!-- Use the resource plugin to copy deps to a lib folder and adjust 
-									the bash scripts -->
-								<shadedArtifactAttached>true</shadedArtifactAttached>
-								<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-								<filters>
-									<filter>
-										<artifact>*:*</artifact>
-										<excludes>
-											<exclude>META-INF/*.SF</exclude>
-											<exclude>META-INF/*.DSA</exclude>
-											<exclude>META-INF/*.RSA</exclude>
-										</excludes>
-									</filter>
-								</filters>
-								<transformers>
-									<transformer
-										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-									<!-- add Main-Class to manifest file -->
-									<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
-									<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
-									<!-- </transformer> -->
-								</transformers>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -625,7 +577,75 @@
 				</plugins>
 			</build>
 		</profile>
-	</profiles>
+		
+		<profile>
+					<id>deb</id>
+			<build>
+			<plugins>
+						<plugin>
+					<artifactId>jdeb</artifactId>
+					<groupId>org.vafer</groupId>
+					<version>1.5</version>
+				</plugin>
+				</plugins>
+			</build>
+
+</profile>
+
+
+		<profile>
+					<id>dist</id>
+			<build>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>2.4.3</version>
+					<executions>
+						<!-- Run shade goal on package phase -->
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>shade</goal>
+							</goals>
+							<configuration>
+								<!-- TODO Shading is currently needed for the debian packages, which 
+									is slow and causes huge deployments -->
+								<!-- The deb packaging should be modified to work similar to the 
+									dockerfile maven plugin: -->
+								<!-- Use the resource plugin to copy deps to a lib folder and adjust 
+									the bash scripts -->
+								<shadedArtifactAttached>true</shadedArtifactAttached>
+								<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+								<filters>
+									<filter>
+										<artifact>*:*</artifact>
+										<excludes>
+											<exclude>META-INF/*.SF</exclude>
+											<exclude>META-INF/*.DSA</exclude>
+											<exclude>META-INF/*.RSA</exclude>
+										</excludes>
+									</filter>
+								</filters>
+								<transformers>
+									<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+									<!-- add Main-Class to manifest file -->
+									<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+									<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+									<!-- </transformer> -->
+								</transformers>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				</plugins>
+			</build>
+
+</profile>
+
+</profiles>
+
 
 	<repositories>
 		<repository>

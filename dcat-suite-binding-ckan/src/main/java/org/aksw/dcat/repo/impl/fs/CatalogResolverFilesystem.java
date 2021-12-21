@@ -278,7 +278,7 @@ public class CatalogResolverFilesystem
         String datasetId = datar.getDataset().getURI();
 
         Function<String, String> iriResolver = iri -> iri;
-        Collection<URL> urls = dr.getDistribution().getDownloadURLs().stream()
+        Collection<URL> urls = dr.getDistribution().getDownloadUrls().stream()
                 .map(iriResolver::apply)
                 .map(UriUtils::newURI)
                 .filter(x -> x != null)

@@ -2,12 +2,6 @@ package org.aksw.dcat.ap.playground.main;
 
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDatasetImpl;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApDistributionImpl;
-import org.aksw.jenax.arq.util.implementation.SimpleImplementation;
-import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -20,9 +14,9 @@ public class MainDemoDcatApRdf {
 
     public static void main(String[] args) {
         JenaSystem.init();
-        BuiltinPersonalities.model.add(DcatApDataset.class, new SimpleImplementation(RdfDcatApDatasetImpl::new));
-        BuiltinPersonalities.model.add(DcatApDistribution.class, new SimpleImplementation(RdfDcatApDistributionImpl::new));
-        BuiltinPersonalities.model.add(RdfDcatApAgent.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
+//        BuiltinPersonalities.model.add(DcatApDataset.class, new SimpleImplementation(RdfDcatApDatasetImpl::new));
+//        BuiltinPersonalities.model.add(DcatApDistribution.class, new SimpleImplementation(RdfDcatApDistributionImpl::new));
+//        BuiltinPersonalities.model.add(RdfDcatApAgent.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
 
 
         Model model = ModelFactory.createDefaultModel();
@@ -32,13 +26,13 @@ public class MainDemoDcatApRdf {
         //plainDataset.setDescription("Top Secret");
         rdfDataset.setVersionInfo("0.3-SNAPSHOT");
         rdfDataset.setVersionNotes("Work in progress");
-        rdfDataset.setAccuralPeriodicity("http://foo.bar/baz");
+        rdfDataset.setAccrualPeriodicity("http://foo.bar/baz");
         rdfDataset.addLiteral(DCTerms.description, "Top Secret");
 
         DcatApDistribution dist = rdfDataset.createDistribution();
         rdfDataset.getDistributions(Resource.class).add(dist);
 
-        dist.setAccessURL("http://some.url/");
+        dist.setAccessUrl("http://some.url/");
         dist.setTitle("My dist");
         dist.setDescription("Some description");
 

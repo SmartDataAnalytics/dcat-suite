@@ -1,16 +1,27 @@
 package org.aksw.dcat.ap.binding.jena.domain.impl;
 
-import java.util.Collection;
+import java.util.Set;
 
 import org.aksw.dcat.ap.domain.api.DcatApDatasetCore;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.jena_sparql_api.mapper.annotation.Iri;
+import org.apache.jena.rdf.model.Resource;
 
 public interface DcatApDataset
-	extends DcatDataset, DcatApDatasetCore
+    extends DcatDataset, DcatApDatasetCore
 {
-	DcatApDistribution createDistribution();
+    @Iri("dcat:distribution")
+    @Override
+    <T extends Resource> Set<T> getDistributions(Class<T> clazz);
 
-	default Collection<? extends DcatApDistribution> getDistributions() {
-		return getDistributions(DcatApDistribution.class);
-	}
+    @Override
+    default Set<? extends DcatApDistribution> getDistributions() {
+        return getDistributions(DcatApDistribution.class);
+    }
+
+    DcatApDistribution createDistribution();
+
+//    default <T extends Resource> Set<? extends DcatApDistribution> getDistributions() {
+//        return getDistributions(DcatApDistribution.class);
+//    }
 }

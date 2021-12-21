@@ -55,6 +55,12 @@ public class CmdTransformCreate
     @Option(names= {"-v", "--version"}, arity = "1")
     public String version;
 
+    @Option(names= {"-c", "--conformance"}, description = "IRIs of specifications to which the output conforms to")
+    public List<String> conformances = new ArrayList<>();
+
+    @Option(names= {"-t", "--tag"}, description = "A short handle to add to e.g. filenames of output files ")
+    public String tag;
+
     @Option(names="--help", usageHelp=true)
     public boolean help = false;
 
@@ -85,10 +91,15 @@ public class CmdTransformCreate
 
 
         job.setJobName(jobName);
+
+        job.setTag(tag);
+        job.getConformances().addAll(conformances);
+
         MavenEntity mvnEntity = job.as(MavenEntity.class);
         mvnEntity.setGroupId(groupId);
         mvnEntity.setVersion(version);
         mvnEntity.setArtifactId(artifactId);
+
 
         RDFDataMgr.write(System.out, job.getModel(), RDFFormat.TURTLE_BLOCKS);
 

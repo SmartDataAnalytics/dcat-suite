@@ -91,8 +91,7 @@ public class DcatOps {
     }
 
     public static void transformAllDists(DcatDataset ds, Consumer<Resource> consumer) {
-
-        for(DcatDistribution dist : ds.getDistributions()) {
+        for (DcatDistribution dist : ds.getDistributions()) {
             consumer.accept(dist);
         }
     }
@@ -288,7 +287,7 @@ public class DcatOps {
                 // Disconnect the op from the distribution
                 //r.removeAll(RPIF.op);
                 r = rModel.createResource().as(DcatDistribution.class);
-                r.setDownloadURL(url);
+                r.setDownloadUrl(url);
             }
             return r;
         };
@@ -516,7 +515,7 @@ public class DcatOps {
 
         Collection<DcatDistribution> dists = dataset.getDistributions(DcatDistribution.class);
         for(DcatDistribution dist : dists) {
-            for(String url : dist.getDownloadURLs()) {
+            for(String url : dist.getDownloadUrls()) {
                 // TODO Reuse util function to resolve path to file
                 // If we have a remote url, download it and get the filename
                 // Use a flag for caching the downloads -

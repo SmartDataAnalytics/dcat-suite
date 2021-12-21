@@ -312,7 +312,7 @@ public class DcatCkanDeployUtils {
 
                 logger.info("Deploying distribution " + distributionName);
 
-                Set<String> downloadUrls = dcatDistribution.getDownloadURLs();
+                Set<String> downloadUrls = dcatDistribution.getDownloadUrls();
 
                 List<String> resolvedUrls = downloadUrls.stream()
                         //.filter(Resource::isURIResource)

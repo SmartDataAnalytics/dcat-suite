@@ -35,13 +35,13 @@ public class DistributionResolverCkan
 
 	@Override
 	public InputStream open() throws Exception {
-		return open(dcatDistribution.getDownloadURL());
+		return open(dcatDistribution.getDownloadUrl());
 	}
 
 
 	@Override
 	public InputStream open(String url) throws Exception {
-		boolean isValid = dcatDistribution.getDownloadURLs().contains(url);
+		boolean isValid = dcatDistribution.getDownloadUrls().contains(url);
 		InputStream result;
 		if(isValid) {
 			result = new URI(url).toURL().openStream();

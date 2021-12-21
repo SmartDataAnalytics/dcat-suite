@@ -48,7 +48,7 @@ public interface DistributionResolver {
     }
 
     default Maybe<URL> resolveDownload() throws Exception {
-        String downloadUri = getDistribution().getDownloadURL();
+        String downloadUri = getDistribution().getDownloadUrl();
         Maybe<URL> result = resolveDownload(downloadUri);
         return result;
     }

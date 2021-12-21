@@ -6,10 +6,8 @@ import java.util.Arrays;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDataset;
 import org.aksw.dcat.ap.binding.jena.domain.impl.DcatApDistribution;
 import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
-import org.aksw.dcat.ap.playground.main.RdfDcatApPersonalities;
 import org.aksw.jena_sparql_api.pseudo_rdf.GraphCopy;
 import org.aksw.jena_sparql_api.pseudo_rdf.NodeView;
-import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -41,7 +39,7 @@ public class PseudoRdfConcept {
     public static void main2(String[] args) {
 
         JenaSystem.init();
-        RdfDcatApPersonalities.init(BuiltinPersonalities.model);
+        // RdfDcatApPersonalities.init(BuiltinPersonalities.model);
 
         Resource r = RDFDataMgr.loadModel("dcat-ap-test01.ttl").createResource("http://www.example.org/LinkedGeoData");
 
@@ -56,7 +54,7 @@ public class PseudoRdfConcept {
     public static void main(String[] args) {
 
         JenaSystem.init();
-        RdfDcatApPersonalities.init(BuiltinPersonalities.model);
+        // RdfDcatApPersonalities.init(BuiltinPersonalities.model);
         /*
          * playground
          */

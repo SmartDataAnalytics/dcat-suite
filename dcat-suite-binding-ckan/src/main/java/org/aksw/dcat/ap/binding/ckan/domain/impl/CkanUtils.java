@@ -17,19 +17,11 @@ import org.aksw.commons.beans.model.EntityOps;
 import org.aksw.commons.beans.model.PropertyOps;
 import org.aksw.commons.collections.ConvertingCollection;
 import org.aksw.dcat.ap.binding.ckan.rdf_view.SetFromCkanExtras;
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
 import org.aksw.jena_sparql_api.rdf.collections.ConverterFromObjectToLexicalFormViaRDFDatatype;
-import org.aksw.jenax.arq.util.implementation.SimpleImplementation;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
-import org.apache.jena.enhanced.BuiltinPersonalities;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.sys.JenaSystem;
 import org.springframework.core.convert.support.DefaultConversionService;
 
 import com.google.common.base.Converter;
@@ -72,23 +64,23 @@ public class CkanUtils {
         System.out.println(d.getExtrasAsHashMap());
     }
 
-    public static void mainJena() {
-        JenaSystem.init();
-        BuiltinPersonalities.model.add(RdfDcatApAgentImpl.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
-
-
-        Model m = ModelFactory.createDefaultModel();
-        RdfDcatApAgentImpl v = m.createResource().as(RdfDcatApAgentImpl.class);
-
-
-//		v.addProperty(FOAF.homepage, RDF.HTML);
-//		v.addProperty(FOAF.homepage, RDF.Property);
-
-
-        setValues(v);
-
-        RDFDataMgr.write(System.out, m, RDFFormat.TURTLE_PRETTY);
-    }
+//    public static void mainJena() {
+//        JenaSystem.init();
+//        BuiltinPersonalities.model.add(RdfDcatApAgentImpl.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
+//
+//
+//        Model m = ModelFactory.createDefaultModel();
+//        RdfDcatApAgentImpl v = m.createResource().as(RdfDcatApAgentImpl.class);
+//
+//
+////		v.addProperty(FOAF.homepage, RDF.HTML);
+////		v.addProperty(FOAF.homepage, RDF.Property);
+//
+//
+//        setValues(v);
+//
+//        RDFDataMgr.write(System.out, m, RDFFormat.TURTLE_PRETTY);
+//    }
 
     public static void setValues(DcatApAgent v) {
         //v.setEntityUri("http://example.org/resource/Foo");

@@ -487,7 +487,7 @@ public class DcatCkanRdfUtils {
         dcatDistribution.setFormat(ckanResource.getFormat());
 
         Optional.ofNullable(ckanResource.getUrl())
-                .ifPresent(dcatDistribution::setDownloadURL);
+                .ifPresent(dcatDistribution::setDownloadUrl);
 
         othersToRdf(dcatDistribution, ckanResource.getOthers(), pm);
     }

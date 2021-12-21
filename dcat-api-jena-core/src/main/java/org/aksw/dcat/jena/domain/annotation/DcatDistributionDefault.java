@@ -6,22 +6,22 @@ import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.jena_sparql_api.mapper.annotation.Iri;
 import org.aksw.jena_sparql_api.mapper.annotation.RdfType;
 import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
-import org.aksw.jena_sparql_api.vocab.DCAT;
+import org.aksw.jena_sparql_api.vocab.DcatTerms;
 
 @ResourceView(DcatDistribution.class)
-@RdfType(DCAT.Strs.Distribution)
+@RdfType(DcatTerms.Distribution)
 public interface DcatDistributionDefault
-	extends DcatDistribution
-{	
-	@Override
-	@Iri(DCAT.Strs.accessURL)
-	Set<String> getAccessURLs();
+    extends DcatDistribution
+{
+    @Override
+    @Iri(DcatTerms.accessURL)
+    Set<String> getAccessUrls();
 
-	@Override
-	@Iri(DCAT.Strs.downloadURL)
-	Set<String> getDownloadURLs();
+    @Override
+    @Iri(DcatTerms.downloadURL)
+    Set<String> getDownloadUrls();
 
-	@Override
-	@Iri("http://purl.org/dc/terms/format")
-	String getFormat();
+    @Override
+    @Iri("http://purl.org/dc/terms/format")
+    String getFormat();
 }

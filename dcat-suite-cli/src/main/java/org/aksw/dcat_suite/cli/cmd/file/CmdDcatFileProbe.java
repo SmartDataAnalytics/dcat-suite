@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -17,6 +18,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.util.ResourceUtils;
 
 import picocli.CommandLine.Command;
@@ -31,17 +33,12 @@ public class CmdDcatFileProbe
 
 
     public Integer call() {
+        Path basePath = Path.of("").toAbsolutePath();
+
         for (String file : files) {
-            Path path = Path.of(file);
+            Path relPath = Path.of(file);
 
-            RdfEntityInfo info;
-            try (InputStream in = Files.newInputStream(path)) {
-                info = RDFDataMgrEx.probeEntityInfo(in, Collections.singleton(Lang.NTRIPLES));
-            } catch (IOException e1) {
-                throw new RuntimeException(e1);
-            }
-
-            Resource tmp = ResourceUtils.renameResource(info, path.toString());
+            RdfEntityInfo tmp = DcatRepoLocalUtils.probeFile(basePath, relPath);
             ResourceInDataset r = ResourceInDatasetImpl.createFromCopyIntoResourceGraph(tmp);
             RDFDataMgr.write(StdIo.openStdOutWithCloseShield(), r.getDataset(), RDFFormat.TRIG_BLOCKS);
         }

@@ -1,9 +1,7 @@
 package org.aksw.dcat.ap.binding.ckan.rdf_view;
 
-import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgentImpl;
+import org.aksw.dcat.ap.binding.jena.domain.impl.RdfDcatApAgent;
 import org.aksw.dcat.ap.domain.api.DcatApAgent;
-import org.aksw.jenax.arq.util.implementation.SimpleImplementation;
-import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
@@ -131,11 +129,11 @@ public class MainUniformApi {
 
     public static void main(String [] args) {
         JenaSystem.init();
-        BuiltinPersonalities.model.add(RdfDcatApAgentImpl.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
+//        BuiltinPersonalities.model.add(RdfDcatApAgentImpl.class, new SimpleImplementation(RdfDcatApAgentImpl::new));
 
         Model model = ModelFactory.createDefaultModel();
 
-        DcatApAgent rdfPublisher = model.createResource().as(RdfDcatApAgentImpl.class);
+        DcatApAgent rdfPublisher = model.createResource().as(RdfDcatApAgent.class);
 
         rdfPublisher.setHomepage("http://infai.org");
         rdfPublisher.setMbox("mailto:infai@dev.null");

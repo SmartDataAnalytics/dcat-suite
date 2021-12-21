@@ -54,7 +54,6 @@ public class CmdTransformApply
     @Parameters(description = "Non option args")
     public List<String> nonOptionArgs;
 
-
     @Option(names={"--tg", "--transform-groupId"}, description = "The group id of the transformation to apply")
     public String transformGroupId;
 

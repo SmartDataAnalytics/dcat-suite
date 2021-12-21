@@ -98,7 +98,7 @@ public class DcatUtils {
 	 * @return
 	 */
 	public static Optional<Collection<Resource>> tryGetGraphAccessURLs(DcatDistribution dcatDistribution, Predicate<String> isGraphName) {
-		Set<Resource> accessURLs = dcatDistribution.getAccessURLs().stream()
+		Set<Resource> accessURLs = dcatDistribution.getAccessUrls().stream()
 				.map(ResourceFactory::createResource)
 				.collect(Collectors.toSet());
 		
