@@ -77,7 +77,7 @@ public class DcatOps {
     public static DcatDataset transformAllDists(DcatDataset source, Function<DcatDistribution, DcatDistribution> transform) {
         DcatDataset result = ModelFactory.createDefaultModel().createResource().as(DcatDataset.class);
 
-        for(DcatDistribution dist : source.getDistributions()) {
+        for(DcatDistribution dist : source.getDistributions2()) {
             DcatDistribution newDist = transform.apply(dist);
             result.getModel().add(newDist.getModel());
             result.getDistributions(DcatDistribution.class).add(newDist);
@@ -91,7 +91,7 @@ public class DcatOps {
     }
 
     public static void transformAllDists(DcatDataset ds, Consumer<Resource> consumer) {
-        for (DcatDistribution dist : ds.getDistributions()) {
+        for (DcatDistribution dist : ds.getDistributions2()) {
             consumer.accept(dist);
         }
     }

@@ -143,7 +143,7 @@ public class CmdTransformApply
             .toList();
 
         for (DcatDataset sourceDataset : sourceDatasets) {
-            Collection<? extends DcatDistribution> dists = sourceDataset.getDistributions();
+            Collection<? extends DcatDistribution> dists = sourceDataset.getDistributions2();
 
             for (DcatDistribution dist : dists) {
                 DcatDistribution targetDist = distTransform.apply(dist);

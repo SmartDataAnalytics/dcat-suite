@@ -93,7 +93,7 @@ public class CatalogResolverCkan
         Maybe<DatasetResolver> datasetResolver = resolveDataset(datasetId);
 
         Flowable<DistributionResolver> result = datasetResolver.toFlowable().flatMap(dr ->
-            Flowable.fromIterable(dr.getDataset().getDistributions())
+            Flowable.fromIterable(dr.getDataset().getDistributions2())
                 .filter(d -> d.isURIResource() && d.getURI().equals(distributionId))
                 .map(d -> d.as(DcatDistribution.class))
                 .map(dcatDistribution -> new DistributionResolverCkan(dr, dcatDistribution)));

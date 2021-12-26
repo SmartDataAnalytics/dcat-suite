@@ -576,7 +576,7 @@ public class MainCliDcatSuite {
             List<String> encodings, boolean link) throws IOException {
 
         // Try to parse the format
-        RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileExtension("." + formatOrContentType);
+        RdfEntityInfo info = ContentTypeUtils.deriveHeadersFromFileName("." + formatOrContentType);
         if (info != null) {
             if (info.getContentType() != null) {
                 formatOrContentType = info.getContentType();

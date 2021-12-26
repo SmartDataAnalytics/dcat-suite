@@ -37,10 +37,11 @@ public class DcatRepoLocalImpl
         DcatRepoConfig conf = confModel.listResourcesWithProperty(RDF.type, RepoConfig)
                 .nextOptional().map(r -> r.as(DcatRepoConfig.class)).orElse(null);
 
-        StoreDefinition storeDef = conf.getEngineConf().as(StoreDefinition.class);
+        StoreDefinition storeDef = conf.getEngineConf().as(StoreDefinition.class)
+                .setStorePath("dcat.trig");
 
         this.dataSource = RdfDataSourceFromDataset.create(DifsFactory.newInstance()
-                .setRepoRootPath(repoRootFolder.resolve("dcat.trig"))
+                .setRepoRootPath(repoRootFolder)
                 .setStoreDefinition(storeDef).connectAsDataset(), true);
     }
 

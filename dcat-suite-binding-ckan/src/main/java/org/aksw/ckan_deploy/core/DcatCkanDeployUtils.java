@@ -300,7 +300,7 @@ public class DcatCkanDeployUtils {
         }
 
 
-        for(DcatDistribution dcatDistribution : dataset.getDistributions()) {
+        for(DcatDistribution dcatDistribution : dataset.getDistributions2()) {
 
 
             CkanResource remoteCkanResource = createOrUpdateResource(ckanClient, remoteCkanDataset, dataset, dcatDistribution);

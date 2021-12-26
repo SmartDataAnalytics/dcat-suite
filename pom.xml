@@ -61,17 +61,17 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.3.1</jena.version>
+		<jena.version>4.3.2</jena.version>
 		<!-- <jenax.subversion>1-SNAPSHOT</jenax.subversion> -->
 
-		<jenax.version>4.3.1-1-SNAPSHOT</jenax.version>
+		<jenax.version>4.3.2-1-SNAPSHOT</jenax.version>
 		<aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
 		<gson.version>2.8.5</gson.version>
 
 		<conjure.version>1.0.1-SNAPSHOT</conjure.version>
 
 		<slf4j.version>1.8.0-beta4</slf4j.version>
-		<log4j.version>2.16.0</log4j.version>
+		<log4j.version>2.17.0</log4j.version>
 
 		<jackson.version>2.12.1</jackson.version>
 		<junit.version>4.13</junit.version>
@@ -230,6 +230,12 @@
 			<dependency>
 				<groupId>org.aksw.jenax</groupId>
 				<artifactId>jenax-models-dcat-api</artifactId>
+				<version>${jenax.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.jenax</groupId>
+				<artifactId>jenax-models-prov</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
 

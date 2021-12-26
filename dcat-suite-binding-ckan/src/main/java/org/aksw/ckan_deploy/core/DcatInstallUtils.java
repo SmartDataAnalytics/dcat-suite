@@ -17,33 +17,33 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Download datasets based on dcat descriptions
- * 
+ *
  * @author raven Apr 5, 2018
  *
  */
 public class DcatInstallUtils {
 //	public static void install(Model dcatModel) {
-	
-	private static final Logger logger = LoggerFactory.getLogger(DcatInstallUtils.class);
 
-	
-	public static void install(DcatRepository repo, DcatDataset dcatDataset, Function<String, String> iriResolver, boolean forceReDownload) {
-		for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
-	
-			try {
-				repo.resolveDistribution(dcatDistribution, iriResolver);
-			} catch(Exception e) {
-				logger.warn("Error installing distribution", e);
-			}
-			
+    private static final Logger logger = LoggerFactory.getLogger(DcatInstallUtils.class);
+
+
+    public static void install(DcatRepository repo, DcatDataset dcatDataset, Function<String, String> iriResolver, boolean forceReDownload) {
+        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions2()) {
+
+            try {
+                repo.resolveDistribution(dcatDistribution, iriResolver);
+            } catch(Exception e) {
+                logger.warn("Error installing distribution", e);
+            }
+
 //			install(repoFolder, dcatDistribution, forceReDownload);
 //			for(Resource r : dcatDistribution.getDownloadURLs()) {
 //			}
-		}
-	}
-	
-	
-	
+        }
+    }
+
+
+
 //	public static void install(Path repoFolder, DcatDistribution dcatDistribution, boolean forceReDownload) {
 //		for(Resource r : dcatDistribution.getDownloadURLs()) {
 //			if(!r.isURIResource()) {
@@ -58,30 +58,30 @@ public class DcatInstallUtils {
 //			}
 //		}
 //	}
-	
-	public static void download(Path repoFolder, DcatDistribution dcatDistribution, Resource r, boolean forceReDownload) {
-		
-		String uri = r.getURI();
-		
-		logger.info("Downloading " + uri);
-		
-		String filename = Optional.ofNullable(dcatDistribution.getIdentifier())
-				.orElseThrow(() -> new RuntimeException("could not obtain a file name from downloadable distribution"));
-		
-		filename = StringUtils.trim(filename);
-		if(filename.isEmpty()) { 
-			throw new RuntimeException("Got empty file name");
-		}
-		
-		Path relativeTargetFile = Paths.get(filename);
-		Path targetFile = repoFolder.resolve(relativeTargetFile);
-		
-		
-		try(InputStream in = new URI(uri).toURL().openStream()) {
-			Files.copy(in, targetFile);
-		} catch(Exception e) {
-			logger.error("Failed to download from " + uri + " and write to " + targetFile, e);
-		}		
-	}
+
+    public static void download(Path repoFolder, DcatDistribution dcatDistribution, Resource r, boolean forceReDownload) {
+
+        String uri = r.getURI();
+
+        logger.info("Downloading " + uri);
+
+        String filename = Optional.ofNullable(dcatDistribution.getIdentifier())
+                .orElseThrow(() -> new RuntimeException("could not obtain a file name from downloadable distribution"));
+
+        filename = StringUtils.trim(filename);
+        if(filename.isEmpty()) {
+            throw new RuntimeException("Got empty file name");
+        }
+
+        Path relativeTargetFile = Paths.get(filename);
+        Path targetFile = repoFolder.resolve(relativeTargetFile);
+
+
+        try(InputStream in = new URI(uri).toURL().openStream()) {
+            Files.copy(in, targetFile);
+        } catch(Exception e) {
+            logger.error("Failed to download from " + uri + " and write to " + targetFile, e);
+        }
+    }
 
 }

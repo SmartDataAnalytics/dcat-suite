@@ -3,27 +3,24 @@ package org.aksw.dcat_suite.cli.cmd.file;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import org.aksw.commons.io.util.StdIo;
-import org.aksw.commons.util.entity.EntityInfo;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
+import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfoDefault;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
+import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
+import org.aksw.jenax.reprogen.core.MapperProxyUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFOps;
-import org.apache.jena.sparql.util.DatasetUtils;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
@@ -59,7 +56,7 @@ public class CmdDcatFileAdd
             RdfEntityInfo entityInfo = DcatRepoLocalUtils.probeFile(repo.getBasePath(), filePath);
 
             // Derive the base name; remove file extensions
-            String baseName = DcatRepoLocalUtils.deriveBaseName(file, entityInfo);
+            String baseName = DcatRepoLocalUtils.deriveBaseName(file, entityInfo, true);
 
             // String datasetId = "#" + groupId.replace('.', '/') + "/" + baseName + "/" + version;
             String datasetId = groupId + ":" + baseName + ":" + version;
@@ -94,6 +91,11 @@ public class CmdDcatFileAdd
             RdfEntityInfo tgt = dcatDistribution.as(RdfEntityInfo.class);
             copy(tgt, entityInfo);
 
+            //MapperProxyUtils.s
+            MapperProxyUtils.skolemize("", dcatDistribution.as(RdfEntityInfoDefault.class),
+                    map -> map.remove(RDF.nil));
+            // MapperProxyUtils.
+
             dcatDataset.inModel(dcatDistribution.getModel()).as(DcatDataset.class)
                 .getDistributions(DcatDistribution.class).add(dcatDistribution);
 
@@ -102,11 +104,8 @@ public class CmdDcatFileAdd
 
             if (false) {
                 try (OutputStream out = StdIo.openStdOutWithCloseShield()) {
-                    StreamRDF streamRdf = DcatRepoLocalUtils.getWriterAsGiven(out, RDFFormat.TRIG_BLOCKS, null);
-                    streamRdf = new StreamRDFDeferred(streamRdf, true, DefaultPrefixes.get(), 1000, 1000, null);
-                    streamRdf.start();
-                    StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), streamRdf);
-                    streamRdf.finish();
+                    StreamRDFWriterEx.writeAsGiven(ds.asDatasetGraph(), out, RDFFormat.TRIG_BLOCKS, null,
+                            sr -> new StreamRDFDeferred(sr, true, DefaultPrefixes.get(), 1000, 1000, null));
                 }
             }
         }
@@ -115,6 +114,7 @@ public class CmdDcatFileAdd
 
         return 0;
     }
+
 
     public static void copy(RdfEntityInfo tgt, RdfEntityInfo src) {
         tgt.setCharset(src.getCharset());

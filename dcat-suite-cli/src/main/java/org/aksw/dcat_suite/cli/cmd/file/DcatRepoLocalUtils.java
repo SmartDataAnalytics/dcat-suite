@@ -23,6 +23,7 @@ import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
 import org.aksw.jenax.arq.util.irixresolver.IRIxResolverUtils;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFUtils;
+import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.commons.compress.compressors.CompressorException;
@@ -40,6 +41,7 @@ import org.apache.jena.riot.system.StreamRDFOps;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.riot.system.SyntaxLabels;
 import org.apache.jena.riot.writer.WriterStreamRDFBase;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -58,7 +60,7 @@ public class DcatRepoLocalUtils {
 
     public static Path normalizeRelPath(Path basePath, Path relPath) {
         Path absPath = basePath.resolve(relPath).normalize();
-        Path result = basePath.resolve(absPath);
+        Path result = basePath.relativize(absPath);
         return result;
     }
 
@@ -174,32 +176,21 @@ public class DcatRepoLocalUtils {
 
 
         try (OutputStream out = Files.newOutputStream(conf)) {
-            StreamRDF sink = getWriterAsGiven(out, RDFFormat.TURTLE_BLOCKS, null);
-            sink.start();
-            StreamRDFOps.sendGraphToStream(repoConf.getModel().getGraph(), sink);
-            sink.finish();
+            StreamRDFWriterEx.writeAsGiven(
+                    repoConf.getModel().getGraph(),
+                    out, RDFFormat.TURTLE_BLOCKS, null, null);
+
+//            StreamRDF sink = StreamRDFWriter.getWriterAsGiven(out, RDFFormat.TURTLE_BLOCKS, null);
+//            sink.start();
+//            StreamRDFOps.sendGraphToStream(repoConf.getModel().getGraph(), sink);
+//            sink.finish();
         }
     }
-
-
-    public static StreamRDF getWriterAsGiven(OutputStream out, RDFFormat rdfFormat, Context context) {
-        StreamRDF rawWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, context);
-        StreamRDF coreWriter = StreamRDFUtils.unwrap(rawWriter);
-
-        // Retain blank nodes as given
-        if (coreWriter instanceof WriterStreamRDFBase) {
-            WriterStreamRDFBase tmp = (WriterStreamRDFBase)coreWriter;
-            WriterStreamRDFBaseUtils.setNodeFormatterIRIx(tmp, IRIxResolverUtils.newIRIxAsGiven(""));
-            WriterStreamRDFBaseUtils.setNodeToLabel(tmp, SyntaxLabels.createNodeToLabelAsGiven());
-
-        }
-
-        return rawWriter;
-    }
-
 
 
     /**
+     * Removes all encoding parts from the filename; optionally also removes the content type part.
+     *
      * Given a file name and its detected encodings and content type,
      * assume that the base name can be obtained by removing that many trailing file extensions.
      *
@@ -214,8 +205,8 @@ public class DcatRepoLocalUtils {
      * @param entityInfo
      * @return
      */
-    public static String deriveBaseName(String fileName, EntityInfo entityInfo) {
-        int numExpectedExtensions = entityInfo.getContentEncodings().size() + 1;
+    public static String deriveBaseName(String fileName, EntityInfo entityInfo, boolean removeContentType) {
+        int numExpectedExtensions = entityInfo.getContentEncodings().size() + (removeContentType ? 1 : 0);
         List<String> parts = Arrays.asList(fileName.split("\\."));
         int baseNameParts = Math.max(parts.size() - numExpectedExtensions, 1);
         String result = parts.subList(0, baseNameParts).stream().collect(Collectors.joining("."));
