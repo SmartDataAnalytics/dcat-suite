@@ -33,8 +33,10 @@ import org.aksw.jena_sparql_api.conjure.dataset.algebra.OpUnionDefaultGraph;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.OpVisitor;
 import org.aksw.jena_sparql_api.conjure.dataset.engine.OpExecutorDefault;
 import org.aksw.jena_sparql_api.conjure.dataset.engine.TaskContext;
+import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
+import org.aksw.jena_sparql_api.conjure.noderef.NodeRef;
 import org.aksw.jena_sparql_api.conjure.resourcespec.RPIF;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -125,13 +127,8 @@ public class CmdDcatFileTransformApply
 
         Path transformFilePath = Path.of(transformFile);
         Model transformModel = RDFDataMgr.loadModel(transformFile);
-        Resource xjob = ResourceFactory.createResource(RPIF.ns + "Job");
 
-        List<Job> jobs = transformModel.listResourcesWithProperty(RDF.type, xjob)
-            .mapWith(r -> r.as(Job.class))
-            .toList();
-
-        Job job = Iterables.getOnlyElement(jobs);
+        Job job = JobUtils.getOnlyJob(transformModel);
 
         // TODO Find some expectOne() args
 
@@ -316,6 +313,7 @@ public class CmdDcatFileTransformApply
             List<Resource> transformFileRelPaths,
             Resource outputEntity) {
 
+        Model outModel = outputEntity.getModel();
         Entity derivedEntity = outputEntity.as(Entity.class);
 
         QualifiedDerivation qd = derivedEntity.addNewQualifiedDerivation();
@@ -323,6 +321,12 @@ public class CmdDcatFileTransformApply
         Activity activity = qd.getOrSetHadActivity();
 
         Plan plan = activity.getOrSetHadPlan();
+        JobInstance ji = plan.as(JobInstance.class);
+
+        // FIXME Get the job iris from the list; requires a bit of refactoring
+        String jobIri = transformFileRelPaths.get(0).getURI();
+        NodeRef jobRef = NodeRef.createForFile(outModel, jobIri, null, null);
+        ji.setJobRef(jobRef);
 
         return derivedEntity;
     }
