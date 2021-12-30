@@ -37,7 +37,6 @@ import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jena_sparql_api.conjure.noderef.NodeRef;
-import org.aksw.jena_sparql_api.conjure.resourcespec.RPIF;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
@@ -64,7 +63,6 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFOps;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.system.Txn;
-import org.apache.jena.vocabulary.RDF;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Iterables;
@@ -217,19 +215,26 @@ public class CmdDcatFileTransformApply
             if (!virtualDistribution) {
                 Function<OutputStream, OutputStream> encoder = DcatRepoLocalUtils.createOutputStreamEncoder(tgtEntityInfo.getContentEncodings());
 
-
-
                 try(OutputStream out = encoder.apply(Files.newOutputStream(tgtFile))) {
                     StreamRDF sink = StreamRDFWriter.getWriterStream(out, rdfFormat);
 
+                    Model jobInstModel = ModelFactory.createDefaultModel();
+
                     // Op op = job.getOp();
-                    DataRef dataRef = job.getModel().createResource().as(DataRefUrl.class)
+                    DataRef dataRef = jobInstModel.createResource().as(DataRefUrl.class)
                             .setDataRefUrl(srcFileName)
                             ;
 
-                    JobInstance jobInst = JobInstance.create(job);
+
+                    // Resource transformFileRes = transformFile.toString();
+                    NodeRef jobRef = NodeRef.createForFile(jobInstModel, transformFile.toString(), null, null);
+                    // NodeRef jobRef = jobInstanceModel.createResource()
+
+                    JobInstance jobInst = jobInstModel.createResource().as(JobInstance.class);
+                    jobInst.setJobRef(jobRef);
                     jobInst.getEnvMap().put("B", NodeFactory.createURI("http://ex.org/B/"));
                     jobInst.getEnvMap().put("D", NodeFactory.createURI("http://ex.org/D/"));
+
 
                     Op inputOp = OpDataRefResource.from(dataRef);
                     if (Boolean.TRUE.equals(unionDefaultGraphMode)) {
@@ -238,7 +243,13 @@ public class CmdDcatFileTransformApply
 
                     jobInst.getOpVarMap().put("ARG", inputOp);
 
-                    OpJobInstance opJobIsnt = OpJobInstance.create(jobInst.getModel(), jobInst);
+
+                    Txn.executeWrite(repo.getDataset(), () -> {
+                        createProvenanceData(repo.getDataset(), srcFile, jobInst, tgtFile);
+                        // createProvenanceData(repo.getDataset(), srcFile, Arrays.asList(transformFilePath), tgtFile);
+                    });
+
+                    OpJobInstance opJobInst = OpJobInstance.create(jobInst.getModel(), jobInst);
                     // job.add
 
                     // Map<String, Op> dataRefMapping = new HashMap<>();
@@ -254,7 +265,7 @@ public class CmdDcatFileTransformApply
                             // srcFileNameRes,
                             RDFFormat.TURTLE_BLOCKS);
 
-                    RdfDataPod dataPod = opJobIsnt.accept(opExecutor);
+                    RdfDataPod dataPod = opJobInst.accept(opExecutor);
 //
 //                    RdfDataPod dataPod = ExecutionUtils.executeJob(
 //                            job,
@@ -277,10 +288,6 @@ public class CmdDcatFileTransformApply
 
             }
 
-            Txn.executeWrite(repo.getDataset(), () -> {
-                createProvenanceData(repo.getDataset(), srcFile, Arrays.asList(transformFilePath), tgtFile);
-            });
-
             RDFDataMgr.write(StdIo.openStdOutWithCloseShield(), targetDataset.getModel(), RDFFormat.TURTLE_PRETTY);
 
         }
@@ -294,7 +301,8 @@ public class CmdDcatFileTransformApply
     public static Resource createProvenanceData(
             Dataset dataset,
             Path inputFileRelPath,
-            List<Path> transformFileRelPaths,
+            // List<Path> transformFileRelPaths,
+            JobInstance jobInstance,
             Path outputFileRelPath) {
 
         // Get the model of the target entity
@@ -304,11 +312,36 @@ public class CmdDcatFileTransformApply
 
         return createProvenanceData(
                 mapper.apply(inputFileRelPath),
-                transformFileRelPaths.stream().map(mapper).collect(Collectors.toList()),
+                jobInstance,
+                // transformFileRelPaths.stream().map(mapper).collect(Collectors.toList()),
                 mapper.apply(outputFileRelPath));
     }
 
     public static Entity createProvenanceData(
+            Resource inputEntity,
+            JobInstance jobInstance,
+            Resource outputEntity) {
+
+        Model outModel = outputEntity.getModel();
+        outModel.add(jobInstance.getModel());
+        Entity derivedEntity = outputEntity.as(Entity.class);
+
+        QualifiedDerivation qd = derivedEntity.addNewQualifiedDerivation();
+        qd.setEntity(inputEntity);
+        Activity activity = qd.getOrSetHadActivity();
+
+        activity.setHadPlan(jobInstance);
+        // Plan plan = activity.getOrSetHadPlan();
+        // JobInstance ji = plan.as(JobInstance.class);
+
+        // FIXME Get the job iris from the list; requires a bit of refactoring
+//        String jobIri = transformFileRelPaths.get(0).getURI();
+//        NodeRef jobRef = NodeRef.createForFile(outModel, jobIri, null, null);
+//        ji.setJobRef(jobRef);
+
+        return derivedEntity;
+    }
+    public static Entity createProvenanceDataOld(
             Resource inputEntity,
             List<Resource> transformFileRelPaths,
             Resource outputEntity) {
