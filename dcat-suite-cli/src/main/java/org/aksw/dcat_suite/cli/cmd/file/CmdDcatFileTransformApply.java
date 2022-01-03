@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.aksw.commons.io.util.StdIo;
 import org.aksw.commons.util.obj.ObjectUtils;
+import org.aksw.commons.util.string.Envsubst;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
@@ -36,11 +37,13 @@ import org.aksw.jena_sparql_api.conjure.dataset.engine.TaskContext;
 import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
+import org.aksw.jena_sparql_api.conjure.job.api.JobParam;
 import org.aksw.jena_sparql_api.conjure.noderef.NodeRef;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
+import org.aksw.jenax.arq.util.binding.BindingUtils;
 import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
@@ -62,6 +65,11 @@ import org.apache.jena.riot.RDFWriterRegistry;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFOps;
 import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.util.ExprUtils;
 import org.apache.jena.system.Txn;
 
 import com.google.common.collect.HashBasedTable;
@@ -127,6 +135,8 @@ public class CmdDcatFileTransformApply
         Model transformModel = RDFDataMgr.loadModel(transformFile);
 
         Job job = JobUtils.getOnlyJob(transformModel);
+
+
 
         // TODO Find some expectOne() args
 
@@ -232,8 +242,34 @@ public class CmdDcatFileTransformApply
 
                     JobInstance jobInst = jobInstModel.createResource().as(JobInstance.class);
                     jobInst.setJobRef(jobRef);
-                    jobInst.getEnvMap().put("B", NodeFactory.createURI("http://ex.org/B/"));
-                    jobInst.getEnvMap().put("D", NodeFactory.createURI("http://ex.org/D/"));
+
+                    Map<String, Node> envMap = jobInst.getEnvMap();
+                    envMap.put("INPUT", NodeFactory.createLiteral(srcFile.toString() + "#content"));
+                    envMap.put("CLASSIFIER", NodeFactory.createLiteral(tag));
+
+//                    jobInst.getEnvMap().put("B", NodeFactory.createURI("http://ex.org/B/"));
+//                    jobInst.getEnvMap().put("D", NodeFactory.createURI("http://ex.org/D/"));
+
+                    // Try to bind yet unbound params
+                    for (JobParam param : job.getParams()) {
+                        String name = param.getParamName();
+                        if (!envMap.containsKey(name)) {
+                            Expr expr = param.getDefaultValueExpr();
+
+                            if (expr != null) {
+                                String str = expr.toString();
+                                String str2 = Envsubst.envsubst(str, x -> envMap.get(x).toString(false));
+                                expr = ExprUtils.parse(str2);
+                                Map<Var, Node> tmp = envMap.entrySet().stream().collect(Collectors
+                                        .toMap(e -> Var.alloc(e.getKey()), Entry::getValue));
+                                Binding b = BindingUtils.fromMap(tmp);
+                                //Set<Var> vars = expr.getVarsMentioned();
+
+                                NodeValue nv = ExprUtils.eval(expr, b);
+                                envMap.put(name, nv.getNode());
+                            }
+                        }
+                    }
 
 
                     Op inputOp = OpDataRefResource.from(dataRef);

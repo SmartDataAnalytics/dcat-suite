@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
+import org.aksw.jena_sparql_api.conjure.job.api.JobParam;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jenax.arq.util.node.NodeEnvsubst;
 import org.aksw.jenax.arq.util.node.NodeTransformCollectNodes;
@@ -25,16 +27,21 @@ import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.jenax.stmt.core.SparqlStmtParserImpl;
 import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.apache.jena.query.Syntax;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_Equals;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.util.ExprUtils;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "create", separator = "=", description="Create a new dataset transformation")
-public class CmdTransformCreate
+public class CmdDcatTransformCreate
     implements Callable<Integer>
 {
     @Parameters(description = "SPARQL Statements (inline arguments or files)")
@@ -61,13 +68,25 @@ public class CmdTransformCreate
     @Option(names= {"-t", "--tag"}, description = "A short handle to add to e.g. filenames of output files ")
     public String tag;
 
+    @Option(names= {"-b", "--bind"}, description = "Provide an expression to compute the default value of a placeholder")
+    public List<String> defaultBindings = new ArrayList<>();
+
     @Option(names="--help", usageHelp=true)
     public boolean help = false;
 
 
     @Override
     public Integer call() throws Exception {
-        CmdTransformCreate cmTransformCreate = this;
+
+//        JobParam test = ModelFactory.createDefaultModel().createResource().as(JobParam.class);
+//        test.setDefaultValueExpr(ExprUtils.parse("<http://foo>"));
+//        System.out.println(test.getDefaultValueExpr());
+//
+//        if (true) {
+//            return 0;
+//        }
+
+        CmdDcatTransformCreate cmTransformCreate = this;
 
         PrefixMapping prefixMapping = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
         SparqlScriptProcessor scriptProcessor = new SparqlScriptProcessor(
@@ -87,7 +106,25 @@ public class CmdTransformCreate
                 .map(Entry::getKey).collect(Collectors.toList());
 
         Set<String> optionalArgSet = new LinkedHashSet<>(optionalArgs);
-        Job job = fromSparqlStmts(sparqlStmts, optionalArgSet);
+
+        Map<Var, Expr> varToExpr = new HashMap<>();
+        for (String str : defaultBindings) {
+            Expr expr = ExprUtils.parse(str);
+            if (!(expr instanceof E_Equals)) {
+                throw new IllegalArgumentException("Equality expression expected of the form ?var = ");
+            }
+
+            E_Equals e = (E_Equals)expr;
+
+            Expr arg1 = e.getArg1();
+            if (!arg1.isVariable()) {
+                throw new IllegalArgumentException("Left hand side of expression must be a variable");
+            }
+
+            varToExpr.put(arg1.asVar(), e.getArg2());
+        }
+
+        Job job = fromSparqlStmts(sparqlStmts, optionalArgSet, varToExpr);
 
 
         job.setJobName(jobName);
@@ -128,7 +165,8 @@ public class CmdTransformCreate
 
     public static Job fromSparqlStmts(
             List<SparqlStmt> stmts,
-            Set<String> optionalArgs
+            Set<String> optionalArgs,
+            Map<Var, Expr> varToExpr
         ) {
 
 
@@ -172,10 +210,18 @@ public class CmdTransformCreate
 
         Job result = Job.create(cj.getContext().getModel())
                 .setOp(op)
-                .setDeclaredVars(envVars)
+                // .setDeclaredVars(envVars)
                 .setOpVars(Collections.singleton(opVarName));
 
-        result.setDeclaredVars(mentionedEnvVars);
+        for (String varName : mentionedEnvVars) {
+            JobParam param = result.addNewParam();
+            param.setParamName(varName);
+
+            Var v = Var.alloc(varName);
+            Expr expr = varToExpr.get(v);
+            param.setDefaultValueExpr(expr);
+        }
+        // result.setDeclaredVars(mentionedEnvVars);
 
 
         return result;

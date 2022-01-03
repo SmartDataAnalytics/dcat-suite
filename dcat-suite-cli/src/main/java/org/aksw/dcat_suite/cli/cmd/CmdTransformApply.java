@@ -18,7 +18,7 @@ import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat_suite.cli.main.DcatOps;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
-import org.aksw.jena_sparql_api.conjure.resourcespec.RPIF;
+import org.aksw.jena_sparql_api.conjure.resourcespec.RpifTerms;
 import org.apache.jena.ext.com.google.common.collect.Iterables;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -100,7 +100,7 @@ public class CmdTransformApply
 
         // TODO Load the default catalog if no file is given
         Model transformModel = RDFDataMgr.loadModel(transformFile);
-        Resource xjob = ResourceFactory.createResource(RPIF.ns + "Job");
+        Resource xjob = ResourceFactory.createResource(RpifTerms.NS + "Job");
 
         List<Job> jobs = transformModel.listResourcesWithProperty(RDF.type, xjob)
             .mapWith(r -> r.as(Job.class))
