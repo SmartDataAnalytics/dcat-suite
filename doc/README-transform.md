@@ -1,5 +1,12 @@
 ## Transformation of DCAT Models
 
+## Transform now supports default value expressions and string substitutions
+TODO Add those to the documentation
+```
+dcat transform create -g org.aksw.sportal -a void -v 1.0.0 rdf-processing-toolkit-parent/use-case-sportal-analysis/src/main/resources/compact/* -b '?D=<$INPUT>' -b '?B = <$INPUT/$CLASSIFIER>'  > void.conjure.ttl
+```
+
+
 The dcat tansform command allows for applying transformation on the content in RDF files
 
 Synopsis

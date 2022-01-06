@@ -6,9 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.aksw.dcat.ckan.config.model.DcatResolverCkan;
@@ -32,8 +30,6 @@ import org.aksw.jenax.arq.connection.RDFConnectionModular;
 import org.aksw.jenax.arq.connection.core.QueryExecutionFactorySparqlQueryConnection;
 import org.aksw.jenax.arq.connection.core.RDFConnectionBuilder;
 import org.aksw.jenax.arq.connection.core.SparqlQueryConnectionJsa;
-import org.aksw.jenax.arq.util.node.NodeEnvsubst;
-import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.sparql.relation.api.TernaryRelation;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
@@ -68,17 +64,6 @@ public class CatalogResolverUtils {
         return result;
     }
 
-    public static Function<String, Query> loadTemplate(String fileOrURI, String templateArgName) throws FileNotFoundException, IOException, ParseException {
-        Query templateQuery = SparqlStmtMgr.loadQuery(fileOrURI);
-
-        Function<String, Query> result = value -> {
-            Map<String, String> map = Collections.singletonMap(templateArgName, value);
-            Query r = QueryUtils.applyNodeTransform(templateQuery, x -> NodeEnvsubst.subst(x, map::get));
-            return r;
-        };
-        return result;
-    };
-
     // No longer needed, as this is now part of the settings.ttl
     public static List<TernaryRelation> loadViews(Collection<String> extraViews) throws FileNotFoundException, IOException, ParseException {
         //Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
@@ -112,8 +97,8 @@ public class CatalogResolverUtils {
                 .addQueryTransform(q -> VirtualPartitionedQuery.rewrite(views, q))
                 .getConnection();
 
-        Function<String, Query> patternToQuery = loadTemplate("match-by-regex.sparql", "ARG");
-        Function<String, Query> idToQuery = loadTemplate("match-exact.sparql", "ARG");
+        Function<String, Query> patternToQuery = SparqlStmtMgr.loadTemplate("match-by-regex.sparql", "ARG");
+        Function<String, Query> idToQuery = SparqlStmtMgr.loadTemplate("match-exact.sparql", "ARG");
 
         CatalogResolverSparql result = new CatalogResolverSparql(_conn, idToQuery, patternToQuery);
         return result;

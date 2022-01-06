@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.commons.util.string.Envsubst;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.dcat.jena.domain.api.DcatDownloadUrl;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat_suite.cli.main.DcatOps;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
@@ -42,9 +44,9 @@ import org.aksw.jena_sparql_api.conjure.noderef.NodeRef;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
+import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
-import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.aksw.jenax.model.prov.Plan;
@@ -71,6 +73,8 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.ExprUtils;
 import org.apache.jena.system.Txn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Iterables;
@@ -93,15 +97,20 @@ import picocli.CommandLine.Parameters;
 public class CmdDcatFileTransformApply
     implements Callable<Integer>
 {
+    private static final Logger logger = LoggerFactory.getLogger(CmdDcatFileTransformApply.class);
+
+
     @Parameters(arity="1..*", description = "File list on which to apply the transformation")
     public List<String> filePaths;
 
     @Option(names={"-t"}, description = "The file containing the transformation which to apply")
     public String transformFile;
 
-
     @Option(names={"-u", "--union-default-graph"}, arity="0", description = "Apply the transformation to the union default graph of each input file", fallbackValue = "true")
     public Boolean unionDefaultGraphMode;
+
+    @Option(names={"-i"}, arity="0", description = "Controls which identifier to use for references to data content. May be 'file', 'distribution' or 'dataset'; default: ${DEFAULT-VALUE}", defaultValue = "dataset")
+    public String inputIdType;
 
     @Option(names={"--tag"}, description = "Custom tag (overrides a transformation's one if present)")
     public String customTag = null;
@@ -124,6 +133,81 @@ public class CmdDcatFileTransformApply
 
     @Option(names= {"--virtual"}, description = "Register a distribution that is the result of the transformation but do not generate the result file; default ${DEFAULT-VALUE}", arity="0", fallbackValue = "false")
     public boolean virtualDistribution;
+
+
+    public static enum IdType {
+        FILE,
+        DISTRIBUTION,
+        DATASET
+    }
+
+
+    public static String resolveIdentifier(DcatRepoLocal repo, Path path, String inputType) {
+        IdType idType = Objects.requireNonNull(IdType.valueOf(inputType.toUpperCase()), "Unknown id type" + inputType);
+
+        Set<Resource> candidates = resolveIdentifier(repo, path, idType);
+
+        Resource r = Iterables.getOnlyElement(candidates);
+        return r.getURI();
+    }
+
+    public static Set<Resource> resolveIdentifier(DcatRepoLocal repo, Path filePath, IdType inputType) {
+        Dataset ds = repo.getDataset();
+        Model m = ds.getUnionModel();
+        Path relPath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), filePath);
+
+        Set<Resource> result = Collections.singleton(m.createResource(relPath.toString()));
+
+        if (!IdType.FILE.equals(inputType)) {
+
+            result = result.stream().flatMap(r -> r.as(DcatDownloadUrl.class).getDistributions().stream())
+                    .collect(Collectors.toSet());
+
+            if (!IdType.DISTRIBUTION.equals(inputType)) {
+
+                result = result.stream().flatMap(dist -> dist.as(DcatDistribution.class).getDcatDatasets(DcatDataset.class).stream())
+                        .collect(Collectors.toSet());
+
+                if (!IdType.DATASET.equals(inputType)) {
+                    throw new RuntimeException("Unknown type");
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
+
+//
+//        String str = String.join("\n",
+//            "PREFIX dcat: <http://www.w3.org/ns/dcat> .",
+//            "SELECT ?dataset ?distribution ?downloadUrl {",
+//            "  ?distribution dcat:downloadURL ?downloadUrl",
+//            "  OPTONAL { ?dataset dcat:distribution ?distribution }",
+//            "}");
+//
+//        Query q = QueryFactory.create(str);
+//        SparqlQueryConnection conn;
+//
+//        // url to distribution to dataset
+//        Table<Node, Node, Set<Node>> result = HashBasedTable.create();
+//
+//        try (QueryExecution qe = conn.query(q)) {
+//            ResultSet rs = qe.execSelect();
+//            while (rs.hasNext()) {
+//                Binding b = rs.nextBinding();
+//
+//                Node a = b.get(colName1);
+//                Node b = b.get(colName2);
+//                Node c = b.get(colName3);
+//                result.put(a, b, c);
+//            }
+//        }
+//
+//        return result;
+
 
     @Override
     public Integer call() throws Exception {
@@ -164,11 +248,15 @@ public class CmdDcatFileTransformApply
                     .as(DcatDistribution.class);
 
 
+
             Path srcFile = Path.of(dist.getDownloadUrl());
 
             String srcFileName = srcFile.getFileName().toString();
 
             Resource srcFileNameRes = dist.getModel().createResource(srcFileName);
+
+            String inputVal = resolveIdentifier(repo, srcFile, inputIdType);
+            logger.info("Using content identifier " + inputVal);
 
             Set<DcatDataset> datasets = dist.getDcatDatasets(DcatDataset.class);
 
@@ -244,7 +332,9 @@ public class CmdDcatFileTransformApply
                     jobInst.setJobRef(jobRef);
 
                     Map<String, Node> envMap = jobInst.getEnvMap();
-                    envMap.put("INPUT", NodeFactory.createLiteral(srcFile.toString() + "#content"));
+
+//                    envMap.put("INPUT", NodeFactory.createLiteral(srcFile.toString() + "#content"));
+                    envMap.put("INPUT", NodeFactory.createLiteral(inputVal));
                     envMap.put("CLASSIFIER", NodeFactory.createLiteral(tag));
 
 //                    jobInst.getEnvMap().put("B", NodeFactory.createURI("http://ex.org/B/"));
@@ -280,8 +370,10 @@ public class CmdDcatFileTransformApply
                     jobInst.getOpVarMap().put("ARG", inputOp);
 
 
-                    Txn.executeWrite(repo.getDataset(), () -> {
-                        createProvenanceData(repo.getDataset(), srcFile, jobInst, tgtFile);
+
+                    Dataset repoDataset = repo.getDataset();
+                    Txn.executeWrite(repoDataset, () -> {
+                        createProvenanceData(repoDataset, srcFile, jobInst, tgtFile);
                         // createProvenanceData(repo.getDataset(), srcFile, Arrays.asList(transformFilePath), tgtFile);
                     });
 
@@ -345,12 +437,14 @@ public class CmdDcatFileTransformApply
         Model model = dataset.getNamedModel(outputFileRelPath.toString());
 
         Function<Object, Resource> mapper = anyToResource(model);
+        Resource tgtRes = mapper.apply(outputFileRelPath);
+        tgtRes.addLiteral(ResourceFactory.createProperty("https://rpif.aksw.org/substitute"), true);
 
         return createProvenanceData(
                 mapper.apply(inputFileRelPath),
                 jobInstance,
                 // transformFileRelPaths.stream().map(mapper).collect(Collectors.toList()),
-                mapper.apply(outputFileRelPath));
+                tgtRes);
     }
 
     public static Entity createProvenanceData(
