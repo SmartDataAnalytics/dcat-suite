@@ -135,50 +135,6 @@ public class CmdDcatFileTransformApply
     public boolean virtualDistribution;
 
 
-    public static enum IdType {
-        FILE,
-        DISTRIBUTION,
-        DATASET
-    }
-
-
-    public static String resolveIdentifier(DcatRepoLocal repo, Path path, String inputType) {
-        IdType idType = Objects.requireNonNull(IdType.valueOf(inputType.toUpperCase()), "Unknown id type" + inputType);
-
-        Set<Resource> candidates = resolveIdentifier(repo, path, idType);
-
-        Resource r = Iterables.getOnlyElement(candidates);
-        return r.getURI();
-    }
-
-    public static Set<Resource> resolveIdentifier(DcatRepoLocal repo, Path filePath, IdType inputType) {
-        Dataset ds = repo.getDataset();
-        Model m = ds.getUnionModel();
-        Path relPath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), filePath);
-
-        Set<Resource> result = Collections.singleton(m.createResource(relPath.toString()));
-
-        if (!IdType.FILE.equals(inputType)) {
-
-            result = result.stream().flatMap(r -> r.as(DcatDownloadUrl.class).getDistributions().stream())
-                    .collect(Collectors.toSet());
-
-            if (!IdType.DISTRIBUTION.equals(inputType)) {
-
-                result = result.stream().flatMap(dist -> dist.as(DcatDistribution.class).getDcatDatasets(DcatDataset.class).stream())
-                        .collect(Collectors.toSet());
-
-                if (!IdType.DATASET.equals(inputType)) {
-                    throw new RuntimeException("Unknown type");
-                }
-            }
-        }
-
-        return result;
-    }
-
-
-
 
 //
 //        String str = String.join("\n",
@@ -255,7 +211,7 @@ public class CmdDcatFileTransformApply
 
             Resource srcFileNameRes = dist.getModel().createResource(srcFileName);
 
-            String inputVal = resolveIdentifier(repo, srcFile, inputIdType);
+            String inputVal = DcatRepoLocalUtils.getDcatId(repo, srcFile, inputIdType);
             logger.info("Using content identifier " + inputVal);
 
             Set<DcatDataset> datasets = dist.getDcatDatasets(DcatDataset.class);

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,6 +18,9 @@ import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.util.entity.EntityInfo;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
+import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.dcat.jena.domain.api.DcatDownloadUrl;
 import org.aksw.difs.system.domain.StoreDefinition;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
@@ -33,6 +37,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
@@ -50,6 +55,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 public class DcatRepoLocalUtils {
@@ -233,5 +239,41 @@ public class DcatRepoLocalUtils {
             }
             return out;
         };
+    }
+
+
+    public static String getDcatId(DcatRepoLocal repo, Path path, String inputType) {
+        DcatIdType idType = Objects.requireNonNull(DcatIdType.valueOf(inputType.toUpperCase()), "Unknown id type" + inputType);
+
+        Set<Resource> candidates = getRelatedDcatIds(repo, path, idType);
+
+        Resource r = Iterables.getOnlyElement(candidates);
+        return r.getURI();
+    }
+
+    public static Set<Resource> getRelatedDcatIds(DcatRepoLocal repo, Path filePath, DcatIdType idType) {
+        Dataset ds = repo.getDataset();
+        Model m = ds.getUnionModel();
+        Path relPath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), filePath);
+
+        Set<Resource> result = Collections.singleton(m.createResource(relPath.toString()));
+
+        if (!DcatIdType.FILE.equals(idType)) {
+
+            result = result.stream().flatMap(r -> r.as(DcatDownloadUrl.class).getDistributions().stream())
+                    .collect(Collectors.toSet());
+
+            if (!DcatIdType.DISTRIBUTION.equals(idType)) {
+
+                result = result.stream().flatMap(dist -> dist.as(DcatDistribution.class).getDcatDatasets(DcatDataset.class).stream())
+                        .collect(Collectors.toSet());
+
+                if (!DcatIdType.DATASET.equals(idType)) {
+                    throw new RuntimeException("Unknown id type: " + idType);
+                }
+            }
+        }
+
+        return result;
     }
 }
