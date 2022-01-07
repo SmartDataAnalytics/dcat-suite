@@ -344,7 +344,7 @@ public class DcatOps {
             // Check whether this distribution qualifies for transform:
             // (.) it must either have a downloadURL, or
             // (.) it must have a rpif:op operation attached
-            String downloadURL = org.aksw.dcat.ap.utils.DcatUtils.getFirstDownloadUrlFromDistribution(distribution);
+            String downloadURL = org.aksw.dcat.jena.domain.api.DcatUtils.getFirstDownloadUrlFromDistribution(distribution);
 
             // If there is a downloadURL, create a DataRefUrl from it
             // otherwise, if there is an op, inject this one instead
@@ -438,7 +438,7 @@ public class DcatOps {
             // Check whether this distribution qualifies for transform:
             // (.) it must either have a downloadURL, or
             // (.) it must have a rpif:op operation attached
-            String downloadURL = org.aksw.dcat.ap.utils.DcatUtils.getFirstDownloadUrlFromDistribution(distribution);
+            String downloadURL = org.aksw.dcat.jena.domain.api.DcatUtils.getFirstDownloadUrlFromDistribution(distribution);
 
             // If there is a downloadURL, create a DataRefUrl from it
             // otherwise, if there is an op, inject this one instead

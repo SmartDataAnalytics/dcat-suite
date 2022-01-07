@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -21,14 +20,12 @@ import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.DcatDownloadUrl;
+import org.aksw.dcat.jena.domain.api.DcatIdType;
 import org.aksw.difs.system.domain.StoreDefinition;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
-import org.aksw.jenax.arq.util.irixresolver.IRIxResolverUtils;
-import org.aksw.jenax.arq.util.streamrdf.StreamRDFUtils;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
-import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
@@ -41,13 +38,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFOps;
-import org.apache.jena.riot.system.StreamRDFWriter;
-import org.apache.jena.riot.system.SyntaxLabels;
-import org.apache.jena.riot.writer.WriterStreamRDFBase;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.util.Context;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.DCAT;
@@ -63,6 +53,10 @@ public class DcatRepoLocalUtils {
     private static final Logger logger = LoggerFactory.getLogger(DcatRepoLocalUtils.class);
 
     public static final String DEFAULT_REPO_CONF_FILENAME = "dcat.repo.conf.ttl";
+
+    public static Path normalizeRelPath(Path basePath, String relPath) {
+        return normalizeRelPath(basePath, Path.of(relPath));
+    }
 
     public static Path normalizeRelPath(Path basePath, Path relPath) {
         Path absPath = basePath.resolve(relPath).normalize();
@@ -241,9 +235,8 @@ public class DcatRepoLocalUtils {
         };
     }
 
-
-    public static String getDcatId(DcatRepoLocal repo, Path path, String inputType) {
-        DcatIdType idType = Objects.requireNonNull(DcatIdType.valueOf(inputType.toUpperCase()), "Unknown id type" + inputType);
+    public static String getDcatId(DcatRepoLocal repo, Path path, String inputIdType) {
+        DcatIdType idType = DcatIdType.of(inputIdType);
 
         Set<Resource> candidates = getRelatedDcatIds(repo, path, idType);
 
@@ -276,4 +269,5 @@ public class DcatRepoLocalUtils {
 
         return result;
     }
+
 }

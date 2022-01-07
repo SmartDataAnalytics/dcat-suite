@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,8 @@ import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.commons.util.string.Envsubst;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
-import org.aksw.dcat.jena.domain.api.DcatDownloadUrl;
+import org.aksw.dcat.jena.domain.api.DcatIdType;
+import org.aksw.dcat.jena.domain.api.DcatUtils;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat_suite.cli.main.DcatOps;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
@@ -104,7 +104,10 @@ public class CmdDcatFileTransformApply
     public List<String> filePaths;
 
     @Option(names={"-t"}, description = "The file containing the transformation which to apply")
-    public String transformFile;
+    public String transformFileOrId;
+
+    @Option(names={"--ti"}, description = "The identifier to use for referring to the transformation in the provenance (dataset, distribution or file); default: ${DEFAULT-VALUE} ", defaultValue="dataset")
+    public String transformIdType;
 
     @Option(names={"-u", "--union-default-graph"}, arity="0", description = "Apply the transformation to the union default graph of each input file", fallbackValue = "true")
     public Boolean unionDefaultGraphMode;
@@ -165,14 +168,30 @@ public class CmdDcatFileTransformApply
 //        return result;
 
 
+    public static Model loadDistributionAsModel(Path basePath, DcatDistribution dist) {
+        String url = Iterables.getOnlyElement(dist.getDownloadUrls());
+        Model result = RDFDataMgr.loadModel(url);
+        return result;
+    }
+
     @Override
     public Integer call() throws Exception {
 
         DcatRepoLocal repo = DcatRepoLocalUtils.requireLocalRepo(Path.of(""));
 
+        // Try to resolve the reference to the transform to the resource that contains it
 
-        Path transformFilePath = Path.of(transformFile);
-        Model transformModel = RDFDataMgr.loadModel(transformFile);
+        Path transformFilePath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), transformFileOrId);
+        Resource transformRes = repo.getDataset().getUnionModel().createResource(transformFilePath.toString());
+
+        DcatDistribution transformDist = DcatUtils.resolveDistribution(transformRes);
+        DcatIdType transformIt = DcatIdType.of(transformIdType);
+
+        Resource transformId = DcatUtils.getRelatedId(transformDist, transformIt);
+
+
+
+        Model transformModel = loadDistributionAsModel(repo.getBasePath(), transformDist); // RDFDataMgr.loadModel(transformFileOrId);
 
         Job job = JobUtils.getOnlyJob(transformModel);
 
@@ -281,7 +300,8 @@ public class CmdDcatFileTransformApply
 
 
                     // Resource transformFileRes = transformFile.toString();
-                    NodeRef jobRef = NodeRef.createForFile(jobInstModel, transformFile.toString(), null, null);
+                    // NodeRef jobRef = NodeRef.createForFile(jobInstModel, transformFileOrId.toString(), null, null);
+                    NodeRef jobRef = NodeRef.createForDcatEntity(jobInstModel, transformRes.asNode(), null, null);
                     // NodeRef jobRef = jobInstanceModel.createResource()
 
                     JobInstance jobInst = jobInstModel.createResource().as(JobInstance.class);
@@ -341,6 +361,10 @@ public class CmdDcatFileTransformApply
                     HttpResourceRepositoryFromFileSystemImpl httpRepo = HttpResourceRepositoryFromFileSystemImpl.createDefault();
 
                     TaskContext taskContext = new TaskContext(srcEntity, new HashMap<>(), new HashMap<>());
+
+                    Model repoUnionModel = repoDataset.getUnionModel();
+                    taskContext.getCtxModels().put("thisCatalog", repoUnionModel);
+
                     OpVisitor<RdfDataPod> opExecutor = new OpExecutorDefault(
                             httpRepo,
                             // httpRepo.getCacheStore(),
