@@ -89,7 +89,7 @@ public class CmdDcatFileAdd
             dcatDistribution.setDownloadUrl(filePath.toString());
 
             RdfEntityInfo tgt = dcatDistribution.as(RdfEntityInfo.class);
-            copy(tgt, entityInfo);
+            copyEntityInfo(tgt, entityInfo);
 
             //MapperProxyUtils.s
             MapperProxyUtils.skolemize("", dcatDistribution.as(RdfEntityInfoDefault.class),
@@ -116,10 +116,14 @@ public class CmdDcatFileAdd
     }
 
 
-    public static void copy(RdfEntityInfo tgt, RdfEntityInfo src) {
-        tgt.setCharset(src.getCharset());
-        tgt.setContentEncodings(src.getContentEncodings());
-        tgt.setContentType(src.getContentType());
+    public static void copyEntityInfo(RdfEntityInfo tgt, RdfEntityInfo src) {
+        tgt
+            .setCharset(src.getCharset())
+            .setContentEncodings(src.getContentEncodings())
+            .setContentType(src.getContentType())
+            .setByteSize(src.getByteSize())
+            .setUncompressedByteSize(src.getUncompressedByteSize())
+            ;
     }
 
 }

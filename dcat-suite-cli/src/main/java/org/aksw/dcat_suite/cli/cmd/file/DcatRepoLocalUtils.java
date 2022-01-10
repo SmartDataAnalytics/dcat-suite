@@ -114,7 +114,18 @@ public class DcatRepoLocalUtils {
             throw new RuntimeException(e1);
         }
 
+
         RdfEntityInfo result = ResourceUtils.renameResource(info, relPath.toString()).as(RdfEntityInfo.class);
+
+        try {
+            long size = Files.size(tgtPath);
+            result.setByteSize(size);
+        } catch (IOException e) {
+            logger.warn("Failed to obtain file size for " + tgtPath);
+        }
+
+
+
         return result;
     }
 

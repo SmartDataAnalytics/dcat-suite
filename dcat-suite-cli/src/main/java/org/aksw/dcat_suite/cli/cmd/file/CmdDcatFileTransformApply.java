@@ -51,6 +51,7 @@ import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.aksw.jenax.model.prov.Plan;
 import org.aksw.jenax.model.prov.QualifiedDerivation;
+import org.aksw.jenax.reprogen.core.MapperProxyUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
@@ -73,6 +74,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.ExprUtils;
 import org.apache.jena.system.Txn;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -349,7 +351,11 @@ public class CmdDcatFileTransformApply
 
                     Dataset repoDataset = repo.getDataset();
                     Txn.executeWrite(repoDataset, () -> {
-                        createProvenanceData(repoDataset, srcFile, jobInst, tgtFile);
+                        Entity res = createProvenanceData(repoDataset, srcFile, jobInst, tgtFile);
+
+                        MapperProxyUtils.skolemize("", res,
+                                map -> map.remove(RDF.nil));
+
                         // createProvenanceData(repo.getDataset(), srcFile, Arrays.asList(transformFilePath), tgtFile);
                     });
 
@@ -406,7 +412,7 @@ public class CmdDcatFileTransformApply
         return item -> model.createResource(item.toString());
     }
 
-    public static Resource createProvenanceData(
+    public static Entity createProvenanceData(
             Dataset dataset,
             Path inputFileRelPath,
             // List<Path> transformFileRelPaths,
