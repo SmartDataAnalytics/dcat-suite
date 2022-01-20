@@ -82,9 +82,7 @@ public class ConnectionMgmtView
         Button createBtn = new Button("Create");
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
         createBtn.addClickListener(ev -> {
-            Graph d = GraphFactory.createDefaultGraph();
-            GraphUtil.addInto(d, delta.getAdditionGraph());
-            GraphUtil.deleteFrom(d, delta.getDeletionGraph());
+            Graph d = GraphChange.createEffectiveGraphView(GraphFactory.createDefaultGraph(), delta);
             Resource r = ModelFactory.createModelForGraph(d).wrapAsResource(root);
             RDFDataMgr.write(System.out, r.getModel(), RDFFormat.TURTLE_PRETTY);
         });
