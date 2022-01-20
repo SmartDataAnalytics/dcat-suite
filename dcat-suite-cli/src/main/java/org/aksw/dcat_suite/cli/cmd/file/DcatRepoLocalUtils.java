@@ -21,6 +21,8 @@ import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.DcatDownloadUrl;
 import org.aksw.dcat.jena.domain.api.DcatIdType;
+import org.aksw.dcat.mgmt.api.DataProject;
+import org.aksw.dcat.mgmt.vocab.DCATX;
 import org.aksw.difs.system.domain.StoreDefinition;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
@@ -53,6 +55,18 @@ public class DcatRepoLocalUtils {
     private static final Logger logger = LoggerFactory.getLogger(DcatRepoLocalUtils.class);
 
     public static final String DEFAULT_REPO_CONF_FILENAME = "dcat.repo.conf.ttl";
+
+
+    public static List<DataProject> listDataProjects(Model model) {
+        return model.listResourcesWithProperty(RDF.type, DCATX.DataProject)
+                .mapWith(r -> r.as(DataProject.class))
+                .toList();
+
+//        List<ResourceInDataset> tmp = WrappedIterator.create(
+//                dataset.asDatasetGraph().find(Node.ANY, Node.ANY, RDF.type.asNode(), DcatXVocab.DataProject.asNode()))
+//        .mapWith(quad -> (ResourceInDataset)new ResourceInDatasetImpl(dataset, quad.getGraph().getURI(), quad.getSubject()))
+//        .toList();
+    }
 
     public static Path normalizeRelPath(Path basePath, String relPath) {
         return normalizeRelPath(basePath, Path.of(relPath));
@@ -129,13 +143,37 @@ public class DcatRepoLocalUtils {
         return result;
     }
 
-    public static Path getDcatRepoConfig(Path path) {
+    public static Path findDcatRepoConfig(Path path) {
         return FileUtils.findInAncestors(path.toAbsolutePath(), DEFAULT_REPO_CONF_FILENAME);
     }
 
+    /** Test for whether the given path holds a repository */
+    public static boolean isRepository(Path path) {
+        Path p = path.resolve(DEFAULT_REPO_CONF_FILENAME);
+        boolean result = Files.exists(p);
+        return result;
+    }
 
-    public static DcatRepoLocal requireLocalRepo(Path searchStartPath) {
-        Path configFile = getDcatRepoConfig(searchStartPath);
+    /** Find a repo in the current working directory or the first suitable ancestor */
+    public static DcatRepoLocal findLocalRepo() {
+        return findLocalRepo(Path.of(""));
+    }
+
+    /** Find a repo in the given folder or the first suitable ancestor */
+    public static DcatRepoLocal findLocalRepo(Path searchStartPath) {
+        Path configFile = findDcatRepoConfig(searchStartPath);
+        return loadLocalRepo(configFile);
+    }
+
+    /** Look for the default repo config file in a specific folder */
+    public static DcatRepoLocal getLocalRepo(Path folder) {
+        Path configFile = folder.resolve(DEFAULT_REPO_CONF_FILENAME);
+        return loadLocalRepo(configFile);
+    }
+
+
+    /** Create a repo object from a specific config file */
+    public static DcatRepoLocal loadLocalRepo(Path configFile) {
 
         if (configFile == null) {
             throw new RuntimeException("No local dcat repository detected in any parent folders");
@@ -156,10 +194,14 @@ public class DcatRepoLocalUtils {
     }
 
     public static void init() throws Exception {
-        // Path path = StandardSystemProperty.USER_DIR.
-        Path currentFolder = Path.of("").toAbsolutePath();
+        init(Path.of("").toAbsolutePath());
+    }
 
-        Path conf = getDcatRepoConfig(currentFolder);
+    public static void init(Path currentFolder) throws Exception {
+        // Path path = StandardSystemProperty.USER_DIR.
+        // Path currentFolder = Path.of("").toAbsolutePath();
+
+        Path conf = findDcatRepoConfig(currentFolder);
         if (conf != null) {
             if (currentFolder.equals(conf.getParent())) {
                 throw new RuntimeException("Configuration already exists in this folder: " + conf);

@@ -23,7 +23,7 @@ public class CmdDcatFileRelease
 
     @Override
     public Integer call() throws Exception {
-        DcatRepoLocal repo = DcatRepoLocalUtils.requireLocalRepo(Path.of(""));
+        DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo(Path.of(""));
 
         Dataset repoDataset = repo.getDataset();
 

@@ -1,0 +1,7 @@
+/* [part="toggle-button"]::before { */
+/*     content: none; */
+/* } */
+
+:host(.hide-toggle-button) [part="toggle-button"] {
+    display: none;
+}

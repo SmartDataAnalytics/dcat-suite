@@ -6,6 +6,11 @@
 
 /* Example: border-only style for all Vaadin textfields . */
 [part="input-field"] {
-    box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct);
+/* :host(.border-red [part="input-field"]) { */
+/*    box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct); */
     background-color: var(--lumo-base-color);
+    border: 0px;
+    border-style: none;
+
+    /* border-bottom: thin solid var(--lumo-contrast-30pct); */
 }

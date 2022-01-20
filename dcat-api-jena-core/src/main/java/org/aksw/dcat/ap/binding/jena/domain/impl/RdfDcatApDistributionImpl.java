@@ -3,9 +3,9 @@ package org.aksw.dcat.ap.binding.jena.domain.impl;
 import java.time.Instant;
 import java.util.Set;
 
-import org.aksw.jena_sparql_api.mapper.annotation.Iri;
-import org.aksw.jena_sparql_api.mapper.annotation.IriNs;
-import org.aksw.jena_sparql_api.mapper.annotation.IriType;
+import org.aksw.jenax.annotation.reprogen.Iri;
+import org.aksw.jenax.annotation.reprogen.IriNs;
+import org.aksw.jenax.annotation.reprogen.IriType;
 
 public interface RdfDcatApDistributionImpl
     extends DcatApDistribution

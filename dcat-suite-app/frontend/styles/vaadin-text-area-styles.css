@@ -1,0 +1,6 @@
+[part="input-field"] {
+    background-color: var(--lumo-base-color);
+    border: 0px;
+    border-style: none;
+    /* border-bottom: thin solid var(--lumo-contrast-30pct); */
+}

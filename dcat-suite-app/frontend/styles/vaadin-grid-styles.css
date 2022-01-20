@@ -1,0 +1,10 @@
+
+[part~="cell"] {
+  min-height: 0;
+  /* min-height: var(--lumo-size-xs); */
+}
+
+:host(:not([theme~="no-row-borders"])) [part="row"][first] [part~="cell"]:not([part~="details-cell"]) {
+  min-height: 0;
+  /* min-height: calc(var(--lumo-size-xs) - var(--_lumo-grid-border-width)); */
+}

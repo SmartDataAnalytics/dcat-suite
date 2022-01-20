@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.aksw.jena_sparql_api.mapper.annotation.Iri;
-import org.aksw.jena_sparql_api.mapper.annotation.IriType;
-import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
+import org.aksw.jenax.annotation.reprogen.Iri;
+import org.aksw.jenax.annotation.reprogen.IriType;
+import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.apache.jena.ext.com.google.common.base.Objects;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCAT;

@@ -4,6 +4,7 @@ import picocli.CommandLine.Command;
 
 @Command(name = "file", separator = "=", description = "File-based operations", subcommands = {
         CmdDcatFileInit.class,
+        CmdDcatFileProjectParent.class,
         CmdDcatFileAdd.class,
         CmdDcatFileRm.class,
         CmdDcatFileTransformParent.class,

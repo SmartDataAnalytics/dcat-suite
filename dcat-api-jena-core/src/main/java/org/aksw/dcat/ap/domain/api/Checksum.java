@@ -1,8 +1,8 @@
 package org.aksw.dcat.ap.domain.api;
 
 import org.aksw.dcat.jena.ap.vocab.Spdx;
-import org.aksw.jena_sparql_api.mapper.annotation.Iri;
-import org.aksw.jena_sparql_api.mapper.annotation.ResourceView;
+import org.aksw.jenax.annotation.reprogen.Iri;
+import org.aksw.jenax.annotation.reprogen.ResourceView;
 import org.apache.jena.rdf.model.Resource;
 
 // TODO This class is what SpdxChecksum should be for Dcat-AP - consolidate!

@@ -1,7 +1,6 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -19,7 +18,10 @@ import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
-import org.aksw.dcat_suite.app.vaadin.layout.MClientMainLayout;
+import org.aksw.dcat_suite.app.model.api.GroupMgr;
+import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
+import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
+import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.connection.query.QueryExecutionDecoratorTxn;
 import org.aksw.jenax.path.core.PathPE;
@@ -31,8 +33,8 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
@@ -41,13 +43,16 @@ import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -56,6 +61,7 @@ import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.FileData;
 import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
@@ -65,31 +71,41 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "group/:groupId*", layout = MClientMainLayout.class)
+@Route(value = "group/:groupId*", layout = DmanMainLayout.class)
 @PageTitle("Data Project Management")
 public class DataProjectMgmtView
     extends VerticalLayout
     implements BeforeEnterObserver
 {
 
-    protected FileRepoResolver fileRepoResolver;
+    static { JenaSystem.init(); }
+
+    protected GroupMgrFactory dcatRepoMgr;
+    protected GroupMgr groupMgr;
+    // protected DcatRepoLocal dcatRepo;
+
+//    protected FileRepoResolver fileRepoResolver;
 
     protected Grid<Binding> datasetGrid;
 
-    protected Path fileRepoRootPath;
+    // protected Path fileRepoRootPath;
 
 
     /** The active path within the file repository; used e.g. for uploads and searches */
     protected ObservableValue<Path> activePath = ObservableValueImpl.create(null);
 
+    protected HorizontalLayout headingLayout;
+    protected Image logoImg;
+    protected Div description;
     protected H1 heading;
 
     protected boolean groupExists;
     protected String groupId;
 
-    protected TreeGrid<Path> folderTreeGrid;
 
-    protected Dataset dataset;
+    protected Button addDatasetFromFileBtn;
+
+    protected TreeGrid<Path> folderTreeGrid;
 
     protected Button createGroupBtn = new Button("Create Group");
 
@@ -103,6 +119,8 @@ public class DataProjectMgmtView
 
     protected TreeGrid<Path> fileGrid;
 
+    protected Dataset dataset;
+
     /** List member datasets of the active group */
     public static String listDatasets() {
         // "CONSTRUCT { ?s a RootVar } { ?s }";
@@ -114,14 +132,23 @@ public class DataProjectMgmtView
     public void beforeEnter(BeforeEnterEvent event) {
         groupId = event.getRouteParameters().get("groupId").orElse(null);
 
-        fileRepoRootPath = fileRepoResolver.getRepo(groupId);
+        groupMgr = dcatRepoMgr.create(groupId);
+
+        if (groupExists) {
+            DcatRepoLocal repo = groupMgr.get();
+            Dataset dataset = repo.getDataset();
+        }
+        // dcatRepo = groupMgr.get();
+        // fileRepoRootPath = fileRepoResolver.getRepo(groupId);
         updateView();
     }
 
     protected void updateView() {
-        groupExists = Txn.calculateRead(dataset, () -> dataset.containsNamedModel(groupId));
+        groupExists = groupMgr.exists(); // Txn.calculateRead(dataset, () -> dataset.containsNamedModel(groupId));
 
-        heading.setText(groupId + " exists: " + groupExists);
+
+        heading.setText(groupId);
+        description.getElement().setProperty("innerHTML", "<i>no description</i>");
 
         createGroupBtn.setVisible(!groupExists);
 
@@ -131,14 +158,26 @@ public class DataProjectMgmtView
                 .setBaseURI(""));
         Query q = parser.apply("SELECT * { GRAPH <" + groupId + "> { ?s <http://www.w3.org/2000/01/rdf-schema#member> ?o } }");
 
-        VaadinSparqlUtils.setQueryForGrid(
-                datasetGrid,
-                (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
-                q);
+        if (groupExists) {
+            DcatRepoLocal repo = groupMgr.get();
+            Dataset dataset = repo.getDataset();
+
+            VaadinSparqlUtils.setQueryForGrid(
+                    datasetGrid,
+                    (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
+                    q);
+
+            logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
+
+
+        } else {
+            datasetGrid.setDataProvider(new ListDataProvider<>(Collections.emptyList()));
+        }
 
         datasetGrid.getDataProvider().refreshAll();
 
 
+        Path fileRepoRootPath = groupMgr.getBasePath();
 
         HierarchicalConfigurableFilterDataProvider<Path, Void, String> folderDataProvider =
                 HierarchicalDataProviderForPath.createForFolderStructure(fileRepoRootPath).withConfigurableFilter();
@@ -156,6 +195,8 @@ public class DataProjectMgmtView
     }
 
     protected String pathToString(Path path) {
+        Path fileRepoRootPath = groupMgr.getBasePath();
+
         return path == null ? "(null)" : (fileRepoRootPath.equals(path) ? "/" : path.getFileName().toString());
     }
 
@@ -186,24 +227,43 @@ public class DataProjectMgmtView
 
 
     public DataProjectMgmtView(
-            @Autowired Dataset dataset,
-            FileRepoResolver fileRepoResolver
+            @Autowired GroupMgrFactory dcatRepoMgr
+//            @Autowired Dataset dataset,
+//            FileRepoResolver fileRepoResolver
             ) throws Exception {
+
+        headingLayout = new HorizontalLayout();
+        headingLayout.setWidthFull();
+
+        logoImg = new Image(); // "", "logo");
+//        logoImg.setAlt("logo");
+//        logoImg.getStyle().set("float", "left");
+        logoImg.setMaxWidth(10, Unit.EM);
+        logoImg.setMaxHeight(10, Unit.EM);
+
+        VerticalLayout headingAndDescriptionSeparator = new VerticalLayout();
+
+        heading = new H1();
+//        heading.getStyle().set("float", "none");
+
+        description = new Div();
+//        heading.getStyle().set("float", "none");
 
 
 
         // datasetGrid.setDataProvider(null);
 
-        this.fileRepoResolver = fileRepoResolver;
-        this.dataset = dataset;
+        this.dcatRepoMgr = dcatRepoMgr;
+        // this.dataset = dataset;
 
         this.createGroupBtn.addClickListener(ev -> {
-            Txn.executeWrite(dataset, () -> {
-                Model m = dataset.getNamedModel(groupId);
-                Resource s = m.createResource(groupId);
-                s.addProperty(RDF.type, ResourceFactory.createResource("https://example.org/DataProject"));
-                updateView();
-            });
+            groupMgr.create();
+//            Txn.executeWrite(dataset, () -> {
+//                Model m = dataset.getNamedModel(groupId);
+//                Resource s = m.createResource(groupId);
+//                s.addProperty(RDF.type, ResourceFactory.createResource("https://example.org/DataProject"));
+//                updateView();
+//            });
         });
 
 
@@ -232,17 +292,19 @@ public class DataProjectMgmtView
         // Receiver receiver = new MultiFileBuffer();
         // AbstractFileBuffer receiver = new AbstractFileBuffer(file -> new File()) {};
         MultiFileBuffer receiver = new MultiFileBuffer();
-        this.upload = new Upload(receiver);
+        upload = new Upload(receiver);
 
         upload.setDropAllowed(true);
         upload.addSucceededListener(event -> {
 
 
-            try {
-                Files.createDirectories(fileRepoRootPath);
-            } catch (IOException e1) {
-                throw new RuntimeException(e1);
-            }
+            Path fileRepoRootPath;
+//            try {
+                fileRepoRootPath = groupMgr.getBasePath();
+                // Files.createDirectories(fileRepoRootPath);
+//            } catch (IOException e1) {
+//                throw new RuntimeException(e1);
+//            }
 
 
             String fileName = event.getFileName();
@@ -273,7 +335,6 @@ public class DataProjectMgmtView
 //        content.add(upload);
 
 
-        heading = new H1();
 
         this.datasetGrid = new Grid<>();
 
@@ -307,6 +368,7 @@ public class DataProjectMgmtView
             Column<?> hierarchyColumn = fileGrid.addHierarchyColumn(path -> {
                 // System.out.println(path);
                 // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
+                Path fileRepoRootPath = groupMgr.getBasePath();
                 return Objects.toString(fileRepoRootPath.relativize(path));
                 // return path.toString();
             });
@@ -327,7 +389,9 @@ public class DataProjectMgmtView
         importGtfsDialog.add(closeBtn);
 
         contextMenu.setDynamicContentHandler(absPath -> {
+            Path fileRepoRootPath = groupMgr.getBasePath();
             Path relPath = fileRepoRootPath.relativize(absPath);
+
             contextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
             contextMenu.add(new Hr());
 
@@ -371,7 +435,16 @@ public class DataProjectMgmtView
         txtSearch.setValue("");
         // updateFileSearch(treeData, treeDataProvider, "");
 
-        add(heading);
+
+        headingAndDescriptionSeparator.add(heading);
+        headingAndDescriptionSeparator.add(description);
+
+        headingLayout.add(logoImg);
+        headingLayout.add(headingAndDescriptionSeparator);
+
+        add(headingLayout);
+
+        add(upload);
 
 
         TreeGrid<PathPE> dataGrid = new TreeGrid<>();
@@ -400,7 +473,6 @@ public class DataProjectMgmtView
 
         add(addDatasetBtn);
 
-        add(upload);
 
 
         HorizontalLayout fileMgrPanel = new HorizontalLayout();
@@ -443,7 +515,9 @@ public class DataProjectMgmtView
         try {
             TreeData<Path> td = new TreeData<>();
 
-            List<Path> matches = fileRepoRootPath == null
+            Path fileRepoRootPath = groupMgr.getBasePath();
+
+            List<Path> matches = fileRepoRootPath == null || !Files.exists(fileRepoRootPath)
                     ? Collections.emptyList()
                     : Files.walk(fileRepoRootPath)
                         .filter(Files::isRegularFile)

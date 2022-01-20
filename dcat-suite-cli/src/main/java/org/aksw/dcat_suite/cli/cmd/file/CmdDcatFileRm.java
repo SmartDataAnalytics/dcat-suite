@@ -23,7 +23,7 @@ public class CmdDcatFileRm
 
 
     public Integer call() {
-        DcatRepoLocal repo = DcatRepoLocalUtils.requireLocalRepo(Path.of(""));
+        DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo(Path.of(""));
 
         for (String file : files) {
 

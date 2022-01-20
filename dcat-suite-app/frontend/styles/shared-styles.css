@@ -10,6 +10,56 @@
   max-width: 250px;
 }
 
+.toolbar {
+  background-color: var(--lumo-primary-color-10pct);
+  padding: 0px;
+}
+
+/* Prevent text wrapping in e.g. labels */
+.no-wrap{
+  flex: 0 0 auto;
+}
+
+/* Style for circles; based on https://cdn.vaadin.com/vaadin-lumo-styles/1.0.0-beta2/demo/colors.html */
+.color-swatch {
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--lumo-shade-20pct);
+  margin-right: 0.2em;
+}
+
+.detail-text {
+  font-color: var(--lumo-shade-40pct);
+  font-size: 90%;
+  font-style: italic;
+}
+
+.compact {
+   font-size: 90%;
+}
+
+.compact vaadin-grid-cell-content {
+  padding: 0px 1px;
+}
+
+.compact vaadin-tab {
+  padding: 0px 1px;
+}
 
 
+/* Generic show-child-on-hover-over-parent mechanism */
+/* Usage: <parent><child class="parent-hover-show" /></parent> */
+*:not(:hover) > .parent-hover-show {
+    visibility: hidden;
+}
 
+
+.display-none {
+  display: none;
+}
+
+flow-component-renderer {
+  width: 100%
+}

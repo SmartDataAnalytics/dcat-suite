@@ -13,8 +13,6 @@
 	</parent>
 
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<packaging.type>jar</packaging.type>
@@ -80,15 +78,6 @@
 				<type>pom</type> <version>5.1.14.RELEASE</version> <scope>import</scope> 
 				<! - - <exclusions> <exclusion> <groupId>javax.servlet</groupId> <artifactId>servlet-api</artifactId> 
 				</exclusion> </exclusions> - - > </dependency> -->
-			<dependency>
-
-				<!--<groupId>org.springframework.boot</groupId> -->
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-boot-devtools</artifactId>
-				<version>${spring-boot.version}</version>
-				<!-- <version>2.2.0.RELEASE</version> -->
-				<optional>true</optional>
-			</dependency>
 
 
 			<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-web</artifactId> 
@@ -161,6 +150,14 @@
 			</exclusions>
 		</dependency>
 
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.boot</groupId> -->
+		<!-- <artifactId>spring-boot-devtools</artifactId> -->
+		<!-- <version>${spring-boot.version}</version> -->
+		<!-- <optional>true</optional> -->
+		<!-- <scope>runtime</scope> -->
+		<!-- </dependency> -->
+
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
@@ -186,6 +183,21 @@
 		<dependency>
 			<groupId>org.aksw.scaseco.vaadin</groupId>
 			<artifactId>vaadin-jena-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.scaseco.vaadin</groupId>
+			<artifactId>vaadin-jena-shacl-editor</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-reprogen-shacl</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-rx-dataaccess</artifactId>
 		</dependency>
 
 		<dependency>
@@ -343,6 +355,7 @@
 				<configuration>
 					<wait>500</wait>
 					<maxAttempts>240</maxAttempts>
+					<fork>true</fork>
 				</configuration>
 			</plugin>
 

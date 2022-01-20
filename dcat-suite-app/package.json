@@ -50,7 +50,8 @@
       "@vaadin/vaadin-avatar": "1.0.4",
       "lit-html": "1.4.1",
       "@lrnwebcomponents/pdf-browser-viewer": "2.1.4",
-      "leaflet": "^1.6.0"
+      "leaflet": "^1.6.0",
+      "multiselect-combo-box": "2.4.2"
     },
     "devDependencies": {
       "webpack-babel-multi-target-plugin": "2.3.3",
@@ -71,7 +72,7 @@
       "construct-style-sheets-polyfill": "2.4.6",
       "extract-loader": "5.1.0"
     },
-    "hash": "b934fcf7fa2656d4ed9b7cbd62d65a023a27884ea14bf57c27acfb4b7f717d4f"
+    "hash": "4069b95f91f4bab98c1af6f12c62d53bb5ecac3e4180b41c6757d71ffa0c8fea"
   },
   "dependencies": {
     "lit-element": "2.5.1",
@@ -121,7 +122,8 @@
     "@lrnwebcomponents/pdf-browser-viewer": "2.1.4",
     "leaflet": "^1.6.0",
     "lit-html": "1.4.1",
-    "@vaadin/vaadin-avatar": "1.0.4"
+    "@vaadin/vaadin-avatar": "1.0.4",
+    "multiselect-combo-box": "2.4.2"
   },
   "devDependencies": {
     "webpack-babel-multi-target-plugin": "2.3.3",
