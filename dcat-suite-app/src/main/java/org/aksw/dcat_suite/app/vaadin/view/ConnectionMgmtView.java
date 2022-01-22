@@ -21,7 +21,6 @@ import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.aksw.jenax.reprogen.shacl.ShaclGenerator;
 import org.aksw.vaadin.shacl.ShaclTreeGrid;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;

@@ -6,12 +6,12 @@ import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -41,30 +41,36 @@ public class NewDataProjectView
         panel = new VerticalLayout();
         panel.getStyle().set("border-style", "solid");
         panel.getStyle().set("border-color", "#808080");
-        panel.setWidth("500px");
+        panel.setMaxWidth(100, Unit.EM);
 
         H1 h1 = new H1("New Data Project");
         Paragraph paragraph = new Paragraph("A group id is needed to set up a data project. You must be authorized to create data projects in that group.");
 
-        form = new FormLayout();
-        form.setWidthFull();
-        form.setResponsiveSteps(
-            // Use one column by default
-            new ResponsiveStep("0", 1)
-        );
-
+//        form = new FormLayout();
+//        form.setWidthFull();
+//        form.setResponsiveSteps(
+//            // Use one column by default
+//            new ResponsiveStep("0", 1)
+//        );
+//
         groupIdField = new TextField();
+        groupIdField.setLabel("Group ID");
         groupIdField.setPlaceholder("e.g. org.mydomain.myproject");
-        groupIdField.setWidth(100, Unit.PERCENTAGE);
-
+        groupIdField.setWidthFull();
+        
+        
         createBtn = new Button("Create");
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_LARGE);
 
-        form.addFormItem(groupIdField, "Group ID");
+        createBtn.addClickListener(ev -> createGroup());
+        groupIdField.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> createGroup());
+
+        // form.addFormItem(groupIdField, "Group ID");
 
         panel.add(h1);
         panel.add(paragraph);
-        panel.add(form);
+//        panel.add(form);
+        panel.add(groupIdField);
         panel.add(createBtn);
 
         add(panel);
@@ -74,15 +80,15 @@ public class NewDataProjectView
         // If not then show an error and disable the create button; if the group already exists change 'create' to 'show'.
         // groupIdField.addValueChangeListener(null)
 
-        createBtn.addClickListener(ev -> {
-            String groupId = groupIdField.getValue();
+        // groupIdField.
+    }
+    
+    public void createGroup() {
+        String groupId = groupIdField.getValue();
 
-            GroupMgr groupMgr = dcatRepoMgr.create(groupId);
-            groupMgr.createIfNotExists();
+        GroupMgr groupMgr = dcatRepoMgr.create(groupId);
+        groupMgr.createIfNotExists();
 
-
-            UI.getCurrent().navigate(DmanRoutes.group(groupId));
-        });
-
+        UI.getCurrent().navigate(DmanRoutes.group(groupId));
     }
 }

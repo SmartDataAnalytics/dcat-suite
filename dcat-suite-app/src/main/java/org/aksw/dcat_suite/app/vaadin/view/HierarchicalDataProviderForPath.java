@@ -62,10 +62,12 @@ public class HierarchicalDataProviderForPath
                 result = true;
             } else {
                 Path path = nullToRoot(item);
-                result = Files.isDirectory(path)
-                    ? !Flowable.fromStream(Files.list(path))
-                            .filter(folderItemFilter::test).isEmpty().blockingGet()
-                    : false;
+
+                result = Files.isDirectory(path);
+//                result = Files.isDirectory(path)
+//                    ? !Flowable.fromStream(Files.list(path))
+//                            .filter(folderItemFilter::test).isEmpty().blockingGet()
+//                    : false;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

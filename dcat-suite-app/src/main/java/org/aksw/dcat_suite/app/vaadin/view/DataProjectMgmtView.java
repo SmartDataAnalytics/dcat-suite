@@ -1,30 +1,21 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
-import org.aksw.commons.io.util.FileUtils;
-import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
+import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
+import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
+import org.aksw.jenax.arq.util.binding.QuerySolutionUtils;
+import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.connection.query.QueryExecutionDecoratorTxn;
-import org.aksw.jenax.path.core.PathPE;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
@@ -33,39 +24,35 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.FileData;
-import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
-import com.vaadin.flow.data.provider.hierarchy.TreeData;
-import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -77,7 +64,6 @@ public class DataProjectMgmtView
     extends VerticalLayout
     implements BeforeEnterObserver
 {
-
     static { JenaSystem.init(); }
 
     protected GroupMgrFactory dcatRepoMgr;
@@ -86,7 +72,7 @@ public class DataProjectMgmtView
 
 //    protected FileRepoResolver fileRepoResolver;
 
-    protected Grid<Binding> datasetGrid;
+    protected Grid<DcatDataset> datasetGrid;
 
     // protected Path fileRepoRootPath;
 
@@ -121,110 +107,11 @@ public class DataProjectMgmtView
 
     protected Dataset dataset;
 
-    /** List member datasets of the active group */
-    public static String listDatasets() {
-        // "CONSTRUCT { ?s a RootVar } { ?s }";
-        // Sparqlqueryte
-        return null;
-    }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        groupId = event.getRouteParameters().get("groupId").orElse(null);
-
-        groupMgr = dcatRepoMgr.create(groupId);
-
-        if (groupExists) {
-            DcatRepoLocal repo = groupMgr.get();
-            Dataset dataset = repo.getDataset();
-        }
-        // dcatRepo = groupMgr.get();
-        // fileRepoRootPath = fileRepoResolver.getRepo(groupId);
-        updateView();
-    }
-
-    protected void updateView() {
-        groupExists = groupMgr.exists(); // Txn.calculateRead(dataset, () -> dataset.containsNamedModel(groupId));
-
-
-        heading.setText(groupId);
-        description.getElement().setProperty("innerHTML", "<i>no description</i>");
-
-        createGroupBtn.setVisible(!groupExists);
-
-
-        SparqlQueryParser parser = SparqlQueryParserImpl.create(SparqlParserConfig.newInstance()
-                .setIrixResolverAsGiven()
-                .setBaseURI(""));
-        Query q = parser.apply("SELECT * { GRAPH <" + groupId + "> { ?s <http://www.w3.org/2000/01/rdf-schema#member> ?o } }");
-
-        if (groupExists) {
-            DcatRepoLocal repo = groupMgr.get();
-            Dataset dataset = repo.getDataset();
-
-            VaadinSparqlUtils.setQueryForGrid(
-                    datasetGrid,
-                    (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
-                    q);
-
-            logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
-
-
-        } else {
-            datasetGrid.setDataProvider(new ListDataProvider<>(Collections.emptyList()));
-        }
-
-        datasetGrid.getDataProvider().refreshAll();
-
-
-        Path fileRepoRootPath = groupMgr.getBasePath();
-
-        HierarchicalConfigurableFilterDataProvider<Path, Void, String> folderDataProvider =
-                HierarchicalDataProviderForPath.createForFolderStructure(fileRepoRootPath).withConfigurableFilter();
-
-        folderTreeGrid.setDataProvider(folderDataProvider);
-        folderTreeGrid.addSelectionListener(ev -> {
-            activePath.set(ev.getFirstSelectedItem().orElse(null));
-        });
-
-        activePath.addValueChangeListener(ev -> {
-            txtSearch.setLabel("Search " + pathToString(ev.getNewValue()));
-        });
-
-        updateFileSearch();
-    }
-
-    protected String pathToString(Path path) {
-        Path fileRepoRootPath = groupMgr.getBasePath();
-
-        return path == null ? "(null)" : (fileRepoRootPath.equals(path) ? "/" : path.getFileName().toString());
-    }
-
-
-    /**
-     * Invoke the callable and return an optional with the value.
-     * In case of an exception yields an empty optional.
-     */
-    public static <T> Optional<T> tryCall(Callable<T> callable) {
-        Optional<T> result;
-        try {
-            result = Optional.ofNullable(callable.call());
-        } catch (Exception e) {
-            result = Optional.empty();
-        }
-        return result;
-    }
-
-    public static <T> void invoke(AutoCloseable action, Consumer<? super Exception> exceptionHandler) {
-        try {
-            action.close();
-        } catch (Exception e) {
-            if (exceptionHandler != null) {
-                exceptionHandler.accept(e);
-            }
-        }
-    }
-
+    
+    protected Tab datasetsTab;
+	protected Tab resourcesTab;
+	protected VerticalLayout content;
+    
 
     public DataProjectMgmtView(
             @Autowired GroupMgrFactory dcatRepoMgr
@@ -270,7 +157,8 @@ public class DataProjectMgmtView
         this.addDatasetBtn.addClickListener(ev -> {
             Txn.executeWrite(dataset, () -> {
                 String newDatasetName = IntStream.range(1, Integer.MAX_VALUE)
-                    .mapToObj(i -> groupId + "/dataset" + i)
+                    .mapToObj(i -> "dataset" + i)
+//                    .mapToObj(i -> groupId + "/dataset" + i)
                     .filter(name -> !dataset.containsNamedModel(name))
                     .findFirst()
                     .orElse(null);
@@ -284,135 +172,102 @@ public class DataProjectMgmtView
                 Resource groupRes = x.createResource(groupId);
 
                 groupRes.addProperty(RDFS.member, s);
-
-                updateView();
             });
+            updateView();
+
         });
 
-        // Receiver receiver = new MultiFileBuffer();
-        // AbstractFileBuffer receiver = new AbstractFileBuffer(file -> new File()) {};
-        MultiFileBuffer receiver = new MultiFileBuffer();
-        upload = new Upload(receiver);
+        datasetGrid = new Grid<>();
 
-        upload.setDropAllowed(true);
-        upload.addSucceededListener(event -> {
+        VaadinGridUtils.allowMultipleVisibleItemDetails(datasetGrid);
+        datasetGrid.setItemDetailsRenderer(new ComponentRenderer<>(DatasetDetailsView::new, DatasetDetailsView::setDataset));
+        
+        
+        headingAndDescriptionSeparator.add(heading);
+        headingAndDescriptionSeparator.add(description);
 
+        headingLayout.add(logoImg);
+        headingLayout.add(headingAndDescriptionSeparator);
 
-            Path fileRepoRootPath;
-//            try {
-                fileRepoRootPath = groupMgr.getBasePath();
-                // Files.createDirectories(fileRepoRootPath);
-//            } catch (IOException e1) {
-//                throw new RuntimeException(e1);
-//            }
+        
+        add(headingLayout);
 
+        
+        datasetsTab = new Tab(
+        	VaadinIcon.CONNECT.create(),
+			new Span("Datasets"),
+			createBadge("24")
+		);
+		resourcesTab = new Tab(
+			VaadinIcon.FILE.create(),
+			new Span("Files"),
+			createBadge("439")
+		);
+//		Tab cancelled = new Tab(
+//			new Span("Cancelled"),
+//			createBadge("5")
+//		);
+        
+        Tabs tabs = new Tabs();
+        tabs.setHeightFull();
+        tabs.add(datasetsTab, resourcesTab);
+        content = new VerticalLayout();
+		content.setSpacing(false);
+		
+    	tabs.addSelectedChangeListener(event -> setContent(event.getSelectedTab()));
+    	setContent(tabs.getSelectedTab());		
+    	
+    	
+//          createTab(VaadinIcon.HOME, "Home", DmanLandingPageView.class),
+//          createTab(VaadinIcon.FOLDER_ADD, "New Data Project", NewDataProjectView.class),
+//          createTab(VaadinIcon.EYE, "Browse", BrowseRepoView.class),
+//          createTab(VaadinIcon.CONNECT, "Connections", ConnectionMgmtView.class)
 
-            String fileName = event.getFileName();
+        // tabs.setOrientation(Tabs.Orientation.VERTICAL);
 
-            FileData fileData = receiver.getFileData(fileName);
-            File file = fileData.getFile();
-            Path srcPath = file.toPath();
-            Path tgtPath = fileRepoRootPath.resolve(fileName);
+        add(tabs, content);
 
-            try {
-                FileUtils.moveAtomic(srcPath, tgtPath);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            Notification.show(String.format("Upload succeeded. Filename: '%s'", fileName));
+        
+//        add(datasetGrid);
+//        AppLayout appLayout = new AppLayout();
+//        appLayout.addToDrawer(datasetGrid);
+//        appLayout.setContent(new Paragraph("Main content"));
+//        add(appLayout);
+        
 
-            updateFileSearch();
-        });
-        upload.addFailedListener(event -> {
-            Notification.show(String.format("Upload failed. Filename: %s", event.getFileName()));
-        });
-//        upload.getElement()
-//        .addEventListener(
-//                "file-remove",
-//                event -> {
-//                  enrichList.clear();
-//                });
-//        content.add(upload);
+//        add(addDatasetBtn);
 
+//        add(createGroupBtn);
+        // setSizeFull();
 
-
-        this.datasetGrid = new Grid<>();
-
-        txtSearch = new TextField("Search /");
-        txtSearch.setValueChangeMode(ValueChangeMode.LAZY);
-
-
-        // Path repoRootPath = Paths.get("/var/www/webdav/gitalog/store");
-
-
-        TreeData<Path> treeData = new TreeData<>();
-        TreeDataProvider<Path> treeDataProvider = new TreeDataProvider<>(treeData);
-
-
-        folderTreeGrid = new TreeGrid<>();
-        {
-            Column<?> hierarchyColumn = folderTreeGrid.addHierarchyColumn(path -> {
-                // System.out.println(path);
-                // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
-                return pathToString(path);
-                // return path.toString();
-            });
-            hierarchyColumn.setResizable(true);
-            hierarchyColumn.setFrozen(true);
-        }
-
-
-        fileGrid = new TreeGrid<>(treeDataProvider);
-        fileGrid.setSizeFull();
-        {
-            Column<?> hierarchyColumn = fileGrid.addHierarchyColumn(path -> {
-                // System.out.println(path);
-                // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
-                Path fileRepoRootPath = groupMgr.getBasePath();
-                return Objects.toString(fileRepoRootPath.relativize(path));
-                // return path.toString();
-            });
-            hierarchyColumn.setResizable(true);
-            hierarchyColumn.setFrozen(true);
-        }
-
-        GridContextMenu<Path> contextMenu = fileGrid.addContextMenu();
+//        add(addDatasetBtn);
+        
+        
+        
+        GridContextMenu<DcatDataset> contextMenu = datasetGrid.addContextMenu();
         contextMenu.addOpenedChangeListener(ev -> {
             if (!ev.isOpened()) {
                 contextMenu.removeAll();
             }
         });
-
-        Dialog importGtfsDialog = new Dialog();
-        Button closeBtn = new Button("Close", ev -> importGtfsDialog.close());
-        importGtfsDialog.add("Import GTFS...");
-        importGtfsDialog.add(closeBtn);
-
-        contextMenu.setDynamicContentHandler(absPath -> {
-            Path fileRepoRootPath = groupMgr.getBasePath();
-            Path relPath = fileRepoRootPath.relativize(absPath);
-
-            contextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
+        
+        contextMenu.setDynamicContentHandler(r -> {
+        	// Resource r = qs.getResource("s");
+        	
+        	int numOptions = 0;
+            contextMenu.addItem("Actions for " + r).setEnabled(false);
             contextMenu.add(new Hr());
-
-            int numOptions = 0;
-
-            boolean isGtfs = tryCall(() -> DetectorGtfs.isGtfs(absPath)).orElse(false);
-            if (isGtfs) {
-                contextMenu.addItem("Import GTFS...", ev -> {
-                    importGtfsDialog.open();
-                });
-                ++numOptions;
-            }
-
+            
             contextMenu.addItem("Delete", ev -> {
-                ConfirmDialog dialog = confirmDialog("Confirm delete",
-                        "You are about to delete: " + relPath,
+                ConfirmDialog dialog = DialogUtils.confirmDialog("Confirm delete",
+                        String.format("You are about to delete: %s (affects %d triples). This operation cannot be undone.", r.asNode(), dataset.asDatasetGraph().getGraph(r.asNode()).size()),
                         "Delete", x -> {
-                            invoke(() -> Files.delete(absPath), e -> {
-                                // TODO Show a notification if delete failed
-                            });
-                            updateFileSearch();
+                        	Txn.executeWrite(dataset, () -> {
+                        		dataset.asDatasetGraph().removeGraph(r.asNode());
+                        	});
+                        	updateView();
+                        	
+                            // TODO Show a notification if delete failed
                         }, "Cancel", x -> {});
                 //dialog.setConfirmButtonTheme("error primary");
                 dialog.open();
@@ -427,237 +282,87 @@ public class DataProjectMgmtView
         });
 
 
-        txtSearch.addValueChangeListener(ev -> {
-            // ((TreeDataProvider<Hierarchy>)treegrid.getDataProvider())
-            String value = ev.getValue();
-            updateFileSearch(treeDataProvider, value);
-        });
-        txtSearch.setValue("");
-        // updateFileSearch(treeData, treeDataProvider, "");
-
-
-        headingAndDescriptionSeparator.add(heading);
-        headingAndDescriptionSeparator.add(description);
-
-        headingLayout.add(logoImg);
-        headingLayout.add(headingAndDescriptionSeparator);
-
-        add(headingLayout);
-
-        add(upload);
-
-
-        TreeGrid<PathPE> dataGrid = new TreeGrid<>();
-        {
-            Column<?> hierarchyColumn = dataGrid.addHierarchyColumn(path -> {
-
-                PathPE fn = path.getFileName();
-                String str = fn == null ? "/" : fn.toSegment().tryGetConstant()
-                        .map(Object::toString).orElse(fn.toString());
-
-                return str;
-            });
-            hierarchyColumn.setResizable(true);
-            hierarchyColumn.setFrozen(true);
-        }
-        dataGrid.setDataProvider(HierarchicalDataProviderForPathPE.createTest());
-
-        add(dataGrid);
-
-
-
-        add(datasetGrid);
-
-        add(createGroupBtn);
-        // setSizeFull();
-
-        add(addDatasetBtn);
-
-
-
-        HorizontalLayout fileMgrPanel = new HorizontalLayout();
-        fileMgrPanel.setWidthFull();
-
-        VerticalLayout fileListPanel = new VerticalLayout();
-        fileListPanel.setWidthFull();
-        fileListPanel.add(txtSearch, fileGrid);
-        fileGrid.setSizeFull();
-
-        folderTreeGrid.setWidthFull();
-        fileMgrPanel.add(folderTreeGrid, fileListPanel);
-        fileMgrPanel.setFlexGrow(1, folderTreeGrid);
-        fileMgrPanel.setFlexGrow(1, fileListPanel);
-
-        add(fileMgrPanel);
+    }
+  
+    
+    protected void setContent(Tab tab) {
+    	content.removeAll();
+		if (tab.equals(datasetsTab)) {
+			content.add(datasetGrid, addDatasetBtn);
+		} else if (tab.equals(resourcesTab)) {
+			content.add(new Paragraph("This is the resources tab"));
+		}
     }
 
-    public void updateFileSearch() {
-        updateFileSearch((TreeDataProvider<Path>)fileGrid.getDataProvider(), txtSearch.getValue());
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        groupId = event.getRouteParameters().get("groupId").orElse(null);
+
+        groupMgr = dcatRepoMgr.create(groupId);
+
+        if (groupExists) {
+            DcatRepoLocal repo = groupMgr.get();
+            dataset = repo.getDataset();
+        }
+        // dcatRepo = groupMgr.get();
+        // fileRepoRootPath = fileRepoResolver.getRepo(groupId);
+        updateView();
     }
 
-    public void updateFileSearch(TreeDataProvider<Path> treeDataProvider, String value) {
-
-        TreeData<Path> treeData = treeDataProvider.getTreeData();
-
-        String str = Optional.ofNullable(value).orElse("");
-        String v = str.isBlank() ? "*" : str;
+    protected void updateView() {
+        groupExists = groupMgr.exists(); // Txn.calculateRead(dataset, () -> dataset.containsNamedModel(groupId));
 
 
-        // PathMatcher pathMatcher = fileSystem.getPathMatcher("glob:" + v);
+        heading.setText(groupId);
+        description.getElement().setProperty("innerHTML", "<i>no description</i>");
 
-        Pattern pattern = Pattern.compile(buildPattern(v), Pattern.CASE_INSENSITIVE);
-        // Pattern.compile(v, Pattern.LITERAL);
-
-        PathMatcher pathMatcher = path -> pattern.matcher(path.toString()).find();
-        // dataProvider.setFilter(v);
+        createGroupBtn.setVisible(!groupExists);
 
 
-        try {
-            TreeData<Path> td = new TreeData<>();
+        SparqlQueryParser parser = SparqlQueryParserImpl.create(SparqlParserConfig.newInstance()
+                .setSharedPrefixes(DefaultPrefixes.get())
+        		.setIrixResolverAsGiven()
+                .setBaseURI(""));
+        //Query q = parser.apply("SELECT * { GRAPH <" + groupId + "> { ?s <http://www.w3.org/2000/01/rdf-schema#member> ?o } }");
+        Query q = parser.apply("SELECT ?s ?g { GRAPH ?g { ?s a dcat:Dataset } }");
 
-            Path fileRepoRootPath = groupMgr.getBasePath();
+        if (groupExists) {
+            DcatRepoLocal repo = groupMgr.get();
+            dataset = repo.getDataset();
 
-            List<Path> matches = fileRepoRootPath == null || !Files.exists(fileRepoRootPath)
-                    ? Collections.emptyList()
-                    : Files.walk(fileRepoRootPath)
-                        .filter(Files::isRegularFile)
-                        .filter(pathMatcher::matches)
-                        .collect(Collectors.toList());
+            Txn.executeRead(dataset, () ->
+            	//RDFDataMgr.write(System.out, dataset, RDFFormat.TRIG_PRETTY)
+            	StreamRDFWriterEx.writeAsGiven(dataset.asDatasetGraph(), System.out, RDFFormat.NQUADS, null, null)
+            );
+            
+            VaadinSparqlUtils.setQueryForGridResource(
+                    datasetGrid,
+                    (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
+                    q,
+                    DcatDataset.class,
+                    "s",
+                    QuerySolutionUtils.newGraphAwareBindingMapper(dataset, "s", "g")
+            		);
 
-            // List<Path> matches = FileUtils.listPaths(repoRootPath, v);
+            logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
 
-            for (Path path : matches) {
-                // add(path, repoRootPath, td);
-                td.addItem(null, path);
-            }
 
-            TreeDataSynchronizer.sync(td, treeData);
-            treeDataProvider.refreshAll();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } else {
+            datasetGrid.setDataProvider(new ListDataProvider<>(Collections.emptyList()));
         }
+
+        datasetGrid.getDataProvider().refreshAll();
     }
 
-    public void add(Path path, Path basePath, TreeData<Path> treeData) {
-        if (!treeData.contains(path)) {
-            Path parent = path.getParent();
-
-            if (parent != null && parent.startsWith(basePath)) {
-                Path effParent = parent.equals(basePath) ? null : parent;
-
-                add(effParent, path, treeData);
-
-                treeData.addItem(effParent, path);
-            }
-
-        }
-    }
-
-
-    // Signature compatible with ConfirmDialog of vaadin pro
-    public ConfirmDialog confirmDialog(String header, String text, String confirmText,
-            Consumer<?> confirmListener,
-            String cancelText,
-            Consumer<?> cancelListener) {
-
-        return ConfirmDialog
-            .createQuestion()
-            .withCaption(header)
-            .withMessage(text)
-            .withOkButton(() -> confirmListener.accept(null), ButtonOption.focus(), ButtonOption.caption(confirmText))
-            .withCancelButton(() -> cancelListener.accept(null), ButtonOption.caption(cancelText));
-    }
-
-    /** "abc" -> ".*a.*b.*c.*" */
-    public static String buildPatternMatchAnywhere(String str) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(".*");
-        for (int i = 0; i < str.length(); ++i) {
-            char c = str.charAt(i);
-
-            if ('*' == c) {
-                // sb.append(".*");
-            } else {
-                sb.append(Pattern.quote(Character.toString(c)));
-                sb.append(".*");
-            }
-        }
-        return sb.toString();
-    }
-
-
-    public static String buildPattern(String str) {
-        StringBuilder sb = new StringBuilder();
-
-        String quotedAsterisk = Pattern.quote("*");
-
-        boolean escaped = false;
-        for (int i = 0; i < str.length(); ++i) {
-            char c = str.charAt(i);
-
-            if (c == '*') {
-                if (!escaped) {
-                    escaped = true;
-                } else {
-                    sb.append(quotedAsterisk);
-                    escaped = false;
-                }
-            } else {
-                if (escaped) {
-                    sb.append(".*");
-                    escaped = false;
-                }
-                sb.append(Pattern.quote(Character.toString(c)));
-            }
-        }
-
-        if (escaped) {
-            sb.append(".*");
-            // escaped = false;
-        }
-
-
-        return sb.toString();
-    }
-    public static String buildPattern2(String str) {
-        StringBuilder sb = new StringBuilder();
-
-        char escapeChar = '\\';
-        boolean escaped = false;
-        for (int i = 0; i < str.length(); ++i) {
-            char c = str.charAt(i);
-
-            if (c == escapeChar) {
-                if (!escaped) {
-                    escaped = true;
-                } else {
-                    sb.append(escapeChar);
-                    escaped = false;
-                }
-            } else if (c == '*') {
-                if (!escaped) {
-                    sb.append(".*");
-                } else {
-                    sb.append(Pattern.quote("*"));
-                    escaped = false;
-                }
-            } else {
-                if (escaped) {
-                    sb.append(escapeChar);
-                    escaped = false;
-                }
-                sb.append(Pattern.quote(Character.toString(c)));
-            }
-        }
-
-        if (escaped) {
-            sb.append(escapeChar);
-            // escaped = false;
-        }
-
-
-        return sb.toString();
-    }
-
+    
+	/**
+	 * Helper method for creating a badge.
+	 */
+	public static Span createBadge(String str) {
+		Span badge = new Span(str);
+		badge.getElement().getThemeList().add("badge small contrast");
+		badge.getStyle().set("margin-inline-start", "var(--lumo-space-xs)");
+		return badge;
+	}
+		
 }

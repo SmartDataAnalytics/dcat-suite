@@ -72,7 +72,7 @@
       "construct-style-sheets-polyfill": "2.4.6",
       "extract-loader": "5.1.0"
     },
-    "hash": "4069b95f91f4bab98c1af6f12c62d53bb5ecac3e4180b41c6757d71ffa0c8fea"
+    "hash": "79df1555a01066d7892d15b0e7acce7033dd255871c95ee15318c674d0681068"
   },
   "dependencies": {
     "lit-element": "2.5.1",
@@ -119,11 +119,8 @@
     "@vaadin/vaadin-lumo-styles": "1.6.0",
     "@vaadin/vaadin-material-styles": "1.3.2",
     "@vaadin/vaadin-rich-text-editor": "1.3.0",
-    "@lrnwebcomponents/pdf-browser-viewer": "2.1.4",
-    "leaflet": "^1.6.0",
     "lit-html": "1.4.1",
-    "@vaadin/vaadin-avatar": "1.0.4",
-    "multiselect-combo-box": "2.4.2"
+    "@vaadin/vaadin-avatar": "1.0.4"
   },
   "devDependencies": {
     "webpack-babel-multi-target-plugin": "2.3.3",

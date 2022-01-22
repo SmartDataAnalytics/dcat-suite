@@ -1,7 +1,9 @@
 package org.aksw.dcat_suite.app.vaadin.layout;
 
 import org.aksw.dcat_suite.app.HomeView;
+import org.aksw.dcat_suite.app.vaadin.view.BrowseRepoView;
 import org.aksw.dcat_suite.app.vaadin.view.ConnectionMgmtView;
+import org.aksw.dcat_suite.app.vaadin.view.DmanLandingPageView;
 import org.aksw.dcat_suite.app.vaadin.view.NewDataProjectView;
 
 import com.vaadin.flow.component.Component;
@@ -51,33 +53,8 @@ public class DmanMainLayout
           .set("font-size", "var(--lumo-font-size-l)")
           .set("margin", "0");
 
-        mainViewBtn = new Button("Home", VaadinIcon.HOME.create());
-        mainViewBtn.setWidthFull();
-
-        newDataProjectBtn = new Button("New Data Project", VaadinIcon.FOLDER_ADD.create());
-        // newDataProjectBtn.
-        newDataProjectBtn.setWidthFull();
-
-        connectionMgmtBtn = new Button("Connections", VaadinIcon.CONNECT.create());
-        connectionMgmtBtn.setWidthFull();
-
-        mainViewBtn.addClickListener(ev -> {
-            UI.getCurrent().navigate(DmanRoutes.HOME);
-        });
-
-        newDataProjectBtn.addClickListener(ev -> {
-            UI.getCurrent().navigate(DmanRoutes.NEW_DATA_PROJECT);
-        });
-
-        connectionMgmtBtn.addClickListener(ev -> {
-            UI.getCurrent().navigate(DmanRoutes.CONNECTIONS);
-        });
-
         setDrawerOpened(true);
-
-
         addToNavbar(drawerToggle, title);
-
         addToDrawer(getTabs());
     }
 
@@ -85,8 +62,9 @@ public class DmanMainLayout
     private Tabs getTabs() {
       Tabs tabs = new Tabs();
       tabs.add(
-        createTab(VaadinIcon.HOME, "Home", HomeView.class),
+        createTab(VaadinIcon.HOME, "Home", DmanLandingPageView.class),
         createTab(VaadinIcon.FOLDER_ADD, "New Data Project", NewDataProjectView.class),
+        createTab(VaadinIcon.EYE, "Browse", BrowseRepoView.class),
         createTab(VaadinIcon.CONNECT, "Connections", ConnectionMgmtView.class)
       );
       tabs.setOrientation(Tabs.Orientation.VERTICAL);
@@ -108,4 +86,6 @@ public class DmanMainLayout
 
       return new Tab(link);
     }
+    
+    
 }
