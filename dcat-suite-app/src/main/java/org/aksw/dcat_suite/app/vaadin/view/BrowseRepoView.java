@@ -1,6 +1,5 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -14,23 +13,25 @@ import java.util.stream.Stream;
 
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
-import org.aksw.commons.io.util.FileUtils;
+import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
+import org.claspina.confirmdialog.ConfirmDialog;
 
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.FileData;
-import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
@@ -48,6 +49,8 @@ public class BrowseRepoView
 	protected Checkbox recursiveSearchCb;
 	protected Button showUploadDlgBtn;
 	
+	protected Button changeFolderBtn;
+	
 	protected Path path;
 	
     /** The active path within the file repository; used e.g. for uploads and searches */
@@ -55,8 +58,8 @@ public class BrowseRepoView
 
 	public BrowseRepoView() {
 
-		setWidthFull();
-		setHeight("500px");
+		// setWidthFull();
+		// setHeight("500px");
 		
 		path = Path.of("/tmp/dman");
 
@@ -64,10 +67,10 @@ public class BrowseRepoView
 	    TreeData<Path> treeData = new TreeData<>();
 	    TreeDataProvider<Path> treeDataProvider = new TreeDataProvider<>(treeData);
 
-		activePath = ObservableValueImpl.create(null);
+		activePath = ObservableValueImpl.create(path);
         activePath.addValueChangeListener(ev -> {
-            searchField.setLabel("Search " + pathToString2(path).apply(ev.getNewValue()));
-            updateFileSearch();
+            // searchField.setLabel("Search " + pathToString2(path).apply(ev.getNewValue()));
+        	updateFileSearch();
         });
 
         recursiveSearchCb = new Checkbox("recursive");
@@ -77,13 +80,28 @@ public class BrowseRepoView
 	    folderGrid = createFolderGrid(path);
 		fileGrid = createFileGrid(treeDataProvider, path);
 		
-        searchField = new TextField("Search /");
-        searchField.setWidthFull();
+		configureFileGridContextMenu();
+		
+        searchField = new TextField();
+        searchField.setMinWidth(20, Unit.EM);
+        // searchField.setWidthFull();
+        searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
+        searchField.setSuffixComponent(recursiveSearchCb);
+
+        
+        // searchField.setWidthFull();
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
 
         showUploadDlgBtn = new Button(VaadinIcon.UPLOAD.create());
-        showUploadDlgBtn.addClickListener(ev -> new UploadDialog(activePath.get()).open());
+        showUploadDlgBtn.addClickListener(ev -> {
+        	UploadDialog dlg = new UploadDialog(activePath.get());
+        	dlg.getUpload().addFinishedListener(ev2 -> updateFileSearch());
+        	dlg.open();
+        });
         
+
+        folderGrid.setMinWidth(30, Unit.EM);
+        folderGrid.setMinHeight(30, Unit.EM);
         folderGrid.setSelectionMode(SelectionMode.SINGLE);
         folderGrid.addSelectionListener(ev -> {
             activePath.set(ev.getFirstSelectedItem().orElse(null));
@@ -93,29 +111,114 @@ public class BrowseRepoView
         searchField.setValue("");
 
 
-        
-        
-        VerticalLayout left = new VerticalLayout();        
-        left.add(showUploadDlgBtn, folderGrid);
+        changeFolderBtn = new Button("Change folder...");
+        changeFolderBtn.addClickListener(ev -> {
+        	Dialog dlg = new Dialog();
+        	Button btn = new Button("Close");
 
-        VerticalLayout right = new VerticalLayout();
-        right.add(searchField, recursiveSearchCb, fileGrid);
+        	dlg.add("Select a new current folder");
+        	dlg.add(folderGrid, btn);
+        	btn.addClickListener(ev2 -> dlg.close());
+        	
+        	dlg.open();
+        });
+
+        FlexLayout hl = new FlexLayout();
+        hl.setFlexWrap(FlexWrap.WRAP);
+        hl.setWidthFull();
+        hl.add(changeFolderBtn, showUploadDlgBtn, searchField);
+
+        add(hl, fileGrid);
         
-        HorizontalLayout hl = new HorizontalLayout();
-        hl.setSizeFull();
-        hl.add(left, right);
-        hl.setFlexGrow(1.0, left);
-        hl.setFlexGrow(2.0, right);
+        updateFileSearch();
         
-        add(hl);
+//        VerticalLayout left = new VerticalLayout();        
+//        left.add(showUploadDlgBtn, folderGrid);
+//
+////        SlideTab sliderPanel = new SlideTabBuilder(left)
+////      		  .caption("White Slider")
+////      		  .mode(SlideMode.LEFT)
+////      		  .tabPosition(SlideTabPosition.MIDDLE)
+////      		  // .style()
+////      		  .build();
+//
+//        ToggleTab sliderPanel = new ToggleTab("Folders", left);
+//        
+//        VerticalLayout right = new VerticalLayout();
+//        right.setWidthFull();
+//        right.add(searchField, fileGrid);
+//        
+////        SplitLayout hl = new SplitLayout(left, right);
+////        hl.setOrientation(Orientation.HORIZONTAL);
+//        HorizontalLayout hl = new HorizontalLayout();
+//        hl.setWidthFull();
+//        hl.add(sliderPanel, right);
+////        hl.setFlexGrow(1.0, left);
+////        hl.setFlexGrow(2.0, right);
+//        
+//        add(hl);
 
 	}
 
+	
+	public void configureFileGridContextMenu() {
+		GridContextMenu<Path> contextMenu = fileGrid.addContextMenu();
+		
+        Dialog importGtfsDialog = new Dialog();
+        Button closeBtn = new Button("Close", ev -> importGtfsDialog.close());
+        importGtfsDialog.add("Import GTFS...");
+        importGtfsDialog.add(closeBtn);
+
+        contextMenu.setDynamicContentHandler(relPath -> {
+        	contextMenu.removeAll();
+        	// Path ap = activePath.get();
+        	// Path p = ap == null ? path : path.resolve(ap);
+//            Path fileRepoRootPath = groupMgr.getBasePath();
+            Path absPath = path.resolve(relPath);
+
+            contextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
+            contextMenu.add(new Hr());
+
+            int numOptions = 0;
+
+            boolean isGtfs = InvokeUtils.tryCall(() -> DetectorGtfs.isGtfs(absPath)).orElse(false);
+            if (isGtfs) {
+                contextMenu.addItem("Import GTFS...", ev -> {
+                    importGtfsDialog.open();
+                });
+                ++numOptions;
+            }
+
+            contextMenu.addItem("Delete", ev -> {
+                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
+                        "You are about to delete: " + relPath,
+                        "Delete", x -> {
+                            InvokeUtils.invoke(() -> Files.delete(absPath), e -> {
+                                // TODO Show a notification if delete failed
+                            });
+                            updateFileSearch();
+                        }, "Cancel", x -> {});
+                //dialog.setConfirmButtonTheme("error primary");
+                dialog.open();
+            });
+            ++numOptions;
+
+            if (numOptions == 0) {
+                contextMenu.addItem("(no actions available)").setEnabled(false);
+            }
+
+            return true;
+        });
+
+	}
 
     
     public void updateFileSearch() {
     	Path ap = activePath.get();
     	Path p = ap == null ? path : path.resolve(ap);
+
+    	changeFolderBtn.setText(pathToString2(path).apply(ap));
+
         updateFileSearch((TreeDataProvider<Path>)fileGrid.getDataProvider(), p, searchField.getValue(), recursiveSearchCb.getValue());
     }
 
@@ -129,7 +232,7 @@ public class BrowseRepoView
     	Function<Path, String> pathToString = pathToString(fileRepoRootPath);
     	
         TreeGrid<Path> folderTreeGrid = new TreeGrid<>();
-	    folderTreeGrid.setSizeFull();
+	    //folderTreeGrid.setSizeFull();
 
 	    Column<?> hierarchyColumn = folderTreeGrid.addHierarchyColumn(path -> {
             // System.out.println(path);
@@ -159,7 +262,7 @@ public class BrowseRepoView
     public static TreeGrid<Path> createFileGrid(TreeDataProvider<Path> treeDataProvider, Path fileRepoRootPath) {
 	
 	    TreeGrid<Path> fileGrid = new TreeGrid<>(treeDataProvider);
-	    fileGrid.setSizeFull();
+	    //fileGrid.setSizeFull();
         Column<?> hierarchyColumn = fileGrid.addHierarchyColumn(path -> {
             // System.out.println(path);
             // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");

@@ -112,6 +112,8 @@ public class DataProjectMgmtView
 	protected Tab resourcesTab;
 	protected VerticalLayout content;
     
+	protected BrowseRepoView fileBrowser;
+	
 
     public DataProjectMgmtView(
             @Autowired GroupMgrFactory dcatRepoMgr
@@ -259,7 +261,7 @@ public class DataProjectMgmtView
             contextMenu.add(new Hr());
             
             contextMenu.addItem("Delete", ev -> {
-                ConfirmDialog dialog = DialogUtils.confirmDialog("Confirm delete",
+                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
                         String.format("You are about to delete: %s (affects %d triples). This operation cannot be undone.", r.asNode(), dataset.asDatasetGraph().getGraph(r.asNode()).size()),
                         "Delete", x -> {
                         	Txn.executeWrite(dataset, () -> {
@@ -281,6 +283,7 @@ public class DataProjectMgmtView
             return true;
         });
 
+        fileBrowser = new BrowseRepoView();
 
     }
   
@@ -290,7 +293,7 @@ public class DataProjectMgmtView
 		if (tab.equals(datasetsTab)) {
 			content.add(datasetGrid, addDatasetBtn);
 		} else if (tab.equals(resourcesTab)) {
-			content.add(new Paragraph("This is the resources tab"));
+			content.add(fileBrowser);
 		}
     }
 

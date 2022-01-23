@@ -96,6 +96,7 @@
 			<artifactId>httpmime</artifactId>
 		</dependency>
 
+
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<!-- Replace artifactId with vaadin-core to use only free components -->
@@ -150,13 +151,13 @@
 			</exclusions>
 		</dependency>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.boot</groupId> -->
-<!-- 			<artifactId>spring-boot-devtools</artifactId> -->
-<!-- 			<version>${spring-boot.version}</version> -->
-<!-- 			<optional>true</optional> -->
-<!-- 			<scope>runtime</scope> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.boot</groupId> -->
+		<!-- <artifactId>spring-boot-devtools</artifactId> -->
+		<!-- <version>${spring-boot.version}</version> -->
+		<!-- <optional>true</optional> -->
+		<!-- <scope>runtime</scope> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -241,6 +242,7 @@
 			<artifactId>pdf-browser</artifactId>
 			<version>3.0.1</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.aksw.dcat-suite</groupId>

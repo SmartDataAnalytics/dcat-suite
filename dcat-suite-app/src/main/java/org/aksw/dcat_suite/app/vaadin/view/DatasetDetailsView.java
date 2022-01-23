@@ -15,28 +15,32 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.DCAT;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 
 public class DatasetDetailsView
-	extends FormLayout
+	extends VerticalLayout
 {
 	protected DcatDataset dcatDataset;
 	
 	protected Grid<Resource> distributionsGrid;
 	
+	
 	public DatasetDetailsView() {
-		add(new Paragraph("details"));
+		add(new Paragraph("Distributions"));
 		
 		distributionsGrid = new Grid<>();
+		distributionsGrid.setHeightByRows(true);
+		distributionsGrid.setItemDetailsRenderer(new ComponentRenderer<>(DistributionDetails::new , DistributionDetails::setDistribution));
+		
 		GridContextMenu<Resource> contextMenu = distributionsGrid.addContextMenu();
         
 		contextMenu.setDynamicContentHandler(r -> {
@@ -48,7 +52,7 @@ public class DatasetDetailsView
             contextMenu.add(new Hr());
             
             contextMenu.addItem("Delete", ev -> {
-                ConfirmDialog dialog = DialogUtils.confirmDialog("Confirm delete",
+                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
                         String.format("You are about to delete: %s (affects %d triples). This operation cannot be undone.", r.asNode(), dcatDataset.getModel().size()),
                         "Delete", x -> {
                         	dcatDataset.getModel().remove(dcatDataset, DCAT.distribution, r);

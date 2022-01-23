@@ -55,4 +55,7 @@ public class UploadDialog
         add(upload);
 	}
 
+	public Upload getUpload() {
+		return upload;
+	}
 }

@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
-public class DialogUtils {
+public class VaadinDialogUtils {
     // Signature compatible with ConfirmDialog of vaadin pro
     public static ConfirmDialog confirmDialog(String header, String text, String confirmText,
             Consumer<?> confirmListener,
