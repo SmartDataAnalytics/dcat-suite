@@ -11,7 +11,9 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
+import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.SearchResult;
@@ -232,7 +234,7 @@ public class MainDeleteme {
         // Load sparql template for matching resources by keyword
         // Function<Map<String, String>, Query> template = null;
 
-        List<Resource> matches = catResolver.search(pattern).toList().blockingGet();
+        List<Resource> matches = catResolver.search(pattern).map(DatasetResolver::getDataset).map(DcatDataset::asResource).toList().blockingGet();
         for(Resource match : matches) {
             RDFDataMgr.write(System.out, match.getModel(), RDFFormat.TURTLE_PRETTY);
         }

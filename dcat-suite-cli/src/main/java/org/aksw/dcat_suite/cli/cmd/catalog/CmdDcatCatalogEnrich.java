@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.aksw.dcat.repo.api.CatalogResolver;
+import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.jenax.arq.datasource.RdfDataSources;
 import org.aksw.jenax.connection.datasource.RdfDataSource;
@@ -61,8 +62,8 @@ public class CmdDcatCatalogEnrich
             CatalogResolver catalog = CatalogResolverUtils.createCatalogResolver(conn, transformationIds);
             // long numItems = flow.count().blockingGet();
             List<Resource> list = Txn.calculateRead(conn, () -> {
-                Flowable<Resource> flow = catalog.search("");
-                List<Resource> r = flow.toList().blockingGet();
+                Flowable<DatasetResolver> flow = catalog.search("");
+                List<Resource> r = flow.map(dr -> dr.getDataset().asResource()).toList().blockingGet();
                 return r;
             });
 

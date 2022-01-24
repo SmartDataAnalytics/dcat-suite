@@ -36,7 +36,7 @@ public class CatalogResolverMulti
     }
 
     @Override
-    public Flowable<Resource> search(String pattern) {
+    public Flowable<DatasetResolver> search(String pattern) {
         return Flowable.fromIterable(resolvers)
             .flatMap(r -> r.search(pattern));
     }

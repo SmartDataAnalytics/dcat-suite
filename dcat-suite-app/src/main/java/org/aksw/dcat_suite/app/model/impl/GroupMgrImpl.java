@@ -6,11 +6,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.aksw.commons.io.util.PathUtils;
-import org.aksw.commons.io.util.UriToPathUtils;
 import org.aksw.commons.io.util.symlink.SymbolicLinkStrategies;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
@@ -39,12 +40,20 @@ public class GroupMgrImpl
     protected Path basePath;
     protected String[] relPath;
 
+    public static String[] mavenCoordinateToSegments(String mvn) {
+    	String[] result = Arrays.asList(mvn.split(":")).stream()
+    		.flatMap(part -> Arrays.asList(part.split("\\.")).stream())
+    		.collect(Collectors.toList())
+    		.toArray(new String[0]);
+    	return result;
+    }
+    
     public GroupMgrImpl(String groupId, Path basePath) {
         super();
         this.groupId = groupId;
         this.basePath = basePath;
 
-        this.relPath = UriToPathUtils.javaifyHostnameSegments(groupId);
+        this.relPath = mavenCoordinateToSegments(groupId); // UriToPathUtils.javaifyHostnameSegments(groupId);
     }
 
     @Override

@@ -45,7 +45,9 @@ public class UploadDialog
             }
             Notification.show(String.format("Upload succeeded. Filename: '%s'", fileName));
 
-            // updateFileSearch();
+
+            
+            
         });
         upload.addFailedListener(event -> {
             Notification.show(String.format("Upload failed. Filename: %s", event.getFileName()));

@@ -35,7 +35,7 @@ public class CatalogResolverModel
     }
 
     @Override
-    public Flowable<Resource> search(String pattern) {
+    public Flowable<DatasetResolver> search(String pattern) {
         throw new RuntimeException("not implemented");
     }
 

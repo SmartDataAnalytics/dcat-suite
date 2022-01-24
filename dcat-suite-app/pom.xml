@@ -252,6 +252,13 @@
 		</dependency>
 
 
+		<!-- Syntax highlighting -->
+		<dependency>
+			<groupId>de.f0rce</groupId>
+			<artifactId>ace</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -324,9 +331,14 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-shacl</artifactId>
-			<version>4.1.0</version>
+			<version>4.3.2</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.vaadin.helper</groupId>
+			<artifactId>async-manager</artifactId>
+			<version>1.1.0</version>
+		</dependency>
 		<!-- <dependency> <groupId>org.hobbit</groupId> <artifactId>facete3-app-shared</artifactId> 
 			</dependency> <dependency> <groupId>org.hobbit</groupId> <artifactId>facete3-impl</artifactId> 
 			</dependency> -->

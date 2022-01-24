@@ -3,7 +3,6 @@ package org.aksw.dcat.repo.api;
 import java.net.URL;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
-import org.apache.jena.rdf.model.Resource;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -23,7 +22,7 @@ import io.reactivex.rxjava3.core.Maybe;
  *
  */
 public interface CatalogResolver {
-    Flowable<Resource> search(String pattern);
+    Flowable<DatasetResolver> search(String pattern);
 
     Maybe<DatasetResolver> resolveDataset(String datasetId);
     Flowable<DistributionResolver> resolveDistribution(String distributionId);

@@ -4,7 +4,10 @@ public class DmanRoutes {
     public static final String HOME = "home";
     public static final String NEW_DATA_PROJECT = "new";
     public static final String CONNECTIONS = "connections";
+    public static final String CATALOGS = "catalogs";
     public static final String BROWSE = "browse";
+
+    public static final String CKAN_IMPORT = "ckanImport";
 
 
     public static final String GROUP = "group";

@@ -81,9 +81,10 @@ public class CatalogResolverSparql
     }
 
     @Override
-    public Flowable<Resource> search(String pattern) {
+    public Flowable<DatasetResolver> search(String pattern) {
         return resolveAny(pattern, patternToQuery, null)
-                .map(RDFNode::asResource);
+        		.map(searchResult -> new DatasetResolverImpl(this, searchResult.as(DcatDataset.class)));
+                //.map(RDFNode::asResource);
     }
 
     public CatalogResolverSparql(

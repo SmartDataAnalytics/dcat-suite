@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
@@ -113,14 +114,18 @@ public class DataProjectMgmtView
 	protected VerticalLayout content;
     
 	protected BrowseRepoView fileBrowser;
+	protected QACProvider gtfsValidator;
 	
 
     public DataProjectMgmtView(
-            @Autowired GroupMgrFactory dcatRepoMgr
+            @Autowired GroupMgrFactory dcatRepoMgr,
+            @Autowired QACProvider gtfsValidator
 //            @Autowired Dataset dataset,
 //            FileRepoResolver fileRepoResolver
             ) throws Exception {
 
+    	this.gtfsValidator = gtfsValidator;
+    	
         headingLayout = new HorizontalLayout();
         headingLayout.setWidthFull();
 
@@ -283,7 +288,6 @@ public class DataProjectMgmtView
             return true;
         });
 
-        fileBrowser = new BrowseRepoView();
 
     }
   
@@ -307,6 +311,9 @@ public class DataProjectMgmtView
             DcatRepoLocal repo = groupMgr.get();
             dataset = repo.getDataset();
         }
+        
+        fileBrowser = new BrowseRepoView(groupMgr.get(), gtfsValidator);
+
         // dcatRepo = groupMgr.get();
         // fileRepoRootPath = fileRepoResolver.getRepo(groupId);
         updateView();

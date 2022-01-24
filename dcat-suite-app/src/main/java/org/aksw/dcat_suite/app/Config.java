@@ -38,6 +38,11 @@ public class Config {
 
         // return Paths.of(StandardSystemProperty.JAVA_IO_TMPDIR.value() + "/dman"); // Paths.get("/var/www/webdav/gitalog/files");
     }
+    
+    @Bean
+    public QACProvider gtfsValidator() {
+    	return new QACProvider();
+    }
 
 //    @Bean
 //    public FileRepoResolver fileRepoResolver(@FileStore Path path) {

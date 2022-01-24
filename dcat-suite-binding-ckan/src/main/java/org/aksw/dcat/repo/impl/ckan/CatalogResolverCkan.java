@@ -11,13 +11,13 @@ import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.api.DistributionResolver;
 import org.aksw.dcat.repo.impl.core.DatasetResolverImpl;
 import org.aksw.dcat.utils.DcatUtils;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.trentorise.opendata.jackan.CkanClient;
+import eu.trentorise.opendata.jackan.SearchResults;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 import io.reactivex.rxjava3.core.Flowable;
@@ -43,31 +43,18 @@ public class CatalogResolverCkan
 //	}
 
     @Override
-    public Flowable<Resource> search(String pattern) {
-        throw new RuntimeException("Not supported yet");
+    public Flowable<DatasetResolver> search(String pattern) {
+    	SearchResults<CkanDataset> searchResults = ckanClient.searchDatasets(pattern, 100, 0);
+    	
+    	return Flowable.fromIterable(searchResults.getResults())
+    		.map(this::mapCkanDatasetToResolver);
     }
 
     @Override
     public Maybe<DatasetResolver> resolveDataset(String datasetId) {
         return Maybe.fromCallable(() -> {
             CkanDataset ckanDataset = ckanClient.getDataset(datasetId);
-
-            PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
-
-            DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
-
-            try {
-                // Skolemize the resource first (so we have a reference to the resource)
-                dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
-    //			if(prefix != null) {
-    //				dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
-    //			}
-
-            } catch(Exception e) {
-                logger.warn("Error processing dataset: " + datasetId, e);
-            }
-
-            return new DatasetResolverImpl(this, dcatDataset);
+            return mapCkanDatasetToResolver(ckanDataset);
         });
 
         //RDFDataMgr.write(System.out, dcatDataset.getModel(), RDFFormat.NTRIPLES);
@@ -75,6 +62,27 @@ public class CatalogResolverCkan
 //		return Maybe.just(new DatasetResolverCkan(this, dcatDataset));
     }
 
+    protected DatasetResolver mapCkanDatasetToResolver(CkanDataset ckanDataset) {
+    	String datasetId = ckanDataset.getId();
+
+        PrefixMapping pm = DcatUtils.addPrefixes(new PrefixMappingImpl());
+
+        DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
+
+        try {
+            // Skolemize the resource first (so we have a reference to the resource)
+            dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
+//			if(prefix != null) {
+//				dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
+//			}
+
+        } catch(Exception e) {
+            logger.warn("Error processing dataset: " + datasetId, e);
+        }
+
+        return new DatasetResolverImpl(this, dcatDataset);
+    }
+    
     @Override
     public Flowable<DistributionResolver> resolveDistribution(String distributionId) {
 

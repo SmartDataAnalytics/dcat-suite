@@ -1,0 +1,940 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eg: <http://www.example.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ns: <http://aksw.org/mclient/> .
+
+<http://aksw.org/mclient/qrowd>
+        rdfs:label      "qrowd - Test Datenportal" ;
+        eg:url          <http://ckan.qrowd.aksw.org> ;
+        eg:type         "country+other" ;
+        eg:nuts         "DE" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    <http://ckan.qrowd.aksw.org/catalog.rdf> ;
+        eg:technology   "CKAN" .
+
+
+<http://aksw.org/mclient/govdata%20-%20Datenportal%20f%C3%BCr%20Deutschland>
+        rdfs:label      "govdata - Datenportal für Deutschland" ;
+        eg:url          <https://ckan.govdata.de> ;
+        eg:type         "country+other" ;
+        eg:nuts         "DE" ;
+        eg:accountable  "Christian Horn" ;
+        eg:email        "info@govdata.de" ;
+        eg:dcatApApi    <https://ckan.govdata.de/catalog.rdf> ;
+        eg:technology   "CKAN+Liferay" .
+
+<http://aksw.org/mclient/Baustelleninformationssystem%20des%20Bundes%20und%20der%20L%C3%A4nder>
+        rdfs:label      "Baustelleninformationssystem des Bundes und der Länder" ;
+        eg:url          <https://www.bast.de/BASt_2017/DE/Fahrzeugtechnik/Fachthemen/Baustelleninformation/baustelleninformation.html> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "Dr. Lutz Rittershaus" ;
+        eg:email        "mdm@bast.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Bundesamt%20f%C3%BCr%20Kartographie%20und%20Geod%C3%A4sie>
+        rdfs:label      "Bundesamt für Kartographie und Geodäsie" ;
+        eg:url          <http://www.geodatenzentrum.de/geodaten/gdz_rahmen.gdz_div?gdz_spr=deu&gdz_akt_zeile=5&gdz_anz_zeile=0&gdz_user_id=0> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Bundesministerium%20f%C3%BCr%20Verkehr%20und%20digitale%20Infrastruktur%20%28BMVI%29%20-%20mCLOUD>
+        rdfs:label      "Bundesministerium für Verkehr und digitale Infrastruktur (BMVI) - mCLOUD" ;
+        eg:url          <https://www.mcloud.de/> ;
+        eg:type         "supreme" ;
+        eg:nuts         "" ;
+        eg:accountable  "Dr. Roland Goetzke" ;
+        eg:email        "mcloud@bmvi.bund.de" ;
+        eg:dcatApApi    <https://www.mcloud.de/export/datasets?page=1&pageSize=10000> ;
+        eg:technology   "InGRID" .
+
+<http://aksw.org/mclient/Deutsche%20Bahn>
+        rdfs:label      "Deutsche Bahn" ;
+        eg:url          <http://data.deutschebahn.com/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "DBOpenData@deutschebahn.com" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Deutscher%20Wetterdienst>
+        rdfs:label      "Deutscher Wetterdienst" ;
+        eg:url          <https://opendata.dwd.de/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Geobasisdaten%20und%20Geodatendienste%20der%20Vermessungsverwaltung%20Baden-W%C3%BCrttemberg>
+        rdfs:label      "Geobasisdaten und Geodatendienste der Vermessungsverwaltung Baden-Württemberg" ;
+        eg:url          <https://www.lgl-bw.de/lgl-internet/opencms/de/07_Produkte_und_Dienstleistungen/Open_Data_Initiative/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "geodaten@lgl.bwl.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:OffeneDaten.de  rdfs:label  "OffeneDaten.de" ;
+        eg:url          <https://offenedaten.de/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "info@okfn.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Metropole%20Ruhr%20>
+        rdfs:label      "Metropole Ruhr " ;
+        eg:url          <https://opendata.ruhr/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "Lea Pauly" ;
+        eg:email        "opendata@rvr.ruhr" ;
+        eg:dcatApApi    <https://opendata.ruhr/catalog.rdf> ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Baden-W%C3%BCrttemberg>
+        rdfs:label      "Baden-Württemberg" ;
+        eg:url          <http://opendata.service-bw.de> ;
+        eg:type         "state" ;
+        eg:nuts         "DE1" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "" .
+
+ns:Karlsruhe  rdfs:label  "Karlsruhe" ;
+        eg:url          <https://transparenz.karlsruhe.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE122" ;
+        eg:accountable  "Sven Klenert" ;
+        eg:email        "transparenz@karlsruhe.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Mannheim  rdfs:label  "Mannheim" ;
+        eg:url          <https://opendata.mannheim.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE126" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@mannheim.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "OpenDataSoft" .
+
+<http://aksw.org/mclient/Freiburg%20im%20Breisgau>
+        rdfs:label      "Freiburg im Breisgau" ;
+        eg:url          <http://opendata.freiburg.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DE131" ;
+        eg:accountable  "Thomas Willmann" ;
+        eg:email        "thomas.willmann@stadt.freiburg.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Ortenaukreis  rdfs:label  "Ortenaukreis" ;
+        eg:url          <http://www.ortenaukreis.de/Online-Dienste/Open-Data> ;
+        eg:type         "district" ;
+        eg:nuts         "DE134" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Ulm  rdfs:label      "Ulm" ;
+        eg:url          <http://daten.ulm.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE144" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Bayern  rdfs:label   "Bayern" ;
+        eg:url          <http://www.opendata.bayern.de/> ;
+        eg:type         "state" ;
+        eg:nuts         "DE2" ;
+        eg:accountable  "" ;
+        eg:email        "poststelle@stmflh.bayern.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/M%C3%BCnchen>
+        rdfs:label      "München" ;
+        eg:url          <http://www.opengov-muenchen.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DE212" ;
+        eg:accountable  "" ;
+        eg:email        "data.opengov@muenchen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Berlin  rdfs:label   "Berlin" ;
+        eg:url          <https://datenregister.berlin.de/> ;
+        eg:type         "city+state" ;
+        eg:nuts         "DE3" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Potsdam  rdfs:label  "Potsdam" ;
+        eg:url          <https://opendata.potsdam.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE404" ;
+        eg:accountable  "Stefanie Buchta" ;
+        eg:email        "opendata@rathaus.potsdam.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "OpenDataSoft" .
+
+<http://aksw.org/mclient/Freie%20Hansestadt%20Bremen>
+        rdfs:label      "Freie Hansestadt Bremen" ;
+        eg:url          <http://daten.bremen.de/> ;
+        eg:type         "state" ;
+        eg:nuts         "DE5" ;
+        eg:accountable  "" ;
+        eg:email        "transparenz@finanzen.bremen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Hamburg  rdfs:label  "Hamburg" ;
+        eg:url          <https://suche.transparenz.hamburg.de/> ;
+        eg:type         "city+state" ;
+        eg:nuts         "DE6" ;
+        eg:accountable  "Dominik Panić (Fachliche Leitstelle Transparenzportal)" ;
+        eg:email        "transparenzportal@bkm.hamburg.de" ;
+        eg:dcatApApi    <http://suche.transparenz.hamburg.de/catalog.xml> ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Frankfurt%20am%20Main>
+        rdfs:label      "Frankfurt am Main" ;
+        eg:url          <http://offenedaten.frankfurt.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE712" ;
+        eg:accountable  "Michael Leist" ;
+        eg:email        "offene.daten@stadt-frankfurt.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Neubrandenburg  rdfs:label  "Neubrandenburg" ;
+        eg:url          <http://www.neubrandenburg.de/opendata/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE802" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "" .
+
+ns:Rostock  rdfs:label  "Rostock" ;
+        eg:url          <http://www.opendata-hro.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE803" ;
+        eg:accountable  "" ;
+        eg:email        "opendata.hro@rostock.de" ;
+        eg:dcatApApi    <https://www.opendata-hro.de/catalog.xml> ;
+        eg:technology   "CKAN" .
+
+ns:Braunschweig  rdfs:label  "Braunschweig" ;
+        eg:url          <http://www.braunschweig.de/leben/stadtplanung_bauen/geoinformationen/opengeodata.html> ;
+        eg:type         "city" ;
+        eg:nuts         "DE911" ;
+        eg:accountable  "" ;
+        eg:email        "opengeodata@braunschweig.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Wennigsen%20%28Deister%29>
+        rdfs:label      "Wennigsen (Deister)" ;
+        eg:url          <http://data.wennigsen.net/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE929020" ;
+        eg:accountable  "Jens Spiwek" ;
+        eg:email        "jens@spiwi.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Landkreis%20L%C3%BCneburg>
+        rdfs:label      "Landkreis Lüneburg" ;
+        eg:url          <https://open.lklg.net/> ;
+        eg:type         "district" ;
+        eg:nuts         "DE935" ;
+        eg:accountable  "Hendrik Lampe" ;
+        eg:email        "opendata@lklg.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Nordrhein-Westfalen
+        rdfs:label      "Nordrhein-Westfalen" ;
+        eg:url          <https://open.nrw/> ;
+        eg:type         "state" ;
+        eg:nuts         "DEA" ;
+        eg:accountable  "Dr. Björn Fleischer" ;
+        eg:email        "kontakt@open.nrw.de" ;
+        eg:dcatApApi    <https://ckan.www.open.nrw.de/catalog.xml> ;
+        eg:technology   "Drupal" .
+
+<http://aksw.org/mclient/Niederrhein%20%28Region%29>
+        rdfs:label      "Niederrhein (Region)" ;
+        eg:url          <http://offenesdatenportal.de/> ;
+        eg:type         "district" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "info@krzn.de" ;
+        eg:dcatApApi    <https://www.offenesdatenportal.de/catalog.rdf> ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/D%C3%BCsseldorf>
+        rdfs:label      "Düsseldorf" ;
+        eg:url          <https://opendata.duesseldorf.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA11" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@duesseldorf.de" ;
+        eg:dcatApApi    <https://opendata.duesseldorf.de/catalog.xml> ;
+        eg:technology   "DKAN" .
+
+ns:Krefeld  rdfs:label  "Krefeld" ;
+        eg:url          <https://www.offenesdatenportal.de/organization/krefeld> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA14" ;
+        eg:accountable  "Florian Reykers" ;
+        eg:email        "florian.reykers@krefeld.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/M%C3%B6nchengladbach>
+        rdfs:label      "Mönchengladbach" ;
+        eg:url          <http://offenedaten.moenchengladbach.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA15" ;
+        eg:accountable  "" ;
+        eg:email        "offenedaten@moenchengladbach.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "TYPO3" .
+
+<http://aksw.org/mclient/Stadt%20M%C3%BClheim%20an%20der%20Ruhr>
+        rdfs:label      "Stadt Mülheim an der Ruhr" ;
+        eg:url          <https://geo.muelheim-ruhr.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA16" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Wuppertal  rdfs:label  "Wuppertal" ;
+        eg:url          <http://www.offenedaten-wuppertal.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1A" ;
+        eg:accountable  "Dietmar Szlagowski" ;
+        eg:email        "offenedaten@stadt.wuppertal.de" ;
+        eg:dcatApApi    <https://www.offenedaten-wuppertal.de/catalog.xml> ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Kreis%20Kleve>
+        rdfs:label      "Kreis Kleve" ;
+        eg:url          <https://www.offenesdatenportal.de/organization/kreis-kleve> ;
+        eg:type         "district" ;
+        eg:nuts         "DEA1B" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Kleve  rdfs:label    "Kleve" ;
+        eg:url          <https://www.offenesdatenportal.de/organization/stadt-kleve> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1B036" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Wachtendonk  rdfs:label  "Wachtendonk" ;
+        eg:url          <https://www.offenesdatenportal.de/organization/gemeinde-wachtendonk> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1B060" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Dormagen  rdfs:label  "Dormagen" ;
+        eg:url          <https://opendata.dormagen.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1D004" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@stadt-dormagen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "OpenDataSoft" .
+
+ns:Meerbusch  rdfs:label  "Meerbusch" ;
+        eg:url          <https://opendata.meerbusch.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1D022" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@meerbusch.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Kreis%20Viersen>
+        rdfs:label      "Kreis Viersen" ;
+        eg:url          <https://www.offenesdatenportal.de/organization/kreis-viersen> ;
+        eg:type         "district" ;
+        eg:nuts         "DEA1E" ;
+        eg:accountable  "Michael Stein" ;
+        eg:email        "michael.stein@kreis-viersen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Moers  rdfs:label    "Moers" ;
+        eg:url          <http://offenedaten.moers.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1F024" ;
+        eg:accountable  "Stephan Bernoth und Thorsten Magerstedt" ;
+        eg:email        "offenedaten@moers.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Wesel  rdfs:label    "Wesel" ;
+        eg:url          <http://opendata.wesel.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA1F048" ;
+        eg:accountable  "Herr Scholten und Herr Bohm" ;
+        eg:email        "informationstechnik@wesel.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Bonn  rdfs:label     "Bonn" ;
+        eg:url          <http://opendata.bonn.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA22" ;
+        eg:accountable  "Sven Hense" ;
+        eg:email        "opendata@bonn.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/K%C3%B6ln>
+        rdfs:label      "Köln" ;
+        eg:url          <http://offenedaten-koeln.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA23" ;
+        eg:accountable  "Sabine Möwes" ;
+        eg:email        "I/D2-Poststelle@stadt-koeln.de" ;
+        eg:dcatApApi    <https://offenedaten-koeln.de/catalog.xml> ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Heimbach%20%28Eifel%29>
+        rdfs:label      "Heimbach (Eifel)" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/heimbach> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26012" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/H%C3%BCrtgenwald>
+        rdfs:label      "Hürtgenwald" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/h%C3%BCrtgenwald> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26016" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/J%C3%BClich>
+        rdfs:label      "Jülich" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/j%C3%BClich> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26024" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Kreuzau  rdfs:label  "Kreuzau" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/kreuzau> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26028" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Langerwehe  rdfs:label  "Langerwehe" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/langerwehe> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26032" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Linnich  rdfs:label  "Linnich" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/linnich> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26036" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Merzenich  rdfs:label  "Merzenich" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/merzenich> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26040" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Titz  rdfs:label     "Titz" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/titz> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26056" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Vettwei%C3%9F>
+        rdfs:label      "Vettweiß" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/vettwei%C3%9F> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26060" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Bedburg  rdfs:label  "Bedburg" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/bedburg> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA27004" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Bergheim  rdfs:label  "Bergheim" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/bergheim> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA27008" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Br%C3%BChl%20%28Rheinland%29>
+        rdfs:label      "Brühl (Rheinland)" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/br%C3%BChl> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA27012" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Elsdorf%20%28Rheinland%29>
+        rdfs:label      "Elsdorf (Rheinland)" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/elsdorf> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA27016" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Kerpen  rdfs:label   "Kerpen" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/kerpen> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA27032" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Wesseling  rdfs:label  "Wesseling" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/wesseling> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA27040" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Kreis%20Euskirchen>
+        rdfs:label      "Kreis Euskirchen" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/kreis-euskirchen> ;
+        eg:type         "district" ;
+        eg:nuts         "DEA28" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Bad%20M%C3%BCnstereifel>
+        rdfs:label      "Bad Münstereifel" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/bad-m%C3%BCnstereifel> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA28004" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Kall  rdfs:label     "Kall" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/kall> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA28024" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Aachen  rdfs:label   "Aachen" ;
+        eg:url          <http://offenedaten.aachen.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA2D002" ;
+        eg:accountable  "" ;
+        eg:email        "offenedaten@mail.aachen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Gelsenkirchen  rdfs:label  "Gelsenkirchen" ;
+        eg:url          <https://opendata.gelsenkirchen.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA32" ;
+        eg:accountable  "Ulrike Karn und Manfred vom Sondern" ;
+        eg:email        "ulrike.karn@gelsenkirchen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/M%C3%BCnster%20%28Westfalen%29>
+        rdfs:label      "Münster (Westfalen)" ;
+        eg:url          <https://opendata.stadt-muenster.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA33" ;
+        eg:accountable  "Thomas Werner" ;
+        eg:email        "opendata@citeq.de" ;
+        eg:dcatApApi    <https://opendata.stadt-muenster.de/catalog.xml> ;
+        eg:technology   "Drupal" .
+
+ns:Bochum  rdfs:label   "Bochum" ;
+        eg:url          <http://www.bochum.de/opendata> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA51" ;
+        eg:accountable  "Frau auf'm Kamp und Frau Hartweg und Frau Vidakovic" ;
+        eg:email        "info@bochum.de " ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Herne  rdfs:label    "Herne" ;
+        eg:url          <https://www.herne.de/Stadt-und-Leben/Stadtfakten/Open-Data/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA55" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@herne.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Arnsberg  rdfs:label  "Arnsberg" ;
+        eg:url          <http://offenedaten.arnsberg.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA57004" ;
+        eg:accountable  "Elmar Kettler" ;
+        eg:email        "pressestelle.kettler@arnsberg.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Rheinland-Pfalz  rdfs:label  "Rheinland-Pfalz" ;
+        eg:url          <http://daten.rlp.de/> ;
+        eg:type         "state" ;
+        eg:nuts         "DEB" ;
+        eg:accountable  "Aylin Akça" ;
+        eg:email        "referat391@mdi.rlp.de" ;
+        eg:dcatApApi    <https://daten.rlp.de/catalog.xml> ;
+        eg:technology   "CKAN" .
+
+ns:Sachsen  rdfs:label  "Sachsen" ;
+        eg:url          <http://www.opendata.sachsen.de/> ;
+        eg:type         "state" ;
+        eg:nuts         "DED" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@sid.sachsen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Chemnitz  rdfs:label  "Chemnitz" ;
+        eg:url          <http://portal-chemnitz.opendata.arcgis.com/> ;
+        eg:type         "city" ;
+        eg:nuts         "DED41" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "ArcGIS" .
+
+ns:Leipzig  rdfs:label  "Leipzig" ;
+        eg:url          <https://opendata.leipzig.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DED51" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Halle%20%28Saale%29>
+        rdfs:label      "Halle (Saale)" ;
+        eg:url          <http://opendata.halle.de> ;
+        eg:type         "city" ;
+        eg:nuts         "DEE02" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@halle.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Jena  rdfs:label     "Jena" ;
+        eg:url          <https://opendata.jena.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEG03" ;
+        eg:accountable  "" ;
+        eg:email        "info@jena.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Altenburg  rdfs:label  "Altenburg" ;
+        eg:url          <https://www.altenburg.eu/sixcms/detail.php?id=139875> ;
+        eg:type         "city" ;
+        eg:nuts         "DEG0M001" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Bielefeld  rdfs:label  "Bielefeld" ;
+        eg:url          <https://open-data.bielefeld.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA41" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@bielefeld.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Siegburg  rdfs:label  "Siegburg" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/siegburg> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA2C060" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Niederzier  rdfs:label  "Niederzier" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/niederzier> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26048" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/N%C3%B6rvenich>
+        rdfs:label      "Nörvenich" ;
+        eg:url          <http://offenedaten.kdvz-frechen.de/group/n%C3%B6rvenich> ;
+        eg:type         "city" ;
+        eg:nuts         "DEA26052" ;
+        eg:accountable  "" ;
+        eg:email        "offene-daten@kdvz-frechen.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Brandenburg  rdfs:label  "Brandenburg" ;
+        eg:url          <https://datenadler.de/> ;
+        eg:type         "state" ;
+        eg:nuts         "" ;
+        eg:accountable  "Frank Schiersner" ;
+        eg:email        "frank.schiersner@mik.brandenburg.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "PKAN" .
+
+<http://aksw.org/mclient/OpenData-Plattform%20%C3%96PNV>
+        rdfs:label      "OpenData-Plattform ÖPNV" ;
+        eg:url          <https://www.opendata-oepnv.de/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "opendata-oepnv@vrr.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Kiel  rdfs:label     "Kiel" ;
+        eg:url          <https://opendata.schleswig-holstein.de/organization/landeshauptstadt-kiel> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Dortmund  rdfs:label  "Dortmund" ;
+        eg:url          <https://opendata.dortmund.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@dortmund.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Esri%20Deutschland%20Open%20Data%20Portal>
+        rdfs:label      "Esri Deutschland Open Data Portal" ;
+        eg:url          <https://opendata-esri-de.opendata.arcgis.com/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Magdeburg  rdfs:label  "Magdeburg" ;
+        eg:url          <https://www.magdeburg.de/Start/B%C3%BCrger-Stadt/Verwaltung-Service/Offene-Verwaltungsdaten> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Mittenwalde  rdfs:label  "Mittenwalde" ;
+        eg:url          <http://stadt-mittenwalde.opendata.arcgis.com/> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "ArcGIS" .
+
+ns:Duisburg  rdfs:label  "Duisburg" ;
+        eg:url          <https://opendata-duisburg.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    <https://opendata-duisburg.de/catalog.xml> ;
+        eg:technology   "DKAN" .
+
+<http://aksw.org/mclient/Landkreis%20Diepholz>
+        rdfs:label      "Landkreis Diepholz" ;
+        eg:url          <https://daten.diepholz.de/> ;
+        eg:type         "district" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DKAN" .
+
+ns:Schleswig-Holstein
+        rdfs:label      "Schleswig-Holstein" ;
+        eg:url          <https://opendata.schleswig-holstein.de/> ;
+        eg:type         "state" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@lr.landsh.de" ;
+        eg:dcatApApi    <https://opendata.schleswig-holstein.de/catalog.xml> ;
+        eg:technology   "CKAN" .
+
+<http://aksw.org/mclient/Nahverkehrsgesellschaft%20Baden-W%C3%BCrttemberg%20mbH>
+        rdfs:label      "Nahverkehrsgesellschaft Baden-Württemberg mbH" ;
+        eg:url          <https://www.nvbw.de/aufgaben/digitale-mobilitaet/open-data/> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "Dietmar Seifert" ;
+        eg:email        "opendata@nvbw.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "TYPO3" .
+
+<http://aksw.org/mclient/Bundesamt%20f%C3%BCr%20Seeschifffahrt%20und%20Hydrographie>
+        rdfs:label      "Bundesamt für Seeschifffahrt und Hydrographie" ;
+        eg:url          <https://www.mcloud.de/web/guest/suche/-/results/searchAgg?_mcloudsearchportlet_aggsChoice=extras.displayContact.name.raw%3A%22Bundesamt+f%C3%BCr+Seeschifffahrt+und+Hydrographie+(BSH)%22> ;
+        eg:type         "other" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "" .
+
+<http://aksw.org/mclient/Rhein-Kreis%20Neuss>
+        rdfs:label      "Rhein-Kreis Neuss" ;
+        eg:url          <http://opendata.rhein-kreis-neuss.de/> ;
+        eg:type         "district" ;
+        eg:nuts         "" ;
+        eg:accountable  "Tobias Schellhorn und Jürgen Brings" ;
+        eg:email        "digitalisierung@rhein-kreis-neuss.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "OpenDataSoft" .
+
+ns:Norderstedt  rdfs:label  "Norderstedt" ;
+        eg:url          <https://opendata.schleswig-holstein.de/organization/norderstedt> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "CKAN" .
+
+ns:Dresden  rdfs:label  "Dresden" ;
+        eg:url          <https://opendata.dresden.de> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "statistik@dresden.de" ;
+        eg:dcatApApi    false ;
+        eg:technology   "DUVA" .
+
+ns:Hochsauerlandkreis
+        rdfs:label      "Hochsauerlandkreis" ;
+        eg:url          <http://www.hochsauerlandkreis.de/buergerservice/bauen_wohnen_kataster/geo_service/OpenData/> ;
+        eg:type         "district" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+<http://aksw.org/mclient/Kreis%20Soest>
+        rdfs:label      "Kreis Soest" ;
+        eg:url          <https://www.kreis-soest.de/gis/start/opendata/opendata.php> ;
+        eg:type         "district" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "" ;
+        eg:dcatApApi    false ;
+        eg:technology   "Website" .
+
+ns:Essen  rdfs:label    "Essen" ;
+        eg:url          <https://opendata.essen.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "" ;
+        eg:accountable  "" ;
+        eg:email        "opendata@essen.de" ;
+        eg:dcatApApi    <https://opendata.essen.de/catalog.xml> ;
+        eg:technology   "DKAN" .
+
+ns:Konstanz  rdfs:label  "Konstanz" ;
+        eg:url          <https://offenedaten-konstanz.de/> ;
+        eg:type         "city" ;
+        eg:nuts         "DE138" ;
+        eg:accountable  "Eberhard Baier" ;
+        eg:email        "offenedaten@konstanz.de" ;
+        eg:dcatApApi    <https://offenedaten-konstanz.de/catalog.xml> ;
+        eg:technology   "DKAN" .

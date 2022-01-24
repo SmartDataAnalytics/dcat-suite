@@ -41,7 +41,7 @@ public class NewDataProjectView
         panel = new VerticalLayout();
         panel.getStyle().set("border-style", "solid");
         panel.getStyle().set("border-color", "#808080");
-        panel.setMaxWidth(100, Unit.EM);
+        panel.setMaxWidth(40, Unit.EM);
 
         H1 h1 = new H1("New Data Project");
         Paragraph paragraph = new Paragraph("A group id is needed to set up a data project. You must be authorized to create data projects in that group.");

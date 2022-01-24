@@ -524,7 +524,7 @@ public class MainCliDcatSuite {
             acc.addAll(matches);
 
         } else {
-            List<Resource> matches = catalogResolver.search(pattern).toList().blockingGet();
+            List<Resource> matches = catalogResolver.search(pattern).map(DatasetResolver::getDataset).map(DcatDataset::asResource).toList().blockingGet();
             logger.info(matches.size() + " matches from generic resolver " + catalogResolver);
             acc.addAll(matches.stream().map(x -> x.as(SearchResult.class)).collect(Collectors.toList()));
         }
