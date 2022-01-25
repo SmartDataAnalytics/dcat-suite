@@ -1,6 +1,5 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
-import org.aksw.commons.util.string.StringUtils;
 import org.apache.jena.sparql.engine.binding.Binding;
 
 import com.vaadin.flow.component.UI;
@@ -26,7 +25,9 @@ public class CatalogDetailsView
 	public void refresh() {
 		removeAll();
 		browseBtn = new Button("Browse");
-		browseBtn.addClickListener(ev -> UI.getCurrent().navigate(CatalogBrowseView.class, StringUtils.urlEncode(binding.get("Url").getURI())));
+		String arg = binding.get("Url").getURI();
+		// arg = StringUtils.urlEncode(arg);
+		browseBtn.addClickListener(ev -> UI.getCurrent().navigate(CatalogBrowseView.class, arg));
 		
 		add(browseBtn);
 	}

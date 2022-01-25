@@ -113,7 +113,7 @@ public class DataProjectMgmtView
 	protected Tab resourcesTab;
 	protected VerticalLayout content;
     
-	protected BrowseRepoView fileBrowser;
+	protected BrowseRepoComponent fileBrowser;
 	protected QACProvider gtfsValidator;
 	
 
@@ -312,7 +312,7 @@ public class DataProjectMgmtView
             dataset = repo.getDataset();
         }
         
-        fileBrowser = new BrowseRepoView(groupMgr.get(), gtfsValidator);
+        fileBrowser = new BrowseRepoComponent(groupMgr.get(), gtfsValidator);
 
         // dcatRepo = groupMgr.get();
         // fileRepoRootPath = fileRepoResolver.getRepo(groupId);

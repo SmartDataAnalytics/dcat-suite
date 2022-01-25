@@ -12,12 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nimbusds.jose.util.StandardCharset;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.textfield.TextArea;
 
 import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 
 public class FileDetailsDialog
 	extends VerticalLayout
@@ -31,8 +33,8 @@ public class FileDetailsDialog
 	
 	protected VerticalLayout tabContent;
 	
-	protected TextArea fileContent;
-	protected TextArea fileMetadata;
+	protected AceEditor fileContent;
+	protected AceEditor fileMetadata;
 
 	protected Tab contentTab;
 	protected Tab metadataTab;
@@ -58,10 +60,22 @@ public class FileDetailsDialog
 		
 		Tabs tabs = new Tabs();
 		
-//		fileContent = new AceEditor();
-//		fileMetadata = new AceEditor();
-		fileContent = new TextArea();
-		fileMetadata = new TextArea();
+		fileContent = new AceEditor();
+		fileContent.setWidthFull();
+		fileContent.setMode(AceMode.turtle);
+		fileContent.setTheme(AceTheme.chrome);
+        fileContent.setFontSize(18);
+        fileContent.setMinHeight(10, Unit.EM);
+
+		fileMetadata = new AceEditor();
+		fileMetadata.setWidthFull();
+		fileMetadata.setMode(AceMode.turtle);
+		fileMetadata.setTheme(AceTheme.chrome);
+		fileMetadata.setFontSize(18);
+		fileMetadata.setMinHeight(10, Unit.EM);
+
+//		fileContent = new TextArea();
+//		fileMetadata = new TextArea();
 		
 		contentTab = new Tab("Content");
 		metadataTab = new Tab("Metadata");

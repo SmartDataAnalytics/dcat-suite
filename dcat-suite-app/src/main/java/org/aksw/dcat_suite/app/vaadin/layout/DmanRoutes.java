@@ -7,6 +7,7 @@ public class DmanRoutes {
     public static final String CATALOGS = "catalogs";
     public static final String BROWSE = "browse";
 
+    public static final String CKAN_SEARCH = "ckanSearch";
     public static final String CKAN_IMPORT = "ckanImport";
 
 

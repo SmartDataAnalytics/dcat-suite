@@ -680,13 +680,18 @@ public class MainCliDcatSuite {
 
         // TODO Move this update request to a separate file and/or trigger it using a
         // flag
-        UpdateRequest ur = UpdateFactory.create(
-                "PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
-
         Model pm2 = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
         StreamRDF streamRdf = StreamRDFWriter.getWriterStream(System.out, RDFFormat.TRIG_BLOCKS, null);
         streamRdf = new StreamRDFDeferred(streamRdf, true, pm2, 10, 1000, null);
         streamRdf.start();
+
+        processCkanImport(ckanClient, prefix, datasets, quads, streamRdf);
+        
+        streamRdf.finish();
+    }
+
+    
+    public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets, boolean quads, StreamRDF streamRdf) {
 
         for (String s : datasets) {
             logger.info("Importing dataset " + s);
@@ -697,17 +702,7 @@ public class MainCliDcatSuite {
             DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
 
             try {
-                // Skolemize the resource first (so we have a reference to the resource)
-                dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
-                if (prefix != null) {
-                    dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
-                }
-
-                // Remove temporary ckan specific attributes
-                if (false) {
-                    UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
-                }
-
+            	dcatDataset = skolemizeDcatDataset(dcatDataset, prefix);
             } catch (Exception e) {
                 logger.warn("Error processing dataset " + s, e);
             }
@@ -722,9 +717,29 @@ public class MainCliDcatSuite {
                 StreamRDFOps.sendGraphToStream(dcatDataset.getModel().getGraph(), streamRdf);
             }
         }
-        streamRdf.finish();
     }
+    
+    public static DcatDataset skolemizeDcatDataset(DcatDataset dcatDataset, String prefix) {
+        // TODO Move this update request to a separate file and/or trigger it using a
+        // flag
+        UpdateRequest ur = UpdateFactory.create(
+                "PREFIX ckan: <http://ckan.aksw.org/ontology/> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o FILTER (?p IN (ckan:id, ckan:name)) }");
 
+        // Skolemize the resource first (so we have a reference to the resource)
+        dcatDataset = DcatCkanRdfUtils.skolemizeClosureUsingCkanConventions(dcatDataset).as(DcatDataset.class);
+        if (prefix != null) {
+            dcatDataset = DcatCkanRdfUtils.assignFallbackIris(dcatDataset, prefix).as(DcatDataset.class);
+        }
+
+        // Remove temporary ckan specific attributes
+        if (false) {
+            UpdateExecutionFactory.create(ur, DatasetFactory.wrap(dcatDataset.getModel())).execute();
+        }
+
+        return dcatDataset;
+    }
+    
+    
     public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds,
             Boolean altJSON)
             throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {
