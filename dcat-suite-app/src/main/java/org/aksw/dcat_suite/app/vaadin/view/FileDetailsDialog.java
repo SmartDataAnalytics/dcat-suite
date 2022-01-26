@@ -62,17 +62,19 @@ public class FileDetailsDialog
 		
 		fileContent = new AceEditor();
 		fileContent.setWidthFull();
+		fileContent.setSizeFull();
 		fileContent.setMode(AceMode.turtle);
 		fileContent.setTheme(AceTheme.chrome);
         fileContent.setFontSize(18);
-        fileContent.setMinHeight(10, Unit.EM);
+//        fileContent.setMinHeight(20, Unit.EM);
 
 		fileMetadata = new AceEditor();
-		fileMetadata.setWidthFull();
+		fileMetadata.setSizeFull();
+//		fileMetadata.setWidthFull();
 		fileMetadata.setMode(AceMode.turtle);
 		fileMetadata.setTheme(AceTheme.chrome);
 		fileMetadata.setFontSize(18);
-		fileMetadata.setMinHeight(10, Unit.EM);
+//		fileMetadata.setMinHeight(20, Unit.EM);
 
 //		fileContent = new TextArea();
 //		fileMetadata = new TextArea();
@@ -85,7 +87,7 @@ public class FileDetailsDialog
 		tabs.addSelectedChangeListener(event -> setContent(event.getSelectedTab()));
 		
 		tabContent = new VerticalLayout();
-		
+		tabContent.setSizeFull();
 		
 		add(tabs, tabContent);
 		tabContent.add(fileContent, fileMetadata);

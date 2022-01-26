@@ -78,7 +78,7 @@ public class DistributionResolverImpl
             String id = "org-linkedgeodata-osm-bremen-2018-04-04";
             DatasetResolver dr = cr.resolveDataset(id).blockingGet();
 
-            DcatDistribution dist = dr.getDataset().getDistributions2().iterator().next();
+            DcatDistribution dist = dr.getDataset().getDistributions().iterator().next();
 //			String dist = dr.getDataset().getDistributions().iterator().next().getURI();
             Collection<DistributionResolver> drs = dr.resolveDistribution(dist.getURI()).toList().blockingGet();
             System.out.println(drs);

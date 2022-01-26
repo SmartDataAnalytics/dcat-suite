@@ -1,7 +1,5 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -15,24 +13,14 @@ import java.util.stream.Stream;
 
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
-import org.aksw.dcat_suite.app.QACProvider;
-import org.aksw.dcat_suite.app.StatusCodes;
-import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
-import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
-import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
-import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.aksw.jenax.model.prov.QualifiedDerivation;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.system.Txn;
 import org.claspina.confirmdialog.ConfirmDialog;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -51,7 +39,6 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDat
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.Route;
 
 
 public class FileBrowserComponent
@@ -182,19 +169,22 @@ public class FileBrowserComponent
 	public void configureFileGridContextMenu() {
 		GridContextMenu<Path> contextMenu = fileGrid.addContextMenu();
 		
-        contextMenu.setDynamicContentHandler(relPath -> {
+        contextMenu.setDynamicContentHandler(tipPath -> {
         	contextMenu.removeAll();
-        	Path ap = activePath.get();
-        	Path p = ap == null ? path : path.resolve(ap);
-//            Path fileRepoRootPath = groupMgr.getBasePath();
-            Path absPath = p.resolve(relPath);
+//        	Path ap = activePath.get();
+//        	Path p = ap == null ? path : path.resolve(ap);
+////            Path fileRepoRootPath = groupMgr.getBasePath();
+//            Path absPath = p.resolve(tipPath);
+//            Path relPath = path.relativize(absPath);
+			Path absPath = path.resolve(activePath.getOrDefault(path)).resolve(tipPath);
+			Path relPath = path.relativize(absPath);
 
             contextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
             contextMenu.add(new Hr());
 
             int numOptions = 0;
 
-            numOptions += addExtraOptions(contextMenu, p, relPath);
+            numOptions += addExtraOptions(contextMenu, relPath);
             
             // Delete action
             
@@ -222,7 +212,7 @@ public class FileBrowserComponent
 
 	}
 
-	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path basePath, Path relPath) {
+	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
 		return 0;
 	}
 	
@@ -301,6 +291,13 @@ public class FileBrowserComponent
     	
         folderTreeGrid.setDataProvider(folderDataProvider);
 
+        
+        folderTreeGrid.addItemClickListener(ev -> {
+        	Path item = ev.getItem();
+        	if (!folderTreeGrid.isExpanded(item)) {
+        		folderTreeGrid.expand(item);
+        	}
+    	});
         
         return folderTreeGrid;
     }

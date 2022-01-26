@@ -54,7 +54,7 @@ public class MainDcatApDemo {
         System.out.println("Extras: " + ckanDataset.getExtrasAsHashMap());
 
 
-        Collection<DcatApDistribution> distributions = dcatDataset.getDistributions(DcatApDistribution.class);
+        Collection<DcatApDistribution> distributions = dcatDataset.getDistributionsAs(DcatApDistribution.class);
 
         DcatApDistribution dist = dcatDataset.createDistribution();
 

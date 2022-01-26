@@ -28,3 +28,8 @@ results.tsv
 *.swp
 
 bin
+
+dcat-suite-app/build
+dcat-suite-app/config
+
+

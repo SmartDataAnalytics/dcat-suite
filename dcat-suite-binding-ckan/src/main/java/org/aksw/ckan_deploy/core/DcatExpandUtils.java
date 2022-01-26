@@ -79,7 +79,7 @@ public class DcatExpandUtils {
         Path datasetFolder = targetFolder.resolve(relativeDatasetFolder);
         Files.createDirectories(datasetFolder);
 
-        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions2()) {
+        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
             exportDcatDestribution(sparqlDataset, targetFolder, relativeDatasetFolder, dcatDistribution);
         }
     }

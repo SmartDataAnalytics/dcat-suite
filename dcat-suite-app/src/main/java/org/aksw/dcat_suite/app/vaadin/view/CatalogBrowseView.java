@@ -12,8 +12,10 @@ import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
 import org.aksw.dcat_suite.cli.main.MainCliDcatSuite;
 import org.apache.jena.rdf.model.Resource;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -85,10 +87,14 @@ public class CatalogBrowseView
 	}
 	
 	public void refresh() {
+		add(new H3("Search " + catalogUrl));
+		
 		searchText = new TextField();
+		searchText.setPlaceholder("Find Datasets...");
 		searchBtn = new Button(VaadinIcon.SEARCH.create());
+		searchBtn.addClickShortcut(Key.ENTER);
 		searchText.setSuffixComponent(searchBtn);
-		searchText.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> doSearch());
+		// searchText.addKeyDownListener(Key.ENTER, ev -> doSearch());
 
 		searchBtn.addClickListener(ev -> doSearch());		
 		grid = new Grid<>();

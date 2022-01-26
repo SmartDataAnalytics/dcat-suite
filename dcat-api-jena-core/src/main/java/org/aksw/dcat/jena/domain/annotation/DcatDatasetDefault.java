@@ -24,7 +24,7 @@ public interface DcatDatasetDefault
     @Override
     @Iri(DcatTerms.distribution)
     //@PolymorphicOnly
-    <T extends Resource> Set<T> getDistributions(Class<T> clazz);
+    <T extends Resource> Set<T> getDistributionsAs(Class<T> clazz);
 
     @Override
     @Iri(DcatTerms.keyword)

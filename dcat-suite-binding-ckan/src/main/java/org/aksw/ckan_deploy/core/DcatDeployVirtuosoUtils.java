@@ -131,7 +131,7 @@ public class DcatDeployVirtuosoUtils {
         Multimap<Path, String> fileToGraph = LinkedHashMultimap.create();
 
         try {
-            for(DcatDistribution dcatDistribution : dcatDataset.getDistributions2()) {
+            for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
 
                 // If there is a group group, but the dataset does not declare a default graph, it is skipped
                 String distributionGraphIri = DcatCkanRdfUtils.getUri(dcatDistribution, dcatDefaultGraph).orElse(null);

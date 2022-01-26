@@ -77,10 +77,10 @@ public class DcatOps {
     public static DcatDataset transformAllDists(DcatDataset source, Function<DcatDistribution, DcatDistribution> transform) {
         DcatDataset result = ModelFactory.createDefaultModel().createResource().as(DcatDataset.class);
 
-        for(DcatDistribution dist : source.getDistributions2()) {
+        for(DcatDistribution dist : source.getDistributions()) {
             DcatDistribution newDist = transform.apply(dist);
             result.getModel().add(newDist.getModel());
-            result.getDistributions(DcatDistribution.class).add(newDist);
+            result.getDistributionsAs(DcatDistribution.class).add(newDist);
         }
 
 //        for(DcatDataset ds : dcatDatasets) {
@@ -91,7 +91,7 @@ public class DcatOps {
     }
 
     public static void transformAllDists(DcatDataset ds, Consumer<Resource> consumer) {
-        for (DcatDistribution dist : ds.getDistributions2()) {
+        for (DcatDistribution dist : ds.getDistributions()) {
             consumer.accept(dist);
         }
     }
@@ -513,7 +513,7 @@ public class DcatOps {
     public static void createLocalCopyDataset(DcatDataset dataset, Path targetFolder) throws IOException {
         Files.createDirectories(targetFolder);
 
-        Collection<DcatDistribution> dists = dataset.getDistributions(DcatDistribution.class);
+        Collection<DcatDistribution> dists = dataset.getDistributionsAs(DcatDistribution.class);
         for(DcatDistribution dist : dists) {
             for(String url : dist.getDownloadUrls()) {
                 // TODO Reuse util function to resolve path to file

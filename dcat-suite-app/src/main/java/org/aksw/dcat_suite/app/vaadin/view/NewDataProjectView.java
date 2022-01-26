@@ -63,7 +63,8 @@ public class NewDataProjectView
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_LARGE);
 
         createBtn.addClickListener(ev -> createGroup());
-        groupIdField.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> createGroup());
+        createBtn.addClickShortcut(Key.ENTER);
+        // groupIdField.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> createGroup());
 
         // form.addFormItem(groupIdField, "Group ID");
 

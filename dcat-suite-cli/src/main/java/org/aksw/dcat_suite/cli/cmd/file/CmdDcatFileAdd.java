@@ -97,7 +97,7 @@ public class CmdDcatFileAdd
             // MapperProxyUtils.
 
             dcatDataset.inModel(dcatDistribution.getModel()).as(DcatDataset.class)
-                .getDistributions(DcatDistribution.class).add(dcatDistribution);
+                .getDistributionsAs(DcatDistribution.class).add(dcatDistribution);
 
 
             ds.asDatasetGraph().find().forEachRemaining(repoDs.asDatasetGraph()::add);

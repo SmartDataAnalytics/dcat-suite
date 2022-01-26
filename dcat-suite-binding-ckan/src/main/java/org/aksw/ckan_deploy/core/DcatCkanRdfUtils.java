@@ -86,7 +86,7 @@ public class DcatCkanRdfUtils {
     public static void normalizeDataset(DcatDataset dcatDataset) {
         normalizeCommon(dcatDataset);
 
-        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions2()) {
+        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
             normalizeDistribution(dcatDistribution);
         }
 
@@ -96,7 +96,7 @@ public class DcatCkanRdfUtils {
         //String datasetNamespace = dcatDataset.getNameSpace();
 
         if(dcatDataset.isURIResource()) {
-            for(DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions2())) {
+            for(DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
                 Resource downloadUrl = org.aksw.jena_sparql_api.rdf.collections.ResourceUtils.listPropertyValues(dcatDistribution, DCAT.downloadURL)
                         .toList().stream()
                         .filter(RDFNode::isURIResource)
@@ -186,7 +186,7 @@ public class DcatCkanRdfUtils {
     @SuppressWarnings("unlikely-arg-type")
     public static DcatDataset assignFallbackIris(DcatDataset dcatDataset, String baseIri) {
         // NOTE Create a copy to avoid concurrent modification
-        for (DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions2())) {
+        for (DcatDistribution dcatDistribution : new ArrayList<>(dcatDataset.getDistributions())) {
             String iri = generateFallbackIri(dcatDistribution, baseIri);
 
             // Avoid cryptic errors about resources not found for badly modeled data
@@ -264,7 +264,7 @@ public class DcatCkanRdfUtils {
 
         for (CkanResource ckanResource : ckanDataset.getResources()) {
             DcatDistribution dcatDistribution = model.createResource().as(DcatDistribution.class);
-            dcatDataset.getDistributions(DcatDistribution.class).add(dcatDistribution);
+            dcatDataset.getDistributionsAs(DcatDistribution.class).add(dcatDistribution);
 
             convertToDcat(dcatDistribution, ckanResource, pm);
         }

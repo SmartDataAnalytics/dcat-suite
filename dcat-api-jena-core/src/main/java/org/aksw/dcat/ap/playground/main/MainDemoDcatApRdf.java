@@ -30,7 +30,7 @@ public class MainDemoDcatApRdf {
         rdfDataset.addLiteral(DCTerms.description, "Top Secret");
 
         DcatApDistribution dist = rdfDataset.createDistribution();
-        rdfDataset.getDistributions(Resource.class).add(dist);
+        rdfDataset.getDistributionsAs(Resource.class).add(dist);
 
         dist.setAccessUrl("http://some.url/");
         dist.setTitle("My dist");

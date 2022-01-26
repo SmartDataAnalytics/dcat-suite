@@ -24,6 +24,7 @@ import org.apache.jena.system.Txn;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.Iterables;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
@@ -85,13 +86,15 @@ public class CkanImportView
 
 		
 		groupField = new TextField("GroupId", groupId, "org.mydomain.mygroup");
-		groupField.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> doImport());
+//		groupField.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> doImport());
 
 		Button importBtn = new Button(VaadinIcon.CHECK.create());
 		groupField.setSuffixComponent(importBtn);
 		
-		add(groupField);
+		importBtn.addClickShortcut(Key.ENTER);
 		importBtn.addClickListener(ev -> doImport());
+
+		add(groupField);
 
 		String str = RDFDataMgrEx.toString(dcatDataset.getModel(), RDFFormat.TURTLE_PRETTY);
 

@@ -29,7 +29,7 @@ public interface DatasetResolver {
     default Flowable<DistributionResolver> resolveDistributions() {
         DcatDataset dcatDataset = getDataset();
         //List<RDFNode> list = dcatDataset.listProperties().mapWith(Statement::getObject).toList();
-        Collection<? extends DcatDistribution> distributions = dcatDataset.getDistributions2();
+        Collection<? extends DcatDistribution> distributions = dcatDataset.getDistributions();
 
 //		Flowable<DistributionResolver> result = Flowable.fromIterable(distributions)
 //			.flatMap(dist -> resolveDistribution(dist.getURI()));

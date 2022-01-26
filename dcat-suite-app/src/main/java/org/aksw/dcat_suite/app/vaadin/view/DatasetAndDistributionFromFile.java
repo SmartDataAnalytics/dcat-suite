@@ -1,12 +1,15 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocalUtils;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 
@@ -18,9 +21,8 @@ public class DatasetAndDistributionFromFile
 	
 	protected ComboBox<String> datasetId;
 	protected ComboBox<String> distributionId;
+	protected ComboBox<String> version;
 	
-	protected Button okBtn;
-	protected Button cancelBtn;
 	
 	public DatasetAndDistributionFromFile(Path path) {
 		setResponsiveSteps(
@@ -37,16 +39,34 @@ public class DatasetAndDistributionFromFile
 		distributionId = new ComboBox<>();
 		distributionId.setAllowCustomValue(true);
 		distributionId.setItems();
-		
+
+		version = new ComboBox<>();
+		version.setAllowCustomValue(true);
+		version.setItems("1.0.0");
+
 //		okBtn = new Button("Ok");
 //		cancelBtn = new Button("Cancel");
 //	
 		addFormItem(datasetId, "Dataset");
 		addFormItem(distributionId, "Distribution");
+		addFormItem(version, "Version");
 		
 		setPath(path);
 	}
 
+	public String getVersion() {
+		return version.getValue();
+	}
+
+	public String getDatasetId() {
+		return datasetId.getValue();
+	}
+	
+	public String getDistributionId() {
+		return distributionId.getValue();
+	}
+
+	
 	
 	public void setPath(Path path) {
 		this.path = path;
@@ -62,8 +82,18 @@ public class DatasetAndDistributionFromFile
         if (distributionType.startsWith(".")) {
             distributionType = distributionType.substring(1);
         }
+
+        String dateStr = "";
+        try {
+        	FileTime time = Files.getLastModifiedTime(path);
+        	LocalDate date = LocalDate.ofInstant(time.toInstant(), ZoneId.systemDefault());
+        	dateStr = date.toString();
+        } catch (Exception e) {
+        	throw new RuntimeException(e);
+        }
         
         datasetId.setValue(baseName);
         distributionId.setValue(distributionType);
+    	version.setValue(dateStr);
 	}
 }

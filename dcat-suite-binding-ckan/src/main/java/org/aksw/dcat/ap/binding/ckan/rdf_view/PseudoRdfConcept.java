@@ -82,7 +82,7 @@ public class PseudoRdfConcept {
         rdfDataset.setTitle("My dataset");
         rdfDataset.setDescription("The master plan");
 
-        rdfDataset.getDistributions(DcatApDistribution.class).add(rdfDistribution);
+        rdfDataset.getDistributionsAs(DcatApDistribution.class).add(rdfDistribution);
         rdfDataset.setPublisher(rdfPublisher);
 
         rdfPublisher.setName("Some Publisher");

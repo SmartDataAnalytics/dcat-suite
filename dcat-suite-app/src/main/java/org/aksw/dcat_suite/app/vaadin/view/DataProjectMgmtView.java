@@ -58,6 +58,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 
 @Route(value = "group/:groupId*", layout = DmanMainLayout.class)
 @PageTitle("Data Project Management")
@@ -202,13 +203,13 @@ public class DataProjectMgmtView
         
         datasetsTab = new Tab(
         	VaadinIcon.CONNECT.create(),
-			new Span("Datasets"),
-			createBadge("24")
+			new Span("Datasets")
+			//createBadge("24")
 		);
 		resourcesTab = new Tab(
 			VaadinIcon.FILE.create(),
-			new Span("Files"),
-			createBadge("439")
+			new Span("Files")
+			//createBadge("439")
 		);
 //		Tab cancelled = new Tab(
 //			new Span("Cancelled"),
@@ -354,7 +355,8 @@ public class DataProjectMgmtView
                     QuerySolutionUtils.newGraphAwareBindingMapper(dataset, "s", "g")
             		);
 
-            logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
+            logoImg.setSrc(new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png")));
+            // logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
 
 
         } else {

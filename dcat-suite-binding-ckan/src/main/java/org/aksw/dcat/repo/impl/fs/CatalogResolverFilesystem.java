@@ -201,7 +201,7 @@ public class CatalogResolverFilesystem
                     DatasetResolver dr = new DatasetResolverImpl(this, dcatDataset);
 
                     // Find the dcat distribution that matches the given ID
-                    DcatDistribution dcatDistribution = dcatDataset.getDistributions2().stream()
+                    DcatDistribution dcatDistribution = dcatDataset.getDistributions().stream()
                         .filter(r -> r.getURI().equals(distributionId))
                         .filter(r -> UriToPathUtils.resolvePath(r.getURI()) != null)
                         .findAny().orElse(null);
@@ -505,7 +505,7 @@ public class CatalogResolverFilesystem
     }
 
     public void indexDistributions(DcatDataset dcatDataset, Path targetDatasetFolder) throws Exception {
-        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions2()) {
+        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
             if(dcatDistribution.isURIResource()) {
                 String uri = dcatDistribution.getURI();
 

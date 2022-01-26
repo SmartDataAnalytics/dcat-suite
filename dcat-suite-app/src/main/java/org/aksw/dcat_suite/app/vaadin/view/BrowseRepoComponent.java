@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.StatusCodes;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
@@ -12,14 +13,18 @@ import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jenax.model.prov.Entity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.system.Txn;
+import org.apache.jena.vocabulary.DCAT;
+import org.apache.jena.vocabulary.RDF;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
 
 public class BrowseRepoComponent
 	extends FileBrowserComponent
@@ -84,10 +89,10 @@ public class BrowseRepoComponent
 
 
 	@Override
-	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path basePath, Path relPath) {
+	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
 		int numOptions = 0;
 		
-        Path absPath = basePath.resolve(relPath);
+        Path absPath = path.resolve(relPath);
 
         Dialog importGtfsDialog = new Dialog();
         Button closeBtn = new Button("Close", ev -> importGtfsDialog.close());
@@ -102,7 +107,7 @@ public class BrowseRepoComponent
             ++numOptions;
 
         
-            contextMenu.addItem("Validate GTFS...", ev -> validateGtfs(gtfsValidator, basePath, relPath));
+            contextMenu.addItem("Validate GTFS...", ev -> validateGtfs(gtfsValidator, path, relPath));
             ++numOptions;
 
         }
@@ -111,9 +116,9 @@ public class BrowseRepoComponent
         contextMenu.addItem("View ...", ev -> {
         	Dialog dlg = new Dialog();
         	// DatasetAndDistributionFromFile content = new DatasetAndDistributionFromFile(absPath);
-        	VerticalLayout content = new FileDetailsDialog(basePath, relPath, dcatRepo.getDataset());
-        	content.setWidthFull();
-        	dlg.setWidthFull();
+        	VerticalLayout content = new FileDetailsDialog(path, relPath, dcatRepo.getDataset());
+        	content.setSizeFull();
+        	dlg.setSizeFull();
         	dlg.add(content);
         	dlg.open();
         });
@@ -125,6 +130,26 @@ public class BrowseRepoComponent
         	Dialog dlg = new Dialog();
         	DatasetAndDistributionFromFile content = new DatasetAndDistributionFromFile(absPath);
         	dlg.add(content);
+        	
+        	Button okBtn = new Button("Create");
+        	okBtn.addClickListener(ev2 -> {
+        		Dataset dataset = dcatRepo.getDataset();
+        		
+        		String datasetIri = "#" + content.getDatasetId() + ":" + content.getVersion();
+        		String distIri = datasetIri + ":" + content.getDistributionId();
+
+        		Txn.executeWrite(dataset, () -> {
+        			Model model = dataset.getNamedModel(datasetIri);
+        			model.createResource(datasetIri)
+        				.addProperty(RDF.type, DCAT.Dataset)
+        				.as(DcatDataset.class)
+        				.addNewDistribution(distIri)
+        				.setDownloadUrl(relPath.toString());
+        		});
+        		
+        	});
+        	dlg.add(okBtn);
+        	
         	dlg.open();
         	
         });
@@ -133,6 +158,10 @@ public class BrowseRepoComponent
         return numOptions;
 	}
 
+	public void refresh() {
+		
+	}
+	
 //
 //	public void configureFileGridContextMenu() {
 //		GridContextMenu<Path> contextMenu = fileGrid.addContextMenu();

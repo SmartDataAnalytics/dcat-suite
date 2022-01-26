@@ -185,7 +185,7 @@ public class PseudoRdfConcept {
         Assert.assertEquals("The master plan", rdfDataset.getDescription());
 
 
-        rdfDataset.getDistributions(DcatApDistribution.class).add(rdfDistribution);
+        rdfDataset.getDistributionsAs(DcatApDistribution.class).add(rdfDistribution);
         rdfDataset.setPublisher(rdfPublisher);
 
         rdfPublisher.setName("Some Publisher");

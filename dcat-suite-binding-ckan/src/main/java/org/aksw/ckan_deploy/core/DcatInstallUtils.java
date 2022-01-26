@@ -28,7 +28,7 @@ public class DcatInstallUtils {
 
 
     public static void install(DcatRepository repo, DcatDataset dcatDataset, Function<String, String> iriResolver, boolean forceReDownload) {
-        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions2()) {
+        for(DcatDistribution dcatDistribution : dcatDataset.getDistributions()) {
 
             try {
                 repo.resolveDistribution(dcatDistribution, iriResolver);

@@ -6,11 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import org.aksw.commons.io.util.FileUtils;
 
 import com.google.common.primitives.Ints;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
@@ -66,6 +65,7 @@ public class HierarchicalDataProviderForPath
 //                result = Files.isDirectory(path);
                 result = Files.isDirectory(path)
                     ? !Flowable.fromStream(Files.list(path))
+                    		// .map(HierarchicalDataProviderForPath::flattenFolder)
                             .filter(folderItemFilter::test).isEmpty().blockingGet()
                     : false;
             }
@@ -73,6 +73,26 @@ public class HierarchicalDataProviderForPath
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    /** If the folder has only a single sub-folder then move into the subfolder. Repeat this process.
+     * Argument must be a folder
+     * 
+     * TODO Handle cycles based on symbolic links
+     * @throws IOException 
+     */
+    public static Path flattenFolder(Path path) throws IOException {
+    	List<Path> children = Flowable.fromStream(Files.list(path)).take(2).toList().blockingGet();
+    	
+    	Path child = children.size() == 1 ? children.get(0) : null;
+    	
+    	Path result = child != null && Files.isDirectory(child) ? flattenFolder(child) : path;
+    	return result;
+    }
+
+    public static Path tryFlattenFolder(Path path) throws IOException {
+    	Path result = Files.isDirectory(path) ? tryFlattenFolder(path) : path;
+    	return result;
     }
 
     @Override
@@ -96,6 +116,7 @@ public class HierarchicalDataProviderForPath
             try {
                 result = Flowable.fromStream(Files.list(parent))
                     .filter(folderItemFilter::test)
+            		// .map(HierarchicalDataProviderForPath::flattenFolder)
                     .filter(pathMatcher::matches)
                     .toList()
                     .blockingGet() // Materialize and implicitly close the stream before returning
