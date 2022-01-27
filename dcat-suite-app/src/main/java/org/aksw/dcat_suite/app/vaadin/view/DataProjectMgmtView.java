@@ -1,12 +1,20 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.stream.IntStream;
 
+import javax.imageio.ImageIO;
+
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.mgmt.api.DataProject;
 import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
@@ -42,7 +50,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -83,6 +90,8 @@ public class DataProjectMgmtView
     protected ObservableValue<Path> activePath = ObservableValueImpl.create(null);
 
     protected HorizontalLayout headingLayout;
+    
+    protected Dimension logoDim = new Dimension(256, 256);
     protected Image logoImg;
     protected Div description;
     protected H1 heading;
@@ -133,9 +142,10 @@ public class DataProjectMgmtView
         logoImg = new Image(); // "", "logo");
 //        logoImg.setAlt("logo");
 //        logoImg.getStyle().set("float", "left");
-        logoImg.setMaxWidth(10, Unit.EM);
-        logoImg.setMaxHeight(10, Unit.EM);
-
+        logoImg.setMaxWidth((int)logoDim.getWidth(), Unit.PIXELS);
+        logoImg.setMaxHeight((int)logoDim.getHeight(), Unit.PIXELS);
+        
+        
         VerticalLayout headingAndDescriptionSeparator = new VerticalLayout();
 
         heading = new H1();
@@ -313,7 +323,27 @@ public class DataProjectMgmtView
             dataset = repo.getDataset();
         }
         
-        fileBrowser = new BrowseRepoComponent(groupMgr.get(), gtfsValidator);
+        fileBrowser = new BrowseRepoComponent(groupMgr.get(), gtfsValidator) {
+        	@Override
+        	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
+        		int result = super.addExtraOptions(contextMenu, relPath);
+        	
+                // View (RDF) Metadata
+                contextMenu.addItem("Set as Logo ...", ev -> {
+            		Dataset dataset = dcatRepo.getDataset();
+            		Txn.executeWrite(dataset, () -> {
+            			dataset.getNamedModel(".").createResource(".")
+            				.as(DataProject.class)
+            				.setDepiction(relPath.toString());
+            		});
+                	updateView();
+                });
+
+        		
+        		
+        		return result;
+        	}
+        };
 
         // dcatRepo = groupMgr.get();
         // fileRepoRootPath = fileRepoResolver.getRepo(groupId);
@@ -355,7 +385,43 @@ public class DataProjectMgmtView
                     QuerySolutionUtils.newGraphAwareBindingMapper(dataset, "s", "g")
             		);
 
-            logoImg.setSrc(new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png")));
+    		Dataset dataset = repo.getDataset();
+    		
+    		Txn.executeRead(dataset, () -> {
+    			DataProject dp = dataset.getNamedModel(".").createResource(".")
+    				.as(DataProject.class);
+    			
+    			String logoUrl = dp.getDepiction();
+        		Path logoPath = logoUrl == null ? null : groupMgr.getBasePath().resolve(logoUrl);
+        		// new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png"))
+  
+        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        		try {
+        			BufferedImage img = ImageIO.read(Files.newInputStream(logoPath));
+        			BufferedImage img2 = ImageUtils.scaleImage(img, logoDim);
+        			
+        			ImageIO.write(img2, "png", baos);
+        		} catch (Exception e) {
+        			throw new RuntimeException(e);
+        		}
+
+        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> new ByteArrayInputStream(baos.toByteArray()));
+
+//        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> {
+//					try {
+//						return Files.newInputStream(logoPath);
+//					} catch (IOException e) {
+//						throw new RuntimeException(e);
+//					}
+//				});
+        		
+        		if (sr != null) {
+        			logoImg.setSrc(sr);
+        		}
+
+    		});
+    		
+
             // logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
 
 

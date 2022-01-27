@@ -129,15 +129,15 @@
 					<artifactId>*</artifactId>
 				</exclusion>
 
-					                                <exclusion>
-                                        <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                                        <artifactId>*</artifactId>
-                                </exclusion>
+				<exclusion>
+					<groupId>org.webjars.bowergithub.webcomponents</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
 
 				<exclusion>
-                                        <groupId>org.webjars.npm</groupId>
-                                        <artifactId>*</artifactId>
-                                </exclusion>
+					<groupId>org.webjars.npm</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
 
 			</exclusions>
 		</dependency>
@@ -239,6 +239,11 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.tmatesoft.svnkit</groupId>
+			<artifactId>svnkit</artifactId>
+			<version>1.10.4</version>
+		</dependency>
 
 
 		<!-- PDFViewer which hower does not seem to work with flow -->

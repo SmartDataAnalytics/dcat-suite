@@ -111,6 +111,7 @@ public class BrowseRepoComponent
             ++numOptions;
 
         }
+        
 
         // View (RDF) Metadata
         contextMenu.addItem("View ...", ev -> {

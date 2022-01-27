@@ -32,7 +32,6 @@ public class CatalogMgmtView
     extends VerticalLayout
 {
     protected Button newConnectionButton;
-
 	protected Grid<Binding> catalogsGrid;
 	
 	
@@ -41,7 +40,7 @@ public class CatalogMgmtView
 		
 		catalogsGrid = new Grid<>();
 		// catalogsGrid.setHeightByRows(true);
-		 catalogsGrid.setItemDetailsRenderer(new ComponentRenderer<>(CatalogDetailsView::new , CatalogDetailsView::setBinding));
+		catalogsGrid.setItemDetailsRenderer(new ComponentRenderer<>(CatalogDetailsView::new , CatalogDetailsView::setBinding));
 		
 		// GridContextMenu<Resource> contextMenu = catalogsGrid.addContextMenu();
 
