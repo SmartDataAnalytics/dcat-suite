@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat_suite.app.QACProvider;
@@ -11,6 +12,7 @@ import org.aksw.dcat_suite.app.StatusCodes;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
+import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.jena.query.Dataset;
@@ -43,6 +45,7 @@ public class BrowseRepoComponent
 	public void validateGtfs(QACProvider validationProvider, Path basePath, Path relInPath, Path relOutPath)
 			throws ClientProtocolException, URISyntaxException, IOException
 	{	
+		Instant activityStartedAtTime = Instant.now();
         validationProvider.startJob(basePath.resolve(relInPath).toAbsolutePath().toString());
 
         String currentStatus = validationProvider.getStatus();
@@ -57,10 +60,24 @@ public class BrowseRepoComponent
             Files.write(basePath.resolve(relOutPath), validationResult.getBytes());
         }
         
+		Instant activityEndedAtTime = Instant.now();
+
         Entity entity = createGtfsValidateDialogX(relInPath.toString(), relOutPath.toString());
         
-        Txn.executeWrite(dcatRepo.getDataset(), () -> {
-	        Model m = dcatRepo.getDataset().getNamedModel(entity);
+        Activity activity = entity.getQualifiedDerivations().iterator().next().getOrSetHadActivity();
+        activity
+        	.setStartedAtTime(activityStartedAtTime)
+        	.setEndedAtTime(activityEndedAtTime);
+
+//        activity
+//        	.setStartedAtTime(activityStartedAtTime)
+//        	.setEndedAtTime(activityEndedAtTime);
+       
+        Dataset dataset = dcatRepo.getDataset();
+        Txn.executeWrite(dataset, () -> {
+        	Model m = GraphEntityUtils.getOrCreateModel(dataset, entity, EntityAnnotators.Provenance);
+        	
+	        // Model m = dcatRepo.getDataset().getNamedModel(entity);
 	        m.add(entity.getModel());
         });        
         updateFileSearch();

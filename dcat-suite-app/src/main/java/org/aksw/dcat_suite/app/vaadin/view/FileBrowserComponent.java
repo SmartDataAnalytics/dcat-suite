@@ -121,6 +121,20 @@ public class FileBrowserComponent
         	Dialog dlg = new Dialog();
         	Button btn = new Button("Close");
 
+        	Button newFolderBtn = new Button(VaadinIcon.FOLDER_ADD.create());
+        	dlg.add(newFolderBtn);
+        	newFolderBtn.addClickListener(ev2 -> {
+        		Path ap = activePath.get();
+        			VaadinDialogUtils.confirmInputDialog("Create Folder", "Name", "Create", name -> {
+                		try {
+                			Files.createDirectory(ap.resolve(name));
+                    		folderGrid.getDataProvider().refreshAll();
+                		} catch (Exception e) {
+                			throw new RuntimeException(e);
+                		}
+        			}, "Cancel", null).open();        		
+        	});
+        	
         	dlg.add("Select a new current folder");
         	dlg.add(folderGrid, btn);
         	btn.addClickListener(ev2 -> dlg.close());

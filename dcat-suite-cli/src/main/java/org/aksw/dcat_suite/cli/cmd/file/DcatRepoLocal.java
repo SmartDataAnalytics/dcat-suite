@@ -10,5 +10,11 @@ public interface DcatRepoLocal {
 
     Dataset getDataset();
 
+    
+    void move(Path src, Path tgt);
+    
+    default void rename(Path src, String newName) {
+    	move(src, src.resolveSibling(newName));
+    }
     // RdfDataSourceFromDataset
 }

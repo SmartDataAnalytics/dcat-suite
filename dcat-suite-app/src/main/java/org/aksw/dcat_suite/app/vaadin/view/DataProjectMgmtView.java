@@ -58,7 +58,6 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -106,7 +105,6 @@ public class DataProjectMgmtView
 
     protected Button createGroupBtn = new Button("Create Group");
 
-    protected Upload upload;
 
     protected Path groupFileStore;
 
