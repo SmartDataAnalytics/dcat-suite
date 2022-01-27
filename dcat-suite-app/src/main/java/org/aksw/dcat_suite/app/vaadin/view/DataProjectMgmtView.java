@@ -386,41 +386,46 @@ public class DataProjectMgmtView
             		);
 
     		Dataset dataset = repo.getDataset();
-    		
-    		Txn.executeRead(dataset, () -> {
+
+    		String logoUrl = Txn.calculateRead(dataset, () -> {
+    			StreamResource sr = null;
+    			
     			DataProject dp = dataset.getNamedModel(".").createResource(".")
     				.as(DataProject.class);
     			
-    			String logoUrl = dp.getDepiction();
-        		Path logoPath = logoUrl == null ? null : groupMgr.getBasePath().resolve(logoUrl);
-        		// new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png"))
-  
-        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        		try {
-        			BufferedImage img = ImageIO.read(Files.newInputStream(logoPath));
-        			BufferedImage img2 = ImageUtils.scaleImage(img, logoDim);
-        			
-        			ImageIO.write(img2, "png", baos);
-        		} catch (Exception e) {
-        			throw new RuntimeException(e);
-        		}
-
-        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> new ByteArrayInputStream(baos.toByteArray()));
-
-//        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> {
-//					try {
-//						return Files.newInputStream(logoPath);
-//					} catch (IOException e) {
-//						throw new RuntimeException(e);
-//					}
-//				});
-        		
-        		if (sr != null) {
-        			logoImg.setSrc(sr);
-        		}
-
+    			return dp.getDepiction();
     		});
     		
+			if (logoUrl != null) {
+        		Path logoPath = logoUrl == null ? null : groupMgr.getBasePath().resolve(logoUrl);
+        		// new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png"))
+
+        		if (Files.exists(logoPath)) {
+	        		
+	        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        		try {
+	        			BufferedImage img = ImageIO.read(Files.newInputStream(logoPath));
+	        			BufferedImage img2 = ImageUtils.scaleImage(img, logoDim);
+	        			
+	        			ImageIO.write(img2, "png", baos);
+	        		} catch (Exception e) {
+	        			throw new RuntimeException(e);
+	        		}
+	
+	        		StreamResource sr = baos == null ? null : new StreamResource("logo.png", () -> new ByteArrayInputStream(baos.toByteArray()));
+	//        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> {
+	//					try {
+	//						return Files.newInputStream(logoPath);
+	//					} catch (IOException e) {
+	//						throw new RuntimeException(e);
+	//					}
+	//				});
+	        		
+	        		if (sr != null) {
+	        			logoImg.setSrc(sr);
+	        		}
+        		}	
+			}    		
 
             // logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
 
