@@ -18,6 +18,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.DCAT;
 import org.claspina.confirmdialog.ConfirmDialog;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -31,10 +32,13 @@ public class DatasetDetailsView
 {
 	protected DcatDataset dcatDataset;
 	
+	protected Runnable fixParentHeight;
 	protected Grid<Resource> distributionsGrid;
 	
 	
-	public DatasetDetailsView() {
+	public DatasetDetailsView(Runnable fixParentHeight) {
+		this.fixParentHeight = fixParentHeight;
+		
 		add(new Paragraph("Distributions"));
 		
 		distributionsGrid = new Grid<>();
@@ -85,6 +89,11 @@ public class DatasetDetailsView
 			if (dcatDataset != null) {
 				dcatDataset.addProperty(DCAT.distribution, ResourceFactory.createResource());
 				setDataset(dcatDataset); // refresh
+				UI.getCurrent().accessSynchronously(() -> {
+					distributionsGrid.getElement().executeJs("requestAnimationFrame((function() { this.notifyResize(); }).bind(this))");
+					fixParentHeight.run();
+				});
+				// https://vaadin.com/forum/thread/17019831/grid-items-details-height-bug-with-content-loaded-asynchronously
 			}
 		});
 		

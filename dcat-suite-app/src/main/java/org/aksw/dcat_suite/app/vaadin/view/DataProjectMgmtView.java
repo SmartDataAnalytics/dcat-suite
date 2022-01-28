@@ -7,6 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import javax.imageio.ImageIO;
@@ -14,6 +17,7 @@ import javax.imageio.ImageIO;
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.mgmt.api.DataProject;
 import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
@@ -21,13 +25,16 @@ import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import org.aksw.jena_sparql_api.concepts.UnaryXExpr;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.arq.util.binding.QuerySolutionUtils;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.connection.query.QueryExecutionDecoratorTxn;
+import org.aksw.jenax.path.core.PathOpsNode;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -45,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -59,6 +67,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -119,6 +128,8 @@ public class DataProjectMgmtView
     
     protected Tab datasetsTab;
 	protected Tab resourcesTab;
+	protected Tab filesTab;
+	
 	protected VerticalLayout content;
     
 	protected BrowseRepoComponent fileBrowser;
@@ -196,7 +207,9 @@ public class DataProjectMgmtView
         datasetGrid = new Grid<>();
 
         VaadinGridUtils.allowMultipleVisibleItemDetails(datasetGrid);
-        datasetGrid.setItemDetailsRenderer(new ComponentRenderer<>(DatasetDetailsView::new, DatasetDetailsView::setDataset));
+        datasetGrid.setItemDetailsRenderer(new ComponentRenderer<>(() -> new DatasetDetailsView(() -> {
+			datasetGrid.getElement().executeJs("requestAnimationFrame((function() { this.notifyResize(); }).bind(this))");
+        }), DatasetDetailsView::setDataset));
         
         
         headingAndDescriptionSeparator.add(heading);
@@ -214,7 +227,14 @@ public class DataProjectMgmtView
 			new Span("Datasets")
 			//createBadge("24")
 		);
-		resourcesTab = new Tab(
+
+        resourcesTab = new Tab(
+			VaadinIcon.RECORDS.create(),
+			new Span("Resources")
+			//createBadge("439")
+		);
+
+		filesTab = new Tab(
 			VaadinIcon.FILE.create(),
 			new Span("Files")
 			//createBadge("439")
@@ -226,7 +246,7 @@ public class DataProjectMgmtView
         
         Tabs tabs = new Tabs();
         tabs.setHeightFull();
-        tabs.add(datasetsTab, resourcesTab);
+        tabs.add(datasetsTab, resourcesTab, filesTab);
         content = new VerticalLayout();
 		content.setSpacing(false);
 		
@@ -301,12 +321,60 @@ public class DataProjectMgmtView
     }
   
     
+    public Function<org.aksw.commons.path.core.Path<Node>, String> pathToString(org.aksw.commons.path.core.Path<Node> basePath) {    	
+        return path -> { 
+        	Dataset dataset = groupMgr.get().getDataset();
+
+        	// FIXME Starting a txn on every lookup is far from optimal
+        	String location = Txn.calculateRead(dataset, () ->
+        		 Optional.ofNullable(GraphEntityUtils.getSelfResource(dataset, path.getSegments()))
+        		 	.map(r -> r.as(DcatDistribution.class).getDownloadUrl()).orElse(null));
+        	
+        	Node node = path == null || path.getNameCount() == 0 ? null : path.getFileName().toSegment();
+
+        	String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.toString()); // + ": " + node.getClass());
+        	
+        	if (location != null) {
+        		str += " --- " + location;
+        	}
+        	
+        	return str;
+        };
+    }
+
     protected void setContent(Tab tab) {
     	content.removeAll();
 		if (tab.equals(datasetsTab)) {
 			content.add(datasetGrid, addDatasetBtn);
-		} else if (tab.equals(resourcesTab)) {
+		} else if (tab.equals(filesTab)) {
 			content.add(fileBrowser);
+		} else {
+			
+	        HierarchicalConfigurableFilterDataProvider<org.aksw.commons.path.core.Path<Node>, Void, UnaryXExpr> folderDataProvider =
+	                new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset()).withConfigurableFilter();
+
+	    	Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathOpsNode.newAbsolutePath());
+	    	
+	        TreeGrid<org.aksw.commons.path.core.Path<Node>> artifactTreeGrid = new TreeGrid<>();
+		    //folderTreeGrid.setSizeFull();
+
+		    Column<?> hierarchyColumn = artifactTreeGrid.addHierarchyColumn(path -> {
+	            System.out.println("WTF: " + path);
+	            // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
+	            return pathToString.apply(path);
+	            // return path.toString();
+	        });
+
+		    // folderTreeGrid.addColumn(p -> "");
+	        hierarchyColumn.setResizable(true);
+	        hierarchyColumn.setFrozen(true);
+	    	
+	        artifactTreeGrid.setDataProvider(folderDataProvider);
+	        artifactTreeGrid.setSizeFull();
+	        artifactTreeGrid.setHeightByRows(true);
+	        artifactTreeGrid.setUniqueKeyDataGenerator("key", path -> path.toString());
+	        
+			content.add(artifactTreeGrid);
 		}
     }
 

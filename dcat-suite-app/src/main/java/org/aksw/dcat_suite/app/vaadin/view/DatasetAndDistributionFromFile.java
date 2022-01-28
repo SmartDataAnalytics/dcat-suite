@@ -33,23 +33,26 @@ public class DatasetAndDistributionFromFile
 		
 		
 		datasetId = new ComboBox<>();
-		datasetId.setAllowCustomValue(true);
 		datasetId.setItems();
+		datasetId.setAllowCustomValue(true);
+		datasetId.addCustomValueSetListener(ev -> datasetId.setValue(ev.getDetail()));
 		
 		distributionId = new ComboBox<>();
-		distributionId.setAllowCustomValue(true);
 		distributionId.setItems();
+		distributionId.setAllowCustomValue(true);
+		distributionId.addCustomValueSetListener(ev -> distributionId.setValue(ev.getDetail()));
 
 		version = new ComboBox<>();
 		version.setAllowCustomValue(true);
 		version.setItems("1.0.0");
+		version.addCustomValueSetListener(ev -> version.setValue(ev.getDetail()));
 
 //		okBtn = new Button("Ok");
 //		cancelBtn = new Button("Cancel");
 //	
-		addFormItem(datasetId, "Dataset");
-		addFormItem(distributionId, "Distribution");
+		addFormItem(datasetId, "Artifact");
 		addFormItem(version, "Version");
+		addFormItem(distributionId, "Classifier");
 		
 		setPath(path);
 	}

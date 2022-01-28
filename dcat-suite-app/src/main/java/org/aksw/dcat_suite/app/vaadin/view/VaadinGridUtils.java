@@ -1,6 +1,8 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.dom.Element;
 
 public class VaadinGridUtils {
 	
@@ -23,4 +25,13 @@ public class VaadinGridUtils {
 			}
 		});
 	}
+	
+	public static void notifyResize(Component component) {
+		notifyResize(component.getElement());
+	}
+
+	public static void notifyResize(Element element) {
+		element.executeJs("requestAnimationFrame((function() { this.notifyResize(); }).bind(this))");
+	}
+
 }

@@ -7,14 +7,17 @@ import java.nio.file.Path;
 import java.time.Instant;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
+import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.StatusCodes;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -75,10 +78,10 @@ public class BrowseRepoComponent
        
         Dataset dataset = dcatRepo.getDataset();
         Txn.executeWrite(dataset, () -> {
-        	Model m = GraphEntityUtils.getOrCreateModel(dataset, entity, EntityAnnotators.Provenance);
+        	DatasetOneNg m = GraphEntityUtils.getOrCreateModel(dataset, entity, EntityAnnotators.Provenance);
         	
 	        // Model m = dcatRepo.getDataset().getNamedModel(entity);
-	        m.add(entity.getModel());
+	        m.getModel().add(entity.getModel());
         });        
         updateFileSearch();
 	}
@@ -152,17 +155,26 @@ public class BrowseRepoComponent
         	Button okBtn = new Button("Create");
         	okBtn.addClickListener(ev2 -> {
         		Dataset dataset = dcatRepo.getDataset();
-        		
-        		String datasetIri = "#" + content.getDatasetId() + ":" + content.getVersion();
-        		String distIri = datasetIri + ":" + content.getDistributionId();
+        		        		
+        		// String datasetIri = "#" + content.getDatasetId() + ":" + content.getVersion();
+        		// String distIri = datasetIri + ":" + content.getDistributionId();
 
         		Txn.executeWrite(dataset, () -> {
-        			Model model = dataset.getNamedModel(datasetIri);
-        			model.createResource(datasetIri)
-        				.addProperty(RDF.type, DCAT.Dataset)
-        				.as(DcatDataset.class)
-        				.addNewDistribution(distIri)
-        				.setDownloadUrl(relPath.toString());
+            		DatasetOneNg dong = GraphEntityUtils.getOrCreateModel(dataset,
+            				NodeFactory.createLiteral(content.getDatasetId()),
+            				NodeFactory.createLiteral(content.getVersion()),
+            				NodeFactory.createLiteral(content.getDistributionId())
+            		);
+            		dong.getSelfResource().as(DcatDistribution.class)
+            			.setDownloadUrl(relPath.toString());
+
+
+//        			Model model = dataset.getNamedModel(datasetIri);
+//        			model.createResource(datasetIri)
+//        				.addProperty(RDF.type, DCAT.Dataset)
+//        				.as(DcatDataset.class)
+//        				.addNewDistribution(distIri)
+//        				.setDownloadUrl(relPath.toString());
         		});
         		
         	});

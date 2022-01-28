@@ -6,6 +6,7 @@ import java.nio.file.PathMatcher;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,10 +22,12 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.claspina.confirmdialog.ConfirmDialog;
 
+import com.github.jsonldjava.shaded.com.google.common.io.MoreFiles;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -80,6 +83,8 @@ public class FileBrowserComponent
         
 	    folderGrid = createFolderGrid(path);
 		fileGrid = createFileGrid(treeDataProvider, path);
+		fileGrid.setSelectionMode(SelectionMode.MULTI);
+		fileGrid.setDetailsVisibleOnClick(true);
 		
 		configureFileGridContextMenu();
 		
@@ -104,13 +109,64 @@ public class FileBrowserComponent
         	dlg.open();
         });
         
+        Button moveBtn = new Button(VaadinIcon.FILE_O.create());
+        moveBtn.setEnabled(false);
+        
+		fileGrid.addSelectionListener(ev -> {
+			Set<Path> pathTips = ev.getAllSelectedItems();
+
+			moveBtn.setEnabled(!pathTips.isEmpty());
+			
+		});
+
+        moveBtn.addClickListener(ev -> {
+        	VerticalLayout content = new VerticalLayout();
+        	Button newFolderBtn = new Button(VaadinIcon.FOLDER_ADD.create());
+        	content.add(newFolderBtn);
+
+        	Grid<Path> grid = createFolderGrid(path);
+
+        	newFolderBtn.addClickListener(ev2 -> {
+        		Path ap = grid.getSelectionModel().getFirstSelectedItem().orElse(null);
+            	Path p = ap == null ? path : path.resolve(ap);
+
+            	VaadinDialogUtils.confirmInputDialog("Create Folder", "Name", "Create", name -> {
+            		try {
+            			Files.createDirectory(p.resolve(name));
+            			grid.getDataProvider().refreshAll();
+                		folderGrid.getDataProvider().refreshAll();
+            		} catch (Exception e) {
+            			throw new RuntimeException(e);
+            		}
+    			}, "Cancel", ev3 -> {}).open();
+        	});
+        	
+        	
+        	content.add("Select a new current folder");
+        	content.add(grid);
+
+        	VaadinDialogUtils.confirmDialog("Move Files", content, "Move", ev2 -> {
+        		Path item = grid.getSelectionModel().getFirstSelectedItem().orElse(null);
+        		if (item != null) {
+                	Path tgt = path.resolve(item);
+
+        			for (Path src : fileGrid.getSelectedItems()) {
+        				// TODO resolve src
+        				System.out.println("Moving " + src + " to " + tgt);
+        			}
+        		}
+        		
+        	}, "Abort", ev3 -> {}).open();
+        });
+
+        
 
         folderGrid.setMinWidth(30, Unit.EM);
         folderGrid.setMinHeight(30, Unit.EM);
-        folderGrid.setSelectionMode(SelectionMode.SINGLE);
         folderGrid.addSelectionListener(ev -> {
             activePath.set(ev.getFirstSelectedItem().orElse(null));
         });
+
 
         searchField.addValueChangeListener(ev -> updateFileSearch());
         searchField.setValue("");
@@ -145,7 +201,7 @@ public class FileBrowserComponent
         FlexLayout hl = new FlexLayout();
         hl.setFlexWrap(FlexWrap.WRAP);
         hl.setWidthFull();
-        hl.add(changeFolderBtn, showUploadDlgBtn, searchField);
+        hl.add(changeFolderBtn, showUploadDlgBtn, moveBtn, searchField);
 
         add(hl, fileGrid);
         
@@ -277,13 +333,63 @@ public class FileBrowserComponent
     	Path p = ap == null ? path : path.resolve(ap);
 
     	changeFolderBtn.setText(pathToString2(path).apply(ap));
+    	
+    	folderGrid.getDataProvider().refreshAll();
 
         updateFileSearch((TreeDataProvider<Path>)fileGrid.getDataProvider(), p, searchField.getValue(), recursiveSearchCb.getValue());
     }
 
 
     
-    public static TreeGrid<Path> createFolderGrid(Path fileRepoRootPath) {
+    public TreeGrid<Path> createFolderGrid(Path fileRepoRootPath) {
+    	TreeGrid<Path> folderGrid = createCoreFolderGrid(fileRepoRootPath);
+    	
+        folderGrid.setSelectionMode(SelectionMode.SINGLE);
+        
+        GridContextMenu<Path> folderContextMenu = folderGrid.addContextMenu();
+        folderContextMenu.setDynamicContentHandler(tipPath -> {
+        	folderContextMenu.removeAll();
+//        	Path ap = activePath.get();
+//        	Path p = ap == null ? path : path.resolve(ap);
+////            Path fileRepoRootPath = groupMgr.getBasePath();
+//            Path absPath = p.resolve(tipPath);
+//            Path relPath = path.relativize(absPath);
+			Path absPath = path.resolve(activePath.getOrDefault(path)).resolve(tipPath);
+			Path relPath = path.relativize(absPath);
+
+			folderContextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
+			folderContextMenu.add(new Hr());
+
+            int numOptions = 0;
+            
+            // Delete action
+            
+            folderContextMenu.addItem("Delete", ev -> {
+                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
+                        "You are about to RECURSIVELY delete: " + relPath,
+                        "Delete", x -> {
+                            InvokeUtils.invoke(() -> MoreFiles.deleteRecursively(absPath), e -> {
+                                // TODO Show a notification if delete failed
+                            });
+                            updateFileSearch();
+                        }, "Cancel", x -> {});
+                //dialog.setConfirmButtonTheme("error primary");
+                dialog.open();
+            });
+            ++numOptions;
+            
+            
+            if (numOptions == 0) {
+                folderContextMenu.addItem("(no actions available)").setEnabled(false);
+            }
+
+            return true;
+        });
+        
+        return folderGrid;
+    }
+    
+    public static TreeGrid<Path> createCoreFolderGrid(Path fileRepoRootPath) {
     	
         HierarchicalConfigurableFilterDataProvider<Path, Void, String> folderDataProvider =
                 HierarchicalDataProviderForPath.createForFolderStructure(fileRepoRootPath).withConfigurableFilter();
@@ -319,6 +425,7 @@ public class FileBrowserComponent
     public static Function<Path, String> pathToString(Path fileRepoRootPath) {
         return path -> path == null ? "(null)" : (fileRepoRootPath.equals(path) ? "/" : path.getFileName().toString());
     }
+        
 
     public static Function<Path, String> pathToString2(Path fileRepoRootPath) {
         return path -> path == null ? "(null)" : (fileRepoRootPath.equals(path) ? "/" : fileRepoRootPath.relativize(path).toString());
@@ -328,6 +435,8 @@ public class FileBrowserComponent
     public static TreeGrid<Path> createFileGrid(TreeDataProvider<Path> treeDataProvider, Path fileRepoRootPath) {
 	
 	    TreeGrid<Path> fileGrid = new TreeGrid<>(treeDataProvider);
+	    
+	    
 	    //fileGrid.setSizeFull();
         Column<?> hierarchyColumn = fileGrid.addHierarchyColumn(path -> {
             // System.out.println(path);
