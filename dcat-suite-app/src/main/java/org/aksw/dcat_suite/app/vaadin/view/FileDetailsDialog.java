@@ -58,6 +58,9 @@ public class FileDetailsDialog
 		}
 		
 		
+		// String queryStr = "SELECT ?g { GRAPH ?g { ?g dcat:downloadURL ?file } }"
+		
+		
 		Tabs tabs = new Tabs();
 		
 		fileContent = new AceEditor();

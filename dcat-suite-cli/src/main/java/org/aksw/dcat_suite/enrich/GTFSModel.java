@@ -47,7 +47,7 @@ public class GTFSModel {
         this.fileName = Paths.get(gtfsFile).getFileName();
 		this.gtfs = new GTFSFile(gtfsFile);
 		model = ModelFactory.createDefaultModel();
-		String resourceUri = GTFSUtils.createBaseUri(this.prefix,"dataset",this.title);
+		String resourceUri = GtfsUtils.createBaseUri(this.prefix,"dataset",this.title);
 		dsResource = model.createResource(resourceUri);
 		dsResource.addProperty(DCTerms.identifier,DigestUtils
 			      .md5Hex(resourceUri));
@@ -69,7 +69,7 @@ public class GTFSModel {
         dsResource.addProperty(DCTerms.title, this.title);
         dsResource.addProperty(DCAT.theme, model.createResource(EUROVOC_TRANSPORT_THEME));
         
-        String distUri = GTFSUtils.createBaseUri(this.prefix,"distribution",this.title);
+        String distUri = GtfsUtils.createBaseUri(this.prefix,"distribution",this.title);
         Resource distribution = model.createResource(distUri);
         distribution.addProperty(model.createProperty(EXAMPLE_NS.concat("localId")),fileName.toString());
         
@@ -100,12 +100,12 @@ public class GTFSModel {
 				dsResource.addProperty(DCTerms.temporal, periodOfTime);
 				if (feedinfo.getStartDate() != null) {
 					Property startDateProperty = model.createProperty(SCHEMA_NS.concat("startDate"));
-					String startDate = GTFSUtils.concatDate(feedinfo.getStartDate().getYear(),feedinfo.getStartDate().getMonth(), feedinfo.getStartDate().getDay());
+					String startDate = GtfsUtils.concatDate(feedinfo.getStartDate().getYear(),feedinfo.getStartDate().getMonth(), feedinfo.getStartDate().getDay());
 					periodOfTime.addProperty(startDateProperty, startDate);
 				}
 				if (feedinfo.getEndDate() != null) {
 					Property endDateProperty = model.createProperty(SCHEMA_NS.concat("endDate"));
-					String endDate = GTFSUtils.concatDate(feedinfo.getEndDate().getYear(), feedinfo.getEndDate().getMonth(), feedinfo.getEndDate().getDay());
+					String endDate = GtfsUtils.concatDate(feedinfo.getEndDate().getYear(), feedinfo.getEndDate().getMonth(), feedinfo.getEndDate().getDay());
 					periodOfTime.addProperty(endDateProperty, endDate);
 				}
 			}
@@ -118,7 +118,7 @@ public class GTFSModel {
 				publisherResource = model.createResource(feedinfo.getPublisherUrl());
 			} 
 			else if (feedinfo.getPublisherName() != null) {
-				publisherResource = model.createResource(GTFSUtils.createBaseUri(this.prefix,"",this.title));
+				publisherResource = model.createResource(GtfsUtils.createBaseUri(this.prefix,"",this.title));
 			} 
 			if (publisherResource != null) {
 				publisherResource.addProperty(RDF.type, FOAF.Agent);

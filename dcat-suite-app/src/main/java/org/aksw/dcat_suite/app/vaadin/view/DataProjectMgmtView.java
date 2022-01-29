@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -34,6 +35,8 @@ import org.aksw.jenax.path.core.PathOpsNode;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
+import org.aksw.vaadin.jena.geo.VaadinGeoUtils;
+import org.apache.jena.geosparql.spatial.ConvertLatLon;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -49,6 +52,12 @@ import org.apache.jena.vocabulary.RDFS;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.addon.leaflet4vaadin.LeafletMap;
+import com.vaadin.addon.leaflet4vaadin.layer.groups.FeatureGroup;
+import com.vaadin.addon.leaflet4vaadin.layer.groups.LayerGroup;
+import com.vaadin.addon.leaflet4vaadin.layer.map.options.DefaultMapOptions;
+import com.vaadin.addon.leaflet4vaadin.layer.map.options.MapOptions;
+import com.vaadin.addon.leaflet4vaadin.types.LatLng;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -56,6 +65,7 @@ import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -134,7 +144,8 @@ public class DataProjectMgmtView
     
 	protected BrowseRepoComponent fileBrowser;
 	protected QACProvider gtfsValidator;
-	
+
+	protected LeafletMap leafletMap;
 
     public DataProjectMgmtView(
             @Autowired GroupMgrFactory dcatRepoMgr,
@@ -220,7 +231,22 @@ public class DataProjectMgmtView
 
         
         add(headingLayout);
+        
+        MapOptions options = new DefaultMapOptions();
+        options.setCenter(new LatLng(47.070121823, 19.204101562500004));
+        options.setZoom(7);
+        leafletMap = new LeafletMap(options);
+        leafletMap.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+        leafletMap.setWidth(128, Unit.PIXELS);
+        leafletMap.setHeight(128, Unit.PIXELS);
+        LayerGroup group = new FeatureGroup();
+        group.addTo(leafletMap);
 
+        add(new H3("Map should be here"));
+        add(leafletMap);
+        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
+        
+        
         
         datasetsTab = new Tab(
         	VaadinIcon.CONNECT.create(),
@@ -317,7 +343,7 @@ public class DataProjectMgmtView
             return true;
         });
 
-
+        
     }
   
     
@@ -332,8 +358,8 @@ public class DataProjectMgmtView
         	
         	Node node = path == null || path.getNameCount() == 0 ? null : path.getFileName().toSegment();
 
-        	String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.toString()); // + ": " + node.getClass());
-        	
+        	String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.toString(false)); // + ": " + node.getClass());
+        	        	
         	if (location != null) {
         		str += " --- " + location;
         	}
@@ -351,7 +377,7 @@ public class DataProjectMgmtView
 		} else {
 			
 	        HierarchicalConfigurableFilterDataProvider<org.aksw.commons.path.core.Path<Node>, Void, UnaryXExpr> folderDataProvider =
-	                new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset()).withConfigurableFilter();
+	                new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset(), false).withConfigurableFilter();
 
 	    	Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathOpsNode.newAbsolutePath());
 	    	
@@ -359,11 +385,10 @@ public class DataProjectMgmtView
 		    //folderTreeGrid.setSizeFull();
 
 		    Column<?> hierarchyColumn = artifactTreeGrid.addHierarchyColumn(path -> {
-	            System.out.println("WTF: " + path);
 	            // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
 	            return pathToString.apply(path);
 	            // return path.toString();
-	        });
+	        }); //.setKey("key");
 
 		    // folderTreeGrid.addColumn(p -> "");
 	        hierarchyColumn.setResizable(true);
@@ -372,7 +397,54 @@ public class DataProjectMgmtView
 	        artifactTreeGrid.setDataProvider(folderDataProvider);
 	        artifactTreeGrid.setSizeFull();
 	        artifactTreeGrid.setHeightByRows(true);
-	        artifactTreeGrid.setUniqueKeyDataGenerator("key", path -> path.toString());
+	        // artifactTreeGrid.setUniqueKeyDataGenerator("key", path -> path.toString());
+	        artifactTreeGrid.addItemClickListener(ev -> {
+	        	org.aksw.commons.path.core.Path<Node> item = ev.getItem();
+	        	if (!artifactTreeGrid.isExpanded(item)) {
+	        		artifactTreeGrid.expand(item);
+	        	}
+	    	});
+	        
+	        GridContextMenu<org.aksw.commons.path.core.Path<Node>> contextMenu = artifactTreeGrid.addContextMenu();
+	        contextMenu.setDynamicContentHandler(path -> {
+	        	contextMenu.removeAll();
+	        	
+	        	int numOptions = 0;
+	            contextMenu.addItem("Actions for " + path).setEnabled(false);
+	            contextMenu.add(new Hr());
+	            
+	            contextMenu.addItem("Delete Tree", ev -> {
+                	List<Node> graphNodes = Txn.calculateRead(dataset, () ->
+            	        GraphEntityUtils.findEntities(dataset, path.getSegments(), true));
+                	
+                	System.out.println("Lookup with: " + path.getSegments());
+                	System.out.println("Graph nodes " + graphNodes);
+                	
+	                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
+	                        String.format("You are about to delete: %s (affects %d graphs). This operation cannot be undone.", path.getSegments(), graphNodes.size()),
+	                        "Delete", x -> {
+	                        	Txn.executeWrite(dataset, () -> {
+	                        		for (Node node : graphNodes) {
+	                        			dataset.asDatasetGraph().removeGraph(node);
+	                        		}
+	                        	});
+	                        	// updateView();
+	                        	artifactTreeGrid.getDataProvider().refreshAll();
+	                        	
+	                            // TODO Show a notification if delete failed
+	                        }, "Cancel", x -> {});
+	                //dialog.setConfirmButtonTheme("error primary");
+	                dialog.open();
+	            });
+	            ++numOptions;
+
+	            if (numOptions == 0) {
+	                contextMenu.addItem("(no actions available)").setEnabled(false);
+	            }
+	        	
+	            return true;
+	        });
+	        
 	        
 			content.add(artifactTreeGrid);
 		}

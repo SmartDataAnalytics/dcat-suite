@@ -203,6 +203,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.cryptomator</groupId>
+			<artifactId>webdav-nio-adapter</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-reprogen-shacl</artifactId>
 		</dependency>
@@ -220,6 +226,11 @@
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-arq-relations</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-plugins-bundle</artifactId>
 		</dependency>
 
 		<dependency>
@@ -347,14 +358,28 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-shacl</artifactId>
-			<version>4.3.2</version>
 		</dependency>
+
+		<!-- implied by jenax-arq-plugins-bundle -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.jena</groupId> -->
+		<!-- <artifactId>jena-geosparql</artifactId> -->
+		<!-- </dependency> -->
+
 
 		<dependency>
 			<groupId>org.vaadin.helper</groupId>
 			<artifactId>async-manager</artifactId>
 			<version>1.1.0</version>
 		</dependency>
+
+
+		<dependency>
+			<groupId>org.aksw.scaseco.vaadin</groupId>
+			<artifactId>vaadin-jena-geo</artifactId>
+			<version>4.3.2-1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- <dependency> <groupId>org.hobbit</groupId> <artifactId>facete3-app-shared</artifactId> 
 			</dependency> <dependency> <groupId>org.hobbit</groupId> <artifactId>facete3-impl</artifactId> 
 			</dependency> -->

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.aksw.commons.io.util.StdIo;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.commons.util.string.Envsubst;
+import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.DcatIdType;
@@ -246,7 +247,7 @@ public class CmdDcatFileTransformApply
 
 
             RdfEntityInfo srcEntityInfo = dist.as(RdfEntityInfo.class);
-            String srcBaseName = DcatRepoLocalUtils.deriveBaseName(srcFileName, srcEntityInfo, false);
+            String srcBaseName = FileNameUtils.deriveFileName(srcFileName, srcEntityInfo).getBaseName();
 
             String tag = Objects.requireNonNull(ObjectUtils.coalesce(() -> customTag, job::getTag),
                     "Transformation does not specify a tag; a custom one needs to be provided using --tag");

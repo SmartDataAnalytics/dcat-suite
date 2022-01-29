@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.aksw.commons.io.util.StdIo;
+import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
@@ -56,7 +57,7 @@ public class CmdDcatFileAdd
             RdfEntityInfo entityInfo = DcatRepoLocalUtils.probeFile(repo.getBasePath(), filePath);
 
             // Derive the base name; remove file extensions
-            String baseName = DcatRepoLocalUtils.deriveBaseName(file, entityInfo, true);
+            String baseName = FileNameUtils.deriveFileName(file, entityInfo).getBaseName();
 
             // String datasetId = "#" + groupId.replace('.', '/') + "/" + baseName + "/" + version;
             String datasetId = groupId + ":" + baseName + ":" + version;

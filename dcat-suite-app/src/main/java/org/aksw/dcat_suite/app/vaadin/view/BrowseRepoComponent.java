@@ -6,28 +6,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 
-import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.StatusCodes;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
+import org.aksw.dcat_suite.enrich.GtfsUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.system.Txn;
-import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.RDF;
+import org.onebusaway.gtfs.services.GtfsDao;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 
@@ -121,6 +122,16 @@ public class BrowseRepoComponent
 
         boolean isGtfs = InvokeUtils.tryCall(() -> DetectorGtfs.isGtfs(absPath)).orElse(false);
         if (isGtfs) {
+        	
+        	try {
+				GtfsDao dao = GtfsUtils.load(absPath);
+				Node geom = GtfsUtils.collectGtfsPoints(dao);
+				System.out.println("GOT GEOMETRY: " + geom);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+        	
+        	
             contextMenu.addItem("Import GTFS...", ev -> {
                 importGtfsDialog.open();
             });
@@ -176,7 +187,8 @@ public class BrowseRepoComponent
 //        				.addNewDistribution(distIri)
 //        				.setDownloadUrl(relPath.toString());
         		});
-        		
+        		dlg.close();
+        		Notification.show("Resource created.");
         	});
         	dlg.add(okBtn);
         	

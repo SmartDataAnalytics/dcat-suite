@@ -27,6 +27,8 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 public class HierarchicalDataProviderFromCompositeId
 	extends AbstractBackEndHierarchicalDataProvider<Path<Node>, UnaryXExpr>
 {
+	private static final long serialVersionUID = 1L;
+	
 	protected Dataset dataset;
 	protected Path<Node> basePath;
 
@@ -38,10 +40,18 @@ public class HierarchicalDataProviderFromCompositeId
 	}
 
 	public HierarchicalDataProviderFromCompositeId(Dataset dataset, Path<Node> basePath) {
+		this(dataset, PathOpsNode.newAbsolutePath(), true);
+	}
+
+	public HierarchicalDataProviderFromCompositeId(Dataset dataset, boolean includeBasePath) {
+		this(dataset, PathOpsNode.newAbsolutePath(), includeBasePath);
+	}
+
+	public HierarchicalDataProviderFromCompositeId(Dataset dataset, Path<Node> basePath, boolean includeBasePath) {
 		super();
 		this.dataset = dataset;
 		this.basePath = basePath;
-		this.includeBasePath = true;
+		this.includeBasePath = includeBasePath;
 	}
 
 	@Override

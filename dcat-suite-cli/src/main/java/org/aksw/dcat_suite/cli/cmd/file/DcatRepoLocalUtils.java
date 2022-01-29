@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.util.entity.EntityInfo;
+import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -238,32 +239,6 @@ public class DcatRepoLocalUtils {
 //            StreamRDFOps.sendGraphToStream(repoConf.getModel().getGraph(), sink);
 //            sink.finish();
         }
-    }
-
-
-    /**
-     * Removes all encoding parts from the filename; optionally also removes the content type part.
-     *
-     * Given a file name and its detected encodings and content type,
-     * assume that the base name can be obtained by removing that many trailing file extensions.
-     *
-     * For example, if for the file foo.bar.tar.gz the content type tar and encoding gz were
-     * recognized then 2 trailing parts will be removed and the base name becomes foo.bar.
-     *
-     * At present the removal does not check whether the trailing parts actually correspond
-     * to the detected encodings / content type - so if foo.bar.x.y is also probed to a gzipped tar
-     * then the base name is also foo.bar.
-     *
-     * @param fileName
-     * @param entityInfo
-     * @return
-     */
-    public static String deriveBaseName(String fileName, EntityInfo entityInfo, boolean removeContentType) {
-        int numExpectedExtensions = entityInfo.getContentEncodings().size() + (removeContentType ? 1 : 0);
-        List<String> parts = Arrays.asList(fileName.split("\\."));
-        int baseNameParts = Math.max(parts.size() - numExpectedExtensions, 1);
-        String result = parts.subList(0, baseNameParts).stream().collect(Collectors.joining("."));
-        return result;
     }
 
     public static Function<OutputStream, OutputStream> createOutputStreamEncoder(List<String> encoderNames) {

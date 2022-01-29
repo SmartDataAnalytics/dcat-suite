@@ -29,7 +29,7 @@ public class GTFSStop {
 	
 	public Model createModel (String prefix, Collection<Stop> stops) throws UnsupportedEncodingException {
 		for (Stop stopInfo : stops) {
-			String stopUri = GTFSUtils.createBaseUri(prefix,"stop",stopInfo.getName()); 
+			String stopUri = GtfsUtils.createBaseUri(prefix,"stop",stopInfo.getName()); 
 		
 			Resource stop = stopModel.createResource(stopUri);
 			datasetResource.addProperty(gtfsStop, stop);

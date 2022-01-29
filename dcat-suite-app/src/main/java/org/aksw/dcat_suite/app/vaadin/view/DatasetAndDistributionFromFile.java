@@ -5,7 +5,11 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 
+import org.aksw.commons.util.string.FileName;
+import org.aksw.commons.util.string.FileNameImpl;
+import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocalUtils;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
@@ -69,23 +73,31 @@ public class DatasetAndDistributionFromFile
 		return distributionId.getValue();
 	}
 
-	
-	
+		
 	public void setPath(Path path) {
 		this.path = path;
 		
 				
         RdfEntityInfo entityInfo = DcatRepoLocalUtils.probeFile(Path.of(""), path);
+                
+        // Derive the base name; remove encoding extensions but keep content type file extension
+        FileName fileName = FileNameUtils.deriveFileName(path.getFileName().toString(), entityInfo);
 
-        // Derive the base name; remove file extensions
-        String baseName = DcatRepoLocalUtils.deriveBaseName(path.getFileName().toString(), entityInfo, true);
-
-        String distributionType = ContentTypeUtils.toFileExtension(entityInfo);
-        // Cut off a preceding dot
-        if (distributionType.startsWith(".")) {
-            distributionType = distributionType.substring(1);
+        // Try to create canonical file extensions
+        try {
+        	// If the content type was not detected then try to cut off a file extension from the base name
+        	String ct = entityInfo.getContentType();
+        	if (ct != null) {
+	        	String canonicalContentPart = ContentTypeUtils.toFileExtension(ct, false);
+	        	fileName = FileNameImpl.create(fileName.getBaseName(), canonicalContentPart, fileName.getEncodingParts());
+        	}
+        } catch (Exception e) {
+        	// Keep the non-canonical content part
         }
-
+ 
+        List<String> canonicalEncodingParts = ContentTypeUtils.toFileExtensionParts(entityInfo.getContentEncodings());
+        fileName = FileNameImpl.create(fileName.getBaseName(), fileName.getContentPart(), canonicalEncodingParts);
+ 
         String dateStr = "";
         try {
         	FileTime time = Files.getLastModifiedTime(path);
@@ -95,7 +107,9 @@ public class DatasetAndDistributionFromFile
         	throw new RuntimeException(e);
         }
         
-        datasetId.setValue(baseName);
+        String distributionType = fileName.getExtension(false);
+        
+        datasetId.setValue(fileName.getBaseName());
         distributionId.setValue(distributionType);
     	version.setValue(dateStr);
 	}
