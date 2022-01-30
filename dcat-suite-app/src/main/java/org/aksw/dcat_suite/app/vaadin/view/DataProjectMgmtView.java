@@ -58,14 +58,15 @@ import com.vaadin.addon.leaflet4vaadin.layer.groups.LayerGroup;
 import com.vaadin.addon.leaflet4vaadin.layer.map.options.DefaultMapOptions;
 import com.vaadin.addon.leaflet4vaadin.layer.map.options.MapOptions;
 import com.vaadin.addon.leaflet4vaadin.types.LatLng;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -146,7 +147,10 @@ public class DataProjectMgmtView
 	protected QACProvider gtfsValidator;
 
 	protected LeafletMap leafletMap;
-
+	
+	/** Vector layer */
+	protected LayerGroup group;
+	
     public DataProjectMgmtView(
             @Autowired GroupMgrFactory dcatRepoMgr,
             @Autowired QACProvider gtfsValidator
@@ -232,19 +236,18 @@ public class DataProjectMgmtView
         
         add(headingLayout);
         
-        MapOptions options = new DefaultMapOptions();
-        options.setCenter(new LatLng(47.070121823, 19.204101562500004));
-        options.setZoom(7);
-        leafletMap = new LeafletMap(options);
-        leafletMap.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-        leafletMap.setWidth(128, Unit.PIXELS);
-        leafletMap.setHeight(128, Unit.PIXELS);
-        LayerGroup group = new FeatureGroup();
-        group.addTo(leafletMap);
-
-        add(new H3("Map should be here"));
-        add(leafletMap);
-        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
+//        MapOptions options = new DefaultMapOptions();
+//        options.setCenter(new LatLng(47.070121823, 19.204101562500004));
+//        options.setZoom(7);
+//        leafletMap = new LeafletMap(options);
+//        leafletMap.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+//        leafletMap.setWidth(128, Unit.PIXELS);
+//        leafletMap.setHeight(128, Unit.PIXELS);
+//        group = new FeatureGroup();
+//        group.addTo(leafletMap);
+//
+//        add(leafletMap);
+//        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
         
         
         
@@ -344,6 +347,99 @@ public class DataProjectMgmtView
         });
 
         
+		MapOptions mapOptions = new DefaultMapOptions();
+        mapOptions.setCenter(new LatLng(47.070121823, 19.204101562500004));
+        mapOptions.setZoom(7);
+        mapOptions.setPreferCanvas(true);
+
+        
+        Button x = new Button("Dialog");
+        x.addClickListener(ev -> {
+        	Dialog dlg = new Dialog();
+        	
+	        LeafletMap map = new LeafletMap(mapOptions);
+	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+//	        map.setWidth(512, Unit.PIXELS);
+//	        map.setHeight(512, Unit.PIXELS);
+
+	           dlg.setResizable(true);
+	            dlg.setDraggable(true);
+	            dlg.setWidth("600px");
+	            dlg.setHeight("400px");
+	            dlg.addResizeListener((dialogResizeEvent)-> {
+	               leafletMap.invalidateSize();
+	            });
+	        dlg.add(map);
+        	dlg.open();
+        });
+        add(x);
+        
+        
+        if (false) {
+        Grid<String> testGrid = new Grid<>();
+        
+        testGrid.addComponentColumn(str -> {
+        	Div r = new Div();
+        	r.add(str);
+	        
+//	        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
+	        LeafletMap map = new LeafletMap(mapOptions);
+	        r.setWidth(512, Unit.PIXELS);
+	        r.setHeight(512, Unit.PIXELS);
+
+//	        Button btn = new Button("test");
+	        UI.getCurrent().access(() -> {
+		         map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+			        FeatureGroup group = new FeatureGroup();
+			        group.addTo(map);
+			        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
+	        });
+	        
+	        
+	
+	        add(map);
+
+//	        btn.addClickListener(ev -> {
+//	        });
+//	        r.add(btn);
+
+
+
+
+	        r.add(map);
+	        
+//		        FeatureGroup group = new FeatureGroup();
+	        // group.addTo(map);
+        	// r.add(map);
+	        return r;
+        });
+        testGrid.setItems("a", "b", "c");
+        
+        add(testGrid);
+
+
+        {
+	        LeafletMap map = new LeafletMap(mapOptions);
+	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+	        map.setWidth(512, Unit.PIXELS);
+	        map.setHeight(512, Unit.PIXELS);
+	        add(map);
+        }
+        {
+	        LeafletMap map = new LeafletMap(mapOptions);
+	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+	        map.setWidth(512, Unit.PIXELS);
+	        map.setHeight(512, Unit.PIXELS);
+	        add(map);
+        }
+        {
+	        LeafletMap map = new LeafletMap(mapOptions);
+	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+	        map.setWidth(512, Unit.PIXELS);
+	        map.setHeight(512, Unit.PIXELS);
+	        add(map);
+        }
+        }
     }
   
     

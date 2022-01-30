@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Arrays;
 
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat_suite.app.QACProvider;
@@ -14,9 +15,12 @@ import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.dcat_suite.enrich.GtfsUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.util.expr.FunctionUtils;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
+import org.aksw.vaadin.jena.geo.VaadinGeoUtils;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.jena.geosparql.geof.nontopological.filter_functions.ConvexHullFF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
@@ -25,11 +29,19 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.system.Txn;
 import org.onebusaway.gtfs.services.GtfsDao;
 
+import com.vaadin.addon.leaflet4vaadin.LeafletMap;
+import com.vaadin.addon.leaflet4vaadin.layer.groups.FeatureGroup;
+import com.vaadin.addon.leaflet4vaadin.layer.map.options.DefaultMapOptions;
+import com.vaadin.addon.leaflet4vaadin.layer.map.options.MapOptions;
+import com.vaadin.addon.leaflet4vaadin.types.LatLng;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 
 
 public class BrowseRepoComponent
@@ -44,6 +56,50 @@ public class BrowseRepoComponent
 		super(dcatRepo.getBasePath());
 		this.dcatRepo = dcatRepo;
 		this.gtfsValidator = gtfsValidator;
+				
+		this.fileGrid.setItemDetailsRenderer(
+			new ComponentRenderer<>(tipPath -> {
+
+		        Path absPath = path.resolve(tipPath);
+				
+
+				VerticalLayout r = new VerticalLayout();
+				r.setSizeFull();
+
+		        boolean isGtfs = InvokeUtils.tryCall(() -> DetectorGtfs.isGtfs(absPath)).orElse(false);
+		        Node node = !isGtfs ? null : InvokeUtils.tryCall(() -> {
+					GtfsDao dao = GtfsUtils.load(absPath);
+					Node geom = GtfsUtils.collectGtfsPoints(dao);
+					geom = FunctionUtils.invokeWithNodes(new ConvexHullFF(), geom);
+					return geom;
+		        }).orElse(null);
+
+		        System.out.println("GOT geom: " + node);
+		        
+				if (node != null) {
+					MapOptions mapOptions = new DefaultMapOptions();
+			        mapOptions.setCenter(new LatLng(47.070121823, 19.204101562500004));
+			        mapOptions.setZoom(7);
+			        LeafletMap map = new LeafletMap(mapOptions);
+			        map.setWidth(256, Unit.PIXELS);
+			        map.setHeight(256, Unit.PIXELS);
+					
+			        r.add(map);
+					// UI quirk needed for map widget to function
+					UI.getCurrent().access(() -> {
+				        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");				        
+				        FeatureGroup group = new FeatureGroup();
+				        group.addTo(map);	        
+				        VaadinGeoUtils.toGeoJson(node).addTo(group);
+				        map.fitBounds(VaadinGeoUtils.evelope(Arrays.asList(node)));
+
+				        
+					});
+		        }
+		        
+		        return r;
+			})
+		);
 	}
 
 	public void validateGtfs(QACProvider validationProvider, Path basePath, Path relInPath, Path relOutPath)

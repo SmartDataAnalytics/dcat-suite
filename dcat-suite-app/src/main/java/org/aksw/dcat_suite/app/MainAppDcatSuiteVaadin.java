@@ -1,5 +1,6 @@
 package org.aksw.dcat_suite.app;
 
+import org.apache.jena.geosparql.configuration.GeoSPARQLConfig;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.QueryExecution;
@@ -23,6 +24,8 @@ public class MainAppDcatSuiteVaadin extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
 
+    	// GeoSPARQLConfig.setupNoIndex();
+    	
 //    	Path p = Path.of("/tmp/test.txt");
 //    	PathMatcher pm = p.getFileSystem().getPathMatcher("glob:/tmp/test.txt");
 //    	System.out.println(pm.matches(p));
