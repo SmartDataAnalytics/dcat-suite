@@ -11,12 +11,11 @@ import org.aksw.jena_sparql_api.sparql.ext.geosparql.GeometryWrapper2;
 import org.aksw.jena_sparql_api.sparql.ext.geosparql.JenaExtensionsGeoSparqlX;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.apache.jena.geosparql.implementation.GeometryWrapper;
-import org.apache.jena.geosparql.spatial.ConvertLatLon;
+import org.apache.jena.geosparql.implementation.vocabulary.SRS_URI;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.NodeValue;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.onebusaway.gtfs.impl.GtfsDaoImpl;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsDao;
@@ -60,9 +59,7 @@ public abstract class GtfsUtils {
 				gtfsDao.getAllStops().stream()
 				.map(stop -> BindingFactory.binding(
 						Vars.x,
-						ConvertLatLon.toNode(
-							NodeFactoryExtra.doubleToNode(stop.getLat()),
-							NodeFactoryExtra.doubleToNode(stop.getLon()))))
+						GeometryWrapper.fromPoint(stop.getLon(), stop.getLat(), SRS_URI.WGS84_CRS).asNode()))
 			)
 			.map(NodeValue::asNode)
 			.orElse(null);

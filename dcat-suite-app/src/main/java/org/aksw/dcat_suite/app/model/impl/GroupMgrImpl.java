@@ -24,6 +24,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +71,9 @@ public class GroupMgrImpl
 
             Files.createDirectories(path);
             DcatRepoLocalUtils.init(path);
+            
+            // FIXME Is there a Git/nio version? .toFile() will break for virtual file systems...
+            Git.init().setDirectory(path.toFile()).call();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +83,7 @@ public class GroupMgrImpl
     public DcatRepoLocal get() {
         return DcatRepoLocalUtils.getLocalRepo(getBasePath());
     }
-
+    
     @Override
     public void delete() {
         throw new UnsupportedOperationException("net yet implemeted");

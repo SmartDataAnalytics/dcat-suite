@@ -20,6 +20,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.system.Txn;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.eclipse.jgit.lib.Repository;
 
 public class DcatRepoLocalImpl
     implements DcatRepoLocal
@@ -29,13 +30,18 @@ public class DcatRepoLocalImpl
 
     protected RdfDataSourceFromDataset dataSource;
 
+    // Maybe gitRepository should go to a separate class
+    protected Repository gitRepository;
+    
     public static final String NS = "http://dcat.aksw.org/ontology/";
     public static final Resource RepoConfig = ResourceFactory.createResource(NS + "RepoConfig");
 
-    public DcatRepoLocalImpl(Path confFile, Path repoRoot, RdfDataSource dataSource) throws IOException {
+    public DcatRepoLocalImpl(Path confFile, Path repoRoot, RdfDataSource dataSource, Repository gitRepository) throws IOException {
         super();
         this.configFile = confFile;
         this.repoRootFolder = repoRoot;
+        
+        this.gitRepository = gitRepository;
         // this.dataSource = dataSource;
 
         Model confModel = RDFDataMgr.loadModel(confFile.toString());
@@ -51,6 +57,10 @@ public class DcatRepoLocalImpl
                 .setStoreDefinition(storeDef).connectAsDataset(), true);
     }
 
+    @Override
+    public Repository getGitRepository() {
+    	return gitRepository;
+    }
 
     @Override
     public Path getBasePath() {

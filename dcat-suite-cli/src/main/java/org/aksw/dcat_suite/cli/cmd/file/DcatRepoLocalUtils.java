@@ -15,8 +15,6 @@ import java.util.stream.Collectors;
 
 import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.io.util.FileUtils;
-import org.aksw.commons.util.entity.EntityInfo;
-import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -45,6 +43,8 @@ import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -185,8 +185,22 @@ public class DcatRepoLocalUtils {
 
         DcatRepoLocal result;
 
+
+        logger.debug("Checking for git repository");
+        FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
+        repositoryBuilder.setMustExist(true);
+        // TODO Make the ".git" configurable
+        repositoryBuilder.setGitDir(repoRootFolder.resolve(".git").toFile());
+        Repository repository = null;
+		try {
+			repository = repositoryBuilder.build();
+		} catch (IOException e1) {
+			logger.info("No git repository found - git functionality not available");
+		}
+		
+
         try {
-            result = new DcatRepoLocalImpl(configFile, repoRootFolder, null);
+            result = new DcatRepoLocalImpl(configFile, repoRootFolder, null, repository);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

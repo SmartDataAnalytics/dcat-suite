@@ -60,7 +60,7 @@ public class MainTestGit {
 
         ServletHolder holder = new ServletHolder(gs);
 
-        handler.addServletWithMapping(holder, "/*");
+        handler.addServletWithMapping(holder, "/git/*");
 
         server.start();
         return server;
