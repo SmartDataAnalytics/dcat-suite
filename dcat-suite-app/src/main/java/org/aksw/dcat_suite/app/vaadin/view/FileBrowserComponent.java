@@ -1,9 +1,14 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -14,12 +19,19 @@ import java.util.stream.Stream;
 
 import org.aksw.commons.collection.observable.ObservableValue;
 import org.aksw.commons.collection.observable.ObservableValueImpl;
+import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
+import org.aksw.jena_sparql_api.conjure.job.api.Job;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.aksw.jenax.model.prov.QualifiedDerivation;
+import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import com.github.jsonldjava.shaded.com.google.common.io.MoreFiles;
@@ -108,6 +120,42 @@ public class FileBrowserComponent
 //        	});
         	dlg.open();
         });
+
+        
+        // This button does not really belong here;
+        // The FileBrowser should have an extensible getToolBar() method
+        Button generateWorkflowBtn = new Button(VaadinIcon.WRENCH.create());
+        generateWorkflowBtn.addClickListener(ev -> {
+        	List<Path> paths = toAbsPaths(fileGrid.getSelectedItems());
+        	Collection<SparqlStmt> sparqlStmts = NewConjureWorkflowComponent.getSparqlStmts(paths);
+        	
+        	Dialog dlg = new Dialog();
+        	NewConjureWorkflowComponent content = new NewConjureWorkflowComponent();
+        	content.refresh(sparqlStmts);
+        	dlg.add(content);
+
+        	
+        	Button okBtn = new Button("Generate");
+        	okBtn.addClickListener(ev2 -> {        		
+        		
+        		Set<String> optionalArgs = new HashSet<>();
+        		Map<Var, Expr> bindingMap = content.getDefaultBindings();
+        		
+        		Job job = JobUtils.fromSparqlStmts(sparqlStmts, optionalArgs, bindingMap);
+        		
+        		Path outFile = activeAbsPath().resolve(content.getFileName());
+        		try (OutputStream out = Files.newOutputStream(outFile)) {
+        			RDFDataMgr.write(out, job.getModel(), RDFFormat.TURTLE_BLOCKS);
+        		} catch (IOException e) {
+        			throw new RuntimeException(e);
+				}
+        		dlg.close();
+        	});
+        	dlg.add(okBtn);
+        	
+        	dlg.open();
+        });
+
         
         Button moveBtn = new Button(VaadinIcon.FILE_O.create());
         moveBtn.setEnabled(false);
@@ -188,7 +236,7 @@ public class FileBrowserComponent
                 		} catch (Exception e) {
                 			throw new RuntimeException(e);
                 		}
-        			}, "Cancel", null).open();        		
+        			}, "Cancel", null).open();
         	});
         	
         	dlg.add("Select a new current folder");
@@ -201,7 +249,7 @@ public class FileBrowserComponent
         FlexLayout hl = new FlexLayout();
         hl.setFlexWrap(FlexWrap.WRAP);
         hl.setWidthFull();
-        hl.add(changeFolderBtn, showUploadDlgBtn, moveBtn, searchField);
+        hl.add(changeFolderBtn, showUploadDlgBtn, moveBtn, generateWorkflowBtn, searchField);
 
         add(hl, fileGrid);
         
@@ -281,7 +329,33 @@ public class FileBrowserComponent
         });
 
 	}
+	
+	
+	/** Convert the paths of the file grid to abs paths - allows for opening them*/
+	public List<Path> toAbsPaths(Collection<Path> tipPaths) {
+		List<Path> result = tipPaths.stream().map(this::tipPathToAbsPath).collect(Collectors.toList());
+		return result;
+	}
 
+	public Path activeAbsPath() {
+		Path activeAbsPath = path.resolve(activePath.getOrDefault(path));
+		return activeAbsPath;
+	}
+
+	/** Return the absolute path for a path in the file grid */
+	public Path tipPathToAbsPath(Path tipPath) {
+		Path absPath = activeAbsPath().resolve(tipPath);
+		return absPath;
+	}
+
+	/** Return the path relative to the repo root for a path in the file grid */
+	public Path tipPathtoRelPath(Path tipPath) {
+		Path absPath = tipPathToAbsPath(tipPath);
+		Path relPath = path.relativize(absPath);
+		return relPath;
+	}
+
+	
 	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
 		return 0;
 	}

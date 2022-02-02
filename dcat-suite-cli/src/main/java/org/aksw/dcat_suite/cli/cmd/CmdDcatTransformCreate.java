@@ -2,32 +2,23 @@ package org.aksw.dcat_suite.cli.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.aksw.dcat.jena.domain.api.MavenEntity;
-import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
-import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
-import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
+import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import org.aksw.jena_sparql_api.conjure.fluent.JobUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.Job;
-import org.aksw.jena_sparql_api.conjure.job.api.JobParam;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
-import org.aksw.jenax.arq.util.node.NodeEnvsubst;
-import org.aksw.jenax.arq.util.node.NodeTransformCollectNodes;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.jenax.stmt.core.SparqlStmtParserImpl;
-import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.apache.jena.query.Syntax;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
@@ -88,7 +79,7 @@ public class CmdDcatTransformCreate
 
         CmdDcatTransformCreate cmTransformCreate = this;
 
-        PrefixMapping prefixMapping = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
+        PrefixMapping prefixMapping = DefaultPrefixes.get(); // RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
         SparqlScriptProcessor scriptProcessor = new SparqlScriptProcessor(
                 prologue -> SparqlStmtParserImpl.create(Syntax.syntaxARQ, prologue, false),
                 prefixMapping);
@@ -124,7 +115,7 @@ public class CmdDcatTransformCreate
             varToExpr.put(arg1.asVar(), e.getArg2());
         }
 
-        Job job = fromSparqlStmts(sparqlStmts, optionalArgSet, varToExpr);
+        Job job = JobUtils.fromSparqlStmts(sparqlStmts, optionalArgSet, varToExpr);
 
 
         job.setJobName(jobName);
@@ -143,89 +134,20 @@ public class CmdDcatTransformCreate
         return 0;
     }
 
+    
+    public static Map<Var, Expr> parseStringMap(Map<String, String> map) {
+        Map<Var, Expr> result = new HashMap<>();
+        for (Entry<String, String> e : map.entrySet()) {
+        	Var v = Var.alloc(e.getKey());
+        	Expr expr = ExprUtils.parse(e.getValue());
 
-    public static Set<String> getMentionedEnvVars(Collection<? extends SparqlStmt> sparqlStmts) {
-        NodeTransformCollectNodes collector = new NodeTransformCollectNodes();
-
-        for (SparqlStmt sparqlStmt : sparqlStmts) {
-            SparqlStmtUtils.applyNodeTransform(sparqlStmt, collector);
+        	result.put(v, expr);
         }
-
-        // Get all environment references
-        // TODO Make this a util function
-        Set<String> usedEnvVarNames = collector.getNodes().stream()
-            .map(NodeEnvsubst::getEnvKey)
-            .filter(Objects::nonNull)
-            .map(Entry::getKey)
-            .distinct()
-            .collect(Collectors.toSet());
-
-        return usedEnvVarNames;
-    }
-
-    public static Job fromSparqlStmts(
-            List<SparqlStmt> stmts,
-            Set<String> optionalArgs,
-            Map<Var, Expr> varToExpr
-        ) {
-
-
-        Set<String> mentionedEnvVars = getMentionedEnvVars(stmts);
-
-// TODO Add API for Query objects to fluent
-//		List<SparqlStmt> stmts = Streams.stream(SparqlStmtUtils.processFile(DefaultPrefixes.prefixes, path))
-//				.collect(Collectors.toList());
-
-        List<String> stmtStrs = stmts.stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
-
-//
-//		List<String> queries = RDFDataMgrEx.loadQueries(path, DefaultPrefixes.prefixes).stream()
-//				.map(Object::toString)
-//				.collect(Collectors.toList());
-        ConjureBuilder cj = new ConjureBuilderImpl();
-
-        String opVarName = "ARG";
-//        Op op = cj.fromVar(opVarName).stmts(stmtStrs).getOp();
-        Op op = cj.fromVar(opVarName).construct(stmtStrs).getOp();
-
-//		Set<String> vars = OpUtils.mentionedVarNames(op);
-//		for(SparqlStmt stmt : stmts) {
-//			System.out.println("Env vars: " + SparqlStmtUtils.mentionedEnvVars(stmt));
-//		}
-
-        Map<String, Boolean> combinedMap = stmts.stream()
-            .map(SparqlStmtUtils::mentionedEnvVars)
-            .map(Map::entrySet)
-            .flatMap(Collection::stream)
-            .distinct()
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-        Set<String> envVars = combinedMap.keySet();
-//		System.out.println("All env vars: " + combinedMap);
-
-
-//		System.out.println("MentionedVars: " + vars);
-
-        Job result = Job.create(cj.getContext().getModel())
-                .setOp(op)
-                // .setDeclaredVars(envVars)
-                .setOpVars(Collections.singleton(opVarName));
-
-        for (String varName : mentionedEnvVars) {
-            JobParam param = result.addNewParam();
-            param.setParamName(varName);
-
-            Var v = Var.alloc(varName);
-            Expr expr = varToExpr.get(v);
-            param.setDefaultValueExpr(expr);
-        }
-        // result.setDeclaredVars(mentionedEnvVars);
-
-
         return result;
     }
+    
+
+
 
 }
 

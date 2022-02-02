@@ -35,8 +35,9 @@ import org.aksw.jenax.path.core.PathOpsNode;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
-import org.aksw.vaadin.jena.geo.VaadinGeoUtils;
-import org.apache.jena.geosparql.spatial.ConvertLatLon;
+import org.aksw.vaadin.jena.geo.GeoJsonJenaUtils;
+import org.apache.jena.geosparql.implementation.GeometryWrapper;
+import org.apache.jena.geosparql.implementation.vocabulary.SRS_URI;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -50,6 +51,8 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.claspina.confirmdialog.ConfirmDialog;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.addon.leaflet4vaadin.LeafletMap;
@@ -61,7 +64,6 @@ import com.vaadin.addon.leaflet4vaadin.types.LatLng;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -71,6 +73,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -236,6 +239,25 @@ public class DataProjectMgmtView
         
         add(headingLayout);
         
+        Button gitPushBtn = new Button("Git Sync");
+        add(gitPushBtn);
+        
+        gitPushBtn.addClickListener(ev -> {
+        	Repository gitRepo = groupMgr.get().getGitRepository();
+        	try (Git git = new Git(gitRepo)) {
+	        	try {
+	        		//git.pull().call();
+		        	git.add().setUpdate(true).addFilepattern(".").call();
+		        	git.add().addFilepattern(".").call();
+		        	git.commit().setMessage("Updated").call();
+		        	Notification.show("Sync sucessful");
+	        	} catch (Exception e) {
+	            	Notification.show("Sync failed");
+	        		throw new RuntimeException(e);
+	        	}
+        	}
+        });
+        
 //        MapOptions options = new DefaultMapOptions();
 //        options.setCenter(new LatLng(47.070121823, 19.204101562500004));
 //        options.setZoom(7);
@@ -353,26 +375,26 @@ public class DataProjectMgmtView
         mapOptions.setPreferCanvas(true);
 
         
-        Button x = new Button("Dialog");
-        x.addClickListener(ev -> {
-        	Dialog dlg = new Dialog();
-        	
-	        LeafletMap map = new LeafletMap(mapOptions);
-	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-//	        map.setWidth(512, Unit.PIXELS);
-//	        map.setHeight(512, Unit.PIXELS);
-
-	           dlg.setResizable(true);
-	            dlg.setDraggable(true);
-	            dlg.setWidth("600px");
-	            dlg.setHeight("400px");
-	            dlg.addResizeListener((dialogResizeEvent)-> {
-	               leafletMap.invalidateSize();
-	            });
-	        dlg.add(map);
-        	dlg.open();
-        });
-        add(x);
+//        Button x = new Button("Dialog");
+//        x.addClickListener(ev -> {
+//        	Dialog dlg = new Dialog();
+//        	
+//	        LeafletMap map = new LeafletMap(mapOptions);
+//	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+////	        map.setWidth(512, Unit.PIXELS);
+////	        map.setHeight(512, Unit.PIXELS);
+//
+//	           dlg.setResizable(true);
+//	            dlg.setDraggable(true);
+//	            dlg.setWidth("600px");
+//	            dlg.setHeight("400px");
+//	            dlg.addResizeListener((dialogResizeEvent)-> {
+//	               leafletMap.invalidateSize();
+//	            });
+//	        dlg.add(map);
+//        	dlg.open();
+//        });
+//        add(x);
         
         
         if (false) {
@@ -392,7 +414,7 @@ public class DataProjectMgmtView
 		         map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
 			        FeatureGroup group = new FeatureGroup();
 			        group.addTo(map);
-			        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
+			        GeoJsonJenaUtils.toWgs84GeoJson(GeometryWrapper.fromPoint(0, 0, SRS_URI.DEFAULT_WKT_CRS84)).addTo(group);
 	        });
 	        
 	        

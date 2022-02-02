@@ -1,11 +1,28 @@
 package org.aksw.dcat_suite.app.vaadin.view;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.aksw.commons.io.util.FileUtils;
+import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefSparqlEndpoint;
+import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
+import org.aksw.jena_sparql_api.conjure.dataset.engine.ExecutionUtils;
+import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
+import org.aksw.jena_sparql_api.conjure.fluent.QLib;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -14,6 +31,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.Tabs.Orientation;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.FileData;
 import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
@@ -21,6 +39,8 @@ import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
 public class UploadDialog
 	extends Dialog
 {
+	protected Path fileRepoRootPath;
+	
 	protected Upload upload;
 	
 	protected Tab uploadTab;
@@ -33,6 +53,8 @@ public class UploadDialog
 
 		
 	public UploadDialog(Path fileRepoRootPath) {
+		
+		this.fileRepoRootPath = fileRepoRootPath;
 		
 		HorizontalLayout panel = new HorizontalLayout();
 		
@@ -110,7 +132,52 @@ public class UploadDialog
 		if (tab.equals(uploadTab)) {
 			content.add(upload);
 		} else if (tab.equals(sparqlTab)) {
-			content.add("sparql import");
+			content.add(new H3("sparql import"));
+			
+			FormLayout form = new FormLayout();
+			TextField serviceUrlField = new TextField();			
+			ComboBox<RDFFormat> formatBox = new ComboBox<>();
+			TextField fileNameField = new TextField();
+
+			Button saveBtn = new Button("Save");
+			
+			form.addFormItem(serviceUrlField, "Service URL");
+			form.addFormItem(formatBox, "Format");
+			form.addFormItem(fileNameField, "Filename");
+			content.add(form);
+
+			// RDFWriterRegistry.
+			
+			
+			content.add(saveBtn);
+			
+			saveBtn.addClickListener(ev -> {
+				String serviceUrl = serviceUrlField.getValue();
+				
+				String fileName = fileNameField.getValue();
+				
+				// FIXME Query jena's registry for RDFFormats
+				// FIXME Support quads
+				// How to support sorted ntriples - is this a post processing step or is it better modeled as some custom mime type?!
+				
+				// RDFConnection.connect(serviceUrl);
+				Model model = ModelFactory.createDefaultModel();
+				Op op = ConjureBuilderImpl.start()
+					.fromDataRef(DataRefSparqlEndpoint.create(model, serviceUrl))
+					.construct(QLib.everything())
+					.getOp();
+				
+				RdfDataPod dataPod = ExecutionUtils.executeJob(op);
+				
+				Model m = dataPod.getModel();
+				try (OutputStream out = Files.newOutputStream(fileRepoRootPath.resolve(fileName))) {
+					RDFDataMgr.write(out, m, RDFFormat.TRIG_BLOCKS);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				
+				// 
+			});
 		}
 	}
 

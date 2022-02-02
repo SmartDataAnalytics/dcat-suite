@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Arrays;
 
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat_suite.app.QACProvider;
@@ -15,13 +14,12 @@ import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.dcat_suite.enrich.GtfsUtils;
 import org.aksw.jena_sparql_api.conjure.job.api.JobInstance;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
-import org.aksw.jenax.arq.util.expr.FunctionUtils;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
-import org.aksw.vaadin.jena.geo.VaadinGeoUtils;
+import org.aksw.vaadin.jena.geo.GeoJsonJenaUtils;
+import org.aksw.vaadin.jena.geo.Leaflet4VaadinJenaUtils;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.jena.geosparql.geof.nontopological.filter_functions.ConvexHullFF;
-import org.apache.jena.graph.Node;
+import org.apache.jena.geosparql.implementation.GeometryWrapper;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
@@ -67,16 +65,16 @@ public class BrowseRepoComponent
 				r.setSizeFull();
 
 		        boolean isGtfs = InvokeUtils.tryCall(() -> DetectorGtfs.isGtfs(absPath)).orElse(false);
-		        Node node = !isGtfs ? null : InvokeUtils.tryCall(() -> {
+		        GeometryWrapper gw = !isGtfs ? null : InvokeUtils.tryCall(() -> {
 					GtfsDao dao = GtfsUtils.load(absPath);
-					Node geom = GtfsUtils.collectGtfsPoints(dao);
-					geom = FunctionUtils.invokeWithNodes(new ConvexHullFF(), geom);
-					return geom;
+					GeometryWrapper tmp = GtfsUtils.collectGtfsPoints(dao);
+					tmp = tmp.convexHull();
+					return tmp;
 		        }).orElse(null);
 
-		        System.out.println("GOT geom: " + node);
+		        System.out.println("GOT geom: " + gw);
 		        
-				if (node != null) {
+				if (gw != null) {
 					MapOptions mapOptions = new DefaultMapOptions();
 			        mapOptions.setCenter(new LatLng(47.070121823, 19.204101562500004));
 			        mapOptions.setZoom(7);
@@ -90,10 +88,8 @@ public class BrowseRepoComponent
 				        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");				        
 				        FeatureGroup group = new FeatureGroup();
 				        group.addTo(map);	        
-				        VaadinGeoUtils.toGeoJson(node).addTo(group);
-				        map.fitBounds(VaadinGeoUtils.evelope(Arrays.asList(node)));
-
-				        
+				        GeoJsonJenaUtils.toWgs84GeoJson(gw).addTo(group);
+				        map.fitBounds(Leaflet4VaadinJenaUtils.getWgs84Envelope(gw));
 					});
 		        }
 		        
@@ -179,13 +175,13 @@ public class BrowseRepoComponent
         boolean isGtfs = InvokeUtils.tryCall(() -> DetectorGtfs.isGtfs(absPath)).orElse(false);
         if (isGtfs) {
         	
-        	try {
-				GtfsDao dao = GtfsUtils.load(absPath);
-				Node geom = GtfsUtils.collectGtfsPoints(dao);
-				System.out.println("GOT GEOMETRY: " + geom);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+//        	try {
+//				GtfsDao dao = GtfsUtils.load(absPath);
+//				Node geom = GtfsUtils.collectGtfsPoints(dao);
+//				System.out.println("GOT GEOMETRY: " + geom);
+//			} catch (IOException e) {
+//				throw new RuntimeException(e);
+//			}
         	
         	
             contextMenu.addItem("Import GTFS...", ev -> {

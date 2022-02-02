@@ -2,10 +2,11 @@ package org.aksw.dcat_suite.app;
 
 import java.nio.file.Path;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import org.cryptomator.frontend.webdav.servlet.PublicFixedPathNioWebDavServlet;
+import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
+import org.cryptomator.webdav.core.servlet.AbstractNioWebDavServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 // Note that the url path is by default appended - example:
 // without further config http://localhost/webdav/test.txt maps to /tmp/webdav/test.txt
@@ -14,15 +15,28 @@ import org.cryptomator.frontend.webdav.servlet.PublicFixedPathNioWebDavServlet;
 //		  @WebInitParam(name = "productionMode", value = "false")
 })
 public class MyWebDavServlet
-	extends PublicFixedPathNioWebDavServlet
+	extends AbstractNioWebDavServlet
 {
-	public MyWebDavServlet() {
-		super(Path.of("/tmp"));
-	}
+	@Autowired
+	protected GroupMgrFactory gmf;
+
+//	@Autowired
+//	protected HttpServletRequest req;
 	
 	@Override
-	public void init() throws ServletException {
-		System.out.println("Init of webdav servlet called");
-		super.init();
+	protected Path resolveUrl(String relativeUrl) throws IllegalArgumentException {
+		// Remove the servlet path
+		String actualPath = relativeUrl.substring("webdav/".length());
+
+		String[] groupAndPath = actualPath.split("/", 2);
+		String groupId = groupAndPath[0];
+		String pathStr = groupAndPath.length > 1 ? groupAndPath[1] : "";
+
+		System.out.println("Webdav paths: " + relativeUrl + " - " + groupId + " - " + pathStr);
+
+		
+		Path result = gmf.create(groupId).getBasePath().resolve(pathStr);
+		return result;
 	}
+
 }

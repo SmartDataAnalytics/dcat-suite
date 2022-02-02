@@ -7,15 +7,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import org.aksw.jena_sparql_api.sparql.ext.geosparql.AggregatorsJena;
-import org.aksw.jena_sparql_api.sparql.ext.geosparql.GeometryWrapper2;
-import org.aksw.jena_sparql_api.sparql.ext.geosparql.JenaExtensionsGeoSparqlX;
+import org.aksw.jena_sparql_api.sparql.ext.geosparql.GeometryWrapperUtils;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.apache.jena.geosparql.implementation.GeometryWrapper;
 import org.apache.jena.geosparql.implementation.vocabulary.SRS_URI;
-import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.expr.NodeValue;
 import org.onebusaway.gtfs.impl.GtfsDaoImpl;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsDao;
@@ -39,12 +36,11 @@ public abstract class GtfsUtils {
 	}
 	
 	/**
-	 * Requires {@link JenaExtensionsGeoSparqlX} to be registered to jena.
-	 * Returns a jena node because its easy to work with in the rdf context.
-	 * Use the extract methods of {@link GeometryWrapper} or {@link GeometryWrapper2} in order
+	 * Returns a GeometryWrapper because its easy to go 'up' to the RDF level and 'down' to the JTS level.
+	 * Use the extract methods of {@link GeometryWrapper} or {@link GeometryWrapperUtils} in order
 	 * to obtain the plain jts geometry
 	 */
-	public static Node collectGtfsPoints(GtfsDao gtfsDao) {
+	public static GeometryWrapper collectGtfsPoints(GtfsDao gtfsDao) {
 //		GeoSPARQLConfig.setupNoIndex();
 //
 //		FlowableTransformer<Binding, Binding> mapper = QueryFlowOps.createMapperBindings(QueryFactory.create(
@@ -54,16 +50,20 @@ public abstract class GtfsUtils {
 //				  "SELECT (geof:collect(?point) AS ?a) {\n",
 //				  "  BIND(spatialF:convertLatLon(?y, ?x) AS ?point)\n",
 //				  "}")));
-		Node result = 
+		GeometryWrapper result = 
 			AggregatorsJena.aggGeometryCollection(new ExprVar(Vars.x), false).accumulateAll(
 				gtfsDao.getAllStops().stream()
 				.map(stop -> BindingFactory.binding(
 						Vars.x,
-						GeometryWrapper.fromPoint(stop.getLon(), stop.getLat(), SRS_URI.WGS84_CRS).asNode()))
+						// ConvertLatLon.toLiteral(stop.getLat(), stop.getLon()).asNode()
+						// Note: ConvertLatLon is GeometryWrapper.fromPoint + validation; we skip validation
+						GeometryWrapper.fromPoint(stop.getLat(), stop.getLon(), SRS_URI.WGS84_CRS).asNode()
+						))
 			)
-			.map(NodeValue::asNode)
+			.map(GeometryWrapper::extract)
 			.orElse(null);
-				
+		
+		
 		return result;
 	}
 	

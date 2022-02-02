@@ -44,6 +44,7 @@ import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -193,7 +194,7 @@ public class DcatRepoLocalUtils {
         repositoryBuilder.setGitDir(repoRootFolder.resolve(".git").toFile());
         Repository repository = null;
 		try {
-			repository = repositoryBuilder.build();
+			repository = repositoryBuilder.build();			
 		} catch (IOException e1) {
 			logger.info("No git repository found - git functionality not available");
 		}

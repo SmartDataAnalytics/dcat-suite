@@ -15,6 +15,7 @@ import org.aksw.jena_sparql_api.concepts.Concept;
 import org.aksw.jena_sparql_api.rdf.collections.ListFromRDFList;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
+import org.aksw.jenax.arq.util.node.NodeUtils;
 import org.aksw.jenax.arq.util.syntax.ElementUtils;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.jenax.sparql.query.rx.SparqlRx;
@@ -92,6 +93,18 @@ public class GraphEntityUtils {
 		} catch (Exception e) {
 			throw new RuntimeException("Lookup failed because entity was not unqiue - key: " + nodes, e);
 		}
+	}
+
+	// Many uses cases also require the DatasetOneNg variant which provides getSelfResource()
+//	public static Resource getOrCreateSelfResource(Dataset dataset, List<Node> nodes) {
+//		Resource result = Optional.of(getOrCreateModel(dataset, nodes)).map(DatasetOneNg::getSelfResource).get();
+//		return result;
+//	}
+
+	public static DatasetOneNg getOrCreateModel(Dataset dataset, String ... strings) {
+		List<Node> nodes = NodeUtils.createLiteralNodes(Arrays.asList(strings));
+		DatasetOneNg result = getOrCreateModel(dataset, nodes);
+		return result;
 	}
 
 	public static Resource getSelfResource(Dataset dataset, List<Node> nodes) {

@@ -48,6 +48,7 @@ import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromF
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
+import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
 import org.aksw.jenax.model.prov.Plan;
@@ -292,7 +293,7 @@ public class CmdDcatFileTransformApply
                 Function<OutputStream, OutputStream> encoder = DcatRepoLocalUtils.createOutputStreamEncoder(tgtEntityInfo.getContentEncodings());
 
                 try(OutputStream out = encoder.apply(Files.newOutputStream(tgtFile))) {
-                    StreamRDF sink = StreamRDFWriter.getWriterStream(out, rdfFormat);
+                    StreamRDF sink = StreamRDFWriterEx.getWriterStream(out, rdfFormat, null);  // StreamRDFWriter.getWriterStream(out, rdfFormat);
 
                     Model jobInstModel = ModelFactory.createDefaultModel();
 
@@ -335,7 +336,7 @@ public class CmdDcatFileTransformApply
                                 //Set<Var> vars = expr.getVarsMentioned();
 
                                 NodeValue nv = ExprUtils.eval(expr, b);
-                                envMap.put(name, nv.getNode());
+                                envMap.put(name, NodeFactory.createLiteral(nv.getNode().toString(false)));
                             }
                         }
                     }

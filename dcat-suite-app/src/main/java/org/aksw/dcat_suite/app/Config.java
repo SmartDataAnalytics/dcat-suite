@@ -25,7 +25,7 @@ public class Config {
     @Bean
     @FileStore
     public Path localFileStore() {
-        Path tmpDir = Path.of(StandardSystemProperty.JAVA_IO_TMPDIR.value());
+        Path tmpDir = Path.of(StandardSystemProperty.USER_HOME.value() + "/tmp"); //StandardSystemProperty.JAVA_IO_TMPDIR.value());
         Path result = tmpDir.resolve("dman");
 
         try {

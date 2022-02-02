@@ -1,0 +1,19 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+
+CONSTRUCT {
+  GRAPH <env://B> {
+    <env://B> eg:spatialExtent ?finalGeom
+  }
+}
+{
+  # Query for which sequential scanning of input is sufficient
+  # Note: collect skips null
+  { SELECT (COUNT(*) AS ?geomCount) (geof:collect(?o) AS ?geom) {
+    { ?s ?p ?o } UNION { GRAPH ?g { ?s ?p ?o } }
+
+    FILTER(DATATYPE(?o) = geo:wktLiteral)
+  } }
+
+  BIND(IF(?geomCount <= 100, ?geom,  geof:convexHull(?geom)) AS ?finalGeom)
+}
