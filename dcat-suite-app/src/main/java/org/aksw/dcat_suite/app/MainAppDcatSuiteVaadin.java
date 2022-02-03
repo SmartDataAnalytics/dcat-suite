@@ -30,14 +30,14 @@ public class MainAppDcatSuiteVaadin extends SpringBootServletInitializer {
 
     public static void main(String[] args) throws MismatchedDimensionException, FactoryException, TransformException {
 
-    	if (true) {
-	    	String base = "";
-	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("relativeIri"), base));
-//	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("/relativeIri"), base));
-//	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("#relativeIri"), base));
-//	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("urn:absoluteeIri"), base));
-	    	return;
-    	}
+//    	if (true) {
+//	    	String base = "";
+//	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("relativeIri"), base));
+////	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("/relativeIri"), base));
+////	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("#relativeIri"), base));
+////	    	System.out.println(NodeFunctions.iri(NodeValue.makeString("urn:absoluteeIri"), base));
+//	    	return;
+//    	}
     	
 //    	if (true) {
 //    		System.out.println(NodeFactory.createURI("http://bar.baz").toString(false));

@@ -340,7 +340,7 @@ public class DcatCkanDeployUtils {
 
                 Set<URI> webUrls = Sets.difference(resolvedValidUrls, urlsToExistingPaths);
 
-                String downloadFilename;
+                String downloadFilename = null;
                 Optional<Path> pathReference = Optional.empty();
                 Path root = null;
                 if (urlsToExistingPaths.size() > 0) {
@@ -348,21 +348,24 @@ public class DcatCkanDeployUtils {
                     pathReference = DcatCkanDeployUtils.pathsGet(fileUrl);
                     downloadFilename = pathReference.get().getFileName().toString();
                 } else {
-                    // TODO This should go through the conjure resource cache
-                    root = Files.createTempDirectory("http-cache-");
-                    URI webUrl = webUrls.iterator().next();
-                    String webUrlPathStr = webUrl.getPath();
-                    Path tmp =  Paths.get(webUrlPathStr);
-                    downloadFilename = tmp.getFileName().toString();
-
-                    HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
-
-                    BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
-    //                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
-    //                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
-
-                    RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
-                    pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
+                	// Assume web url - try to download locally and upload
+                	if (!webUrls.isEmpty()) {
+	                    // TODO This should go through the conjure resource cache
+	                    root = Files.createTempDirectory("http-cache-");
+	                    URI webUrl = webUrls.iterator().next();
+	                    String webUrlPathStr = webUrl.getPath();
+	                    Path tmp =  Paths.get(webUrlPathStr);
+	                    downloadFilename = tmp.getFileName().toString();
+	
+	                    HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
+	
+	                    BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
+	    //                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
+	    //                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
+	
+	                    RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
+	                    pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
+                	}
                 }
 
                 // TODO This breaks if the downloadURLs are web urls.
