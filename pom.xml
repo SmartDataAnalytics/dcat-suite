@@ -79,7 +79,7 @@
 		<junit.version>4.13</junit.version>
 		<apache-http.version>4.5.10</apache-http.version>
 
-		<spring-boot.version>2.3.3.RELEASE</spring-boot.version>
+		<spring-boot.version>2.5.12</spring-boot.version>
 
 		<!-- Project Settings -->
 		<maven.compiler.release>11</maven.compiler.release>
