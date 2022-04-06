@@ -8,7 +8,7 @@ import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.difs.builder.DifsFactory;
 import org.aksw.difs.system.domain.StoreDefinition;
 import org.aksw.jena_sparql_api.core.utils.UpdateExecutionUtils;
-import org.aksw.jenax.arq.datasource.RdfDataSourceFromDataset;
+import org.aksw.jenax.arq.datasource.RdfDataEngineFromDataset;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.jenax.connection.datasource.RdfDataSource;
 import org.apache.jena.graph.NodeFactory;
@@ -28,11 +28,11 @@ public class DcatRepoLocalImpl
     protected Path configFile;
     protected Path repoRootFolder;
 
-    protected RdfDataSourceFromDataset dataSource;
+    protected RdfDataEngineFromDataset dataSource;
 
     // Maybe gitRepository should go to a separate class
     protected Repository gitRepository;
-    
+
     public static final String NS = "http://dcat.aksw.org/ontology/";
     public static final Resource RepoConfig = ResourceFactory.createResource(NS + "RepoConfig");
 
@@ -40,7 +40,7 @@ public class DcatRepoLocalImpl
         super();
         this.configFile = confFile;
         this.repoRootFolder = repoRoot;
-        
+
         this.gitRepository = gitRepository;
         // this.dataSource = dataSource;
 
@@ -50,16 +50,17 @@ public class DcatRepoLocalImpl
                 .nextOptional().map(r -> r.as(DcatRepoConfig.class)).orElse(null);
 
         StoreDefinition storeDef = conf.getEngineConf().as(StoreDefinition.class)
+                .setSingleFile(true)
                 .setStorePath("dcat.trig");
 
-        this.dataSource = RdfDataSourceFromDataset.create(DifsFactory.newInstance()
+        this.dataSource = RdfDataEngineFromDataset.create(DifsFactory.newInstance()
                 .setRepoRootPath(repoRootFolder)
                 .setStoreDefinition(storeDef).connectAsDataset(), true);
     }
 
     @Override
     public Repository getGitRepository() {
-    	return gitRepository;
+        return gitRepository;
     }
 
     @Override
@@ -69,40 +70,40 @@ public class DcatRepoLocalImpl
 
     @Override
     public void move(Path src, Path tgt) {
-    	Path srcAbs = repoRootFolder.resolve(src);
-    	Path tgtAbs = repoRootFolder.resolve(tgt);
-    	
-    	if (!srcAbs.startsWith(repoRootFolder)) {
-    		throw new RuntimeException(String.format("Source path %s outside of repository %s", srcAbs, repoRootFolder));
-    	}
+        Path srcAbs = repoRootFolder.resolve(src);
+        Path tgtAbs = repoRootFolder.resolve(tgt);
 
-    	if (!tgtAbs.startsWith(repoRootFolder)) {
-    		throw new RuntimeException(String.format("Target path %s outside of repository %s", srcAbs, repoRootFolder));
-    	}
+        if (!srcAbs.startsWith(repoRootFolder)) {
+            throw new RuntimeException(String.format("Source path %s outside of repository %s", srcAbs, repoRootFolder));
+        }
 
-    	Path srcRel = repoRootFolder.relativize(srcAbs);
-    	Path tgtRel = repoRootFolder.relativize(tgtAbs);
-    	
-    	String srcIri = "" + srcRel;
-    	String tgtIri = "" + tgtRel;
-    	
-    	Dataset dataset = getDataset();
-    	Txn.executeWrite(dataset, () -> {
-    		
-    		UpdateRequest ur = UpdateExecutionUtils.createUpdateRequestRename(Vars.g, NodeFactory.createURI(srcIri), NodeFactory.createURI(tgtIri));
-    		org.apache.jena.update.UpdateExecutionFactory.create(ur, dataset).execute();
+        if (!tgtAbs.startsWith(repoRootFolder)) {
+            throw new RuntimeException(String.format("Target path %s outside of repository %s", srcAbs, repoRootFolder));
+        }
 
-    		try {
-    			FileUtils.moveAtomic(src, tgt);
-    		} catch (Exception e) {
-    			throw new RuntimeException(e);
-    		}
-    		
-    		// Note: If the jvm crashes here then the file was already moved but the transaction will be rolled back
-    		// This would result in an inconsistent state
-    	});
+        Path srcRel = repoRootFolder.relativize(srcAbs);
+        Path tgtRel = repoRootFolder.relativize(tgtAbs);
+
+        String srcIri = "" + srcRel;
+        String tgtIri = "" + tgtRel;
+
+        Dataset dataset = getDataset();
+        Txn.executeWrite(dataset, () -> {
+
+            UpdateRequest ur = UpdateExecutionUtils.createUpdateRequestRename(Vars.g, NodeFactory.createURI(srcIri), NodeFactory.createURI(tgtIri));
+            org.apache.jena.update.UpdateExecutionFactory.create(ur, dataset).execute();
+
+            try {
+                FileUtils.moveAtomic(src, tgt);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            // Note: If the jvm crashes here then the file was already moved but the transaction will be rolled back
+            // This would result in an inconsistent state
+        });
     }
-    
+
     void addDataset(String groupId, String version, Path path) {
 
     }

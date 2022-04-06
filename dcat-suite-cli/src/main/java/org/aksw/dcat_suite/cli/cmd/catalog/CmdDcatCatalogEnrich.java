@@ -8,7 +8,7 @@ import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat.repo.api.DatasetResolver;
 import org.aksw.dcat.repo.impl.core.CatalogResolverUtils;
 import org.aksw.jenax.arq.datasource.RdfDataSources;
-import org.aksw.jenax.connection.datasource.RdfDataSource;
+import org.aksw.jenax.connection.dataengine.RdfDataEngine;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.system.Txn;
@@ -56,7 +56,7 @@ public class CmdDcatCatalogEnrich
         // Run the transformation on the provisioned dataset; obtain the target dataset
 
 
-        RdfDataSource catalogDataSource = RdfDataSources.setupRdfDataSource(catalogEngine.getMap());
+        RdfDataEngine catalogDataSource = RdfDataSources.setupRdfDataSource(catalogEngine.getMap());
 
         try (RDFConnection conn = catalogDataSource.getConnection()) {
             CatalogResolver catalog = CatalogResolverUtils.createCatalogResolver(conn, transformationIds);

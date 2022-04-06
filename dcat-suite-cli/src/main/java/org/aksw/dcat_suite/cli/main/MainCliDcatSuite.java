@@ -146,6 +146,9 @@ public class MainCliDcatSuite {
     }
 
     public static void main(String[] args) throws Exception {
+        // Disable creation of a derby.log file ; triggered by the GeoSPARQL module
+        System.setProperty("derby.stream.error.field", "org.aksw.sparql_integrate.cli.DerbyUtil.DEV_NULL");
+
         JenaSystem.init();
 
         // TODO Move to a plugin
@@ -686,11 +689,11 @@ public class MainCliDcatSuite {
         streamRdf.start();
 
         processCkanImport(ckanClient, prefix, datasets, quads, streamRdf);
-        
+
         streamRdf.finish();
     }
 
-    
+
     public static void processCkanImport(CkanClient ckanClient, String prefix, List<String> datasets, boolean quads, StreamRDF streamRdf) {
 
         for (String s : datasets) {
@@ -702,7 +705,7 @@ public class MainCliDcatSuite {
             DcatDataset dcatDataset = DcatCkanRdfUtils.convertToDcat(ckanDataset, pm);
 
             try {
-            	dcatDataset = skolemizeDcatDataset(dcatDataset, prefix);
+                dcatDataset = skolemizeDcatDataset(dcatDataset, prefix);
             } catch (Exception e) {
                 logger.warn("Error processing dataset " + s, e);
             }
@@ -718,7 +721,7 @@ public class MainCliDcatSuite {
             }
         }
     }
-    
+
     public static DcatDataset skolemizeDcatDataset(DcatDataset dcatDataset, String prefix) {
         // TODO Move this update request to a separate file and/or trigger it using a
         // flag
@@ -738,8 +741,8 @@ public class MainCliDcatSuite {
 
         return dcatDataset;
     }
-    
-    
+
+
     public static void processDkanImport(DkanClient dkanClient, String prefix, List<String> datasetNameOrIds,
             Boolean altJSON)
             throws ClientProtocolException, URISyntaxException, IOException, org.json.simple.parser.ParseException {

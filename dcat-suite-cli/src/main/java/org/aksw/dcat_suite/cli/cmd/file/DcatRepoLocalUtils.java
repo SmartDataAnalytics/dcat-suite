@@ -44,7 +44,6 @@ import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,14 +73,24 @@ public class DcatRepoLocalUtils {
         return normalizeRelPath(basePath, Path.of(relPath));
     }
 
-    public static Path normalizeRelPath(Path basePath, Path relPath) {
-        Path absPath = basePath.resolve(relPath).normalize();
-        Path result = basePath.relativize(absPath);
+    /** Resolve a relative path first against the current working directory and then
+     * relativize it against the repository root */
+    public static Path normalizeRelPath(Path basePath, Path filePath) {
+        Path fileAbsPath = filePath.toAbsolutePath().normalize();
+        Path result = basePath.relativize(fileAbsPath);
+
+        // Path absPath = basePath.resolve(relPath).normalize();
+        // Path result = basePath.relativize(absPath);
         return result;
     }
 
     /**
-     * Find the graph that has the same graph as the file.
+     * For a given path, find the graph with the same name and return the resource
+     * in it which has that path as the download URL
+     *
+     * ?file {
+     *   ?someResource dcat:downloadURL ?file
+     * }
      *
      * @param repo
      * @param relPath
@@ -89,12 +98,17 @@ public class DcatRepoLocalUtils {
      */
     public static ResourceInDataset getFileStatus(DcatRepoLocal repo, Path relPath) {
         relPath = normalizeRelPath(repo.getBasePath(), relPath);
-        Node pathIri = NodeFactory.createURI(relPath.toString());
+        String pathStr = relPath.toString();
+        Node pathNode = NodeFactory.createURI(pathStr);
 
         Dataset dataset = repo.getDataset();
+//        ResourceInDataset result = new ResourceInDatasetImpl(dataset, pathStr, pathNode);
+//        // DatasetOneNg ds = DatasetOneNgImpl.create(dataset, pathIri);
+//
+//        return result;
 
         List<ResourceInDataset> tmp = WrappedIterator.create(
-                dataset.asDatasetGraph().find(pathIri, Node.ANY, DCAT.downloadURL.asNode(), pathIri))
+                dataset.asDatasetGraph().find(pathNode, Node.ANY, DCAT.downloadURL.asNode(), pathNode))
         .mapWith(quad -> (ResourceInDataset)new ResourceInDatasetImpl(dataset, quad.getGraph().getURI(), quad.getSubject()))
         .toList();
 
@@ -193,12 +207,12 @@ public class DcatRepoLocalUtils {
         // TODO Make the ".git" configurable
         repositoryBuilder.setGitDir(repoRootFolder.resolve(".git").toFile());
         Repository repository = null;
-		try {
-			repository = repositoryBuilder.build();			
-		} catch (IOException e1) {
-			logger.info("No git repository found - git functionality not available");
-		}
-		
+        try {
+            repository = repositoryBuilder.build();
+        } catch (IOException e1) {
+            logger.info("No git repository found - git functionality not available");
+        }
+
 
         try {
             result = new DcatRepoLocalImpl(configFile, repoRootFolder, null, repository);
@@ -220,16 +234,18 @@ public class DcatRepoLocalUtils {
         Path conf = findDcatRepoConfig(currentFolder);
         if (conf != null) {
             if (currentFolder.equals(conf.getParent())) {
-                throw new RuntimeException("Configuration already exists in this folder: " + conf);
+                throw new RuntimeException("Configuration already exists in the current folder: " + conf);
             } else {
-                throw new RuntimeException("A file already exists (TODO force flag not yet implemented) at " + conf);
+                logger.warn("Creating a store nested inside another one because"
+                        + "there already exists a config at this parent folder: " + conf);
+                // throw new RuntimeException("A file already exists (TODO force flag not yet implemented) at " + conf);
             }
         } else {
             conf = currentFolder.resolve(DEFAULT_REPO_CONF_FILENAME);
         }
 
         // Path confAbsPath = conf.toAbsolutePath();
-        logger.info("Writing to config to  " + conf);
+        logger.info("Writing config to  " + conf);
 
         Model repoConfModel = ModelFactory.createDefaultModel();
         DcatRepoConfig repoConf = repoConfModel.createResource(DEFAULT_REPO_CONF_FILENAME).as(DcatRepoConfig.class);
@@ -239,7 +255,7 @@ public class DcatRepoLocalUtils {
 
         StoreDefinition storeConf = repoConfModel.createResource().as(StoreDefinition.class)
                 .setSingleFile(true)
-                .setStorePath("dcat.ttl");
+                .setStorePath("dcat.trig");
 
         repoConf.setEngineConf(storeConf);
 

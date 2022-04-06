@@ -20,6 +20,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -32,40 +33,42 @@ public class CatalogMgmtView
     extends VerticalLayout
 {
     protected Button newConnectionButton;
-	protected Grid<Binding> catalogsGrid;
-	
-	
-	public CatalogMgmtView() {
-		add(new H1("Catalogs"));
-		
-		catalogsGrid = new Grid<>();
-		// catalogsGrid.setHeightByRows(true);
-		catalogsGrid.setItemDetailsRenderer(new ComponentRenderer<>(CatalogDetailsView::new , CatalogDetailsView::setBinding));
-		
-		// GridContextMenu<Resource> contextMenu = catalogsGrid.addContextMenu();
+    protected Grid<Binding> catalogsGrid;
+    protected HeaderRow catalogsGridHeaderRow;
 
-		add(catalogsGrid);
-		
+
+    public CatalogMgmtView() {
+        add(new H1("Catalogs"));
+
+        catalogsGrid = new Grid<>();
+        catalogsGridHeaderRow = catalogsGrid.appendHeaderRow();
+        // catalogsGrid.setHeightByRows(true);
+        catalogsGrid.setItemDetailsRenderer(new ComponentRenderer<>(CatalogDetailsView::new , CatalogDetailsView::setBinding));
+
+        // GridContextMenu<Resource> contextMenu = catalogsGrid.addContextMenu();
+
+        add(catalogsGrid);
+
 //		Button addDistributionBtn = new Button("Add distribution");
-//		
+//
 //		addDistributionBtn.addClickListener(ev -> {
 //			if (dcatDataset != null) {
 //				dcatDataset.addProperty(DCAT.distribution, ResourceFactory.createResource());
 //				setDataset(dcatDataset); // refresh
 //			}
 //		});
-//		
+//
 //		add(addDistributionBtn);
-//		
-        
+//
+
 //		contextMenu.setDynamicContentHandler(r -> {
 //        	// Resource r = qs.getResource("s");
 //        	contextMenu.removeAll();
-//        	
+//
 //        	int numOptions = 0;
 //            contextMenu.addItem("Actions for " + r).setEnabled(false);
 //            contextMenu.add(new Hr());
-//            
+//
 //            contextMenu.addItem("Delete", ev -> {
 //                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
 //                        String.format("You are about to delete: %s (affects %d triples). This operation cannot be undone.", r.asNode(), dcatDataset.getModel().size()),
@@ -91,27 +94,28 @@ public class CatalogMgmtView
 //            return true;
 //        });
 
-		refresh();
-	}
+        refresh();
+    }
 
-	void refresh() {
-		Dataset ds = RDFDataMgr.loadDataset("opendataportals.ttl");		
-		
+    void refresh() {
+        Dataset ds = RDFDataMgr.loadDataset("opendataportals.ttl");
+
         SparqlQueryParser parser = SparqlQueryParserImpl.create(SparqlParserConfig.newInstance()
                 .setSharedPrefixes(DefaultPrefixes.get())
-        		.setIrixResolverAsGiven()
+                .setIrixResolverAsGiven()
                 .setBaseURI(""));
 
         List<Var> vars = Var.varList(Arrays.asList("Name", "Technology"));
-		Query q = parser.apply("SELECT * { [] rdfs:label ?Name ; eg:url ?Url ; eg:technology ?Technology }");
-		
-		VaadinSparqlUtils.setQueryForGridBinding(
-				catalogsGrid,
-				(Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, ds), ds),
-				q,
-				vars);
-		
-		VaadinSparqlUtils.configureGridFilter(catalogsGrid, vars);
+        Query q = parser.apply("SELECT * { [] rdfs:label ?Name ; eg:url ?Url ; eg:technology ?Technology }");
 
-	}
+        VaadinSparqlUtils.setQueryForGridBinding(
+                catalogsGrid,
+                catalogsGridHeaderRow,
+                (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, ds), ds),
+                q,
+                vars);
+
+        VaadinSparqlUtils.configureGridFilter(catalogsGrid, catalogsGridHeaderRow, vars);
+
+    }
 }

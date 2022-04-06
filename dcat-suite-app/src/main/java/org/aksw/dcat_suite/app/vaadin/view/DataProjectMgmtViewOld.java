@@ -47,6 +47,7 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
@@ -87,6 +88,7 @@ public class DataProjectMgmtViewOld
 //    protected FileRepoResolver fileRepoResolver;
 
     protected Grid<Binding> datasetGrid;
+    protected HeaderRow datasetGridHeaderRow;
 
     // protected Path fileRepoRootPath;
 
@@ -164,6 +166,7 @@ public class DataProjectMgmtViewOld
 
             VaadinSparqlUtils.setQueryForGridBinding(
                     datasetGrid,
+                    datasetGridHeaderRow,
                     (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
                     q);
 
@@ -337,6 +340,7 @@ public class DataProjectMgmtViewOld
 
 
         this.datasetGrid = new Grid<>();
+        this.datasetGridHeaderRow = datasetGrid.appendHeaderRow();
 
         txtSearch = new TextField("Search /");
         txtSearch.setValueChangeMode(ValueChangeMode.LAZY);

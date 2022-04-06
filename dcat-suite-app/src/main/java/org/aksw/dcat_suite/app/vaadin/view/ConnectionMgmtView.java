@@ -16,6 +16,8 @@ import org.aksw.jena_sparql_api.schema.PropertySchemaFromPropertyShape;
 import org.aksw.jena_sparql_api.schema.ResourceCache;
 import org.aksw.jena_sparql_api.schema.SHAnnotatedClass;
 import org.aksw.jena_sparql_api.schema.ShapedNode;
+import org.aksw.jenax.connection.query.QueryExecutionFactoryDataset;
+import org.aksw.jenax.connection.query.QueryExecutionFactoryQuery;
 import org.aksw.jenax.dataaccess.LabelUtils;
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
 import org.aksw.jenax.reprogen.shacl.ShaclGenerator;
@@ -136,6 +138,7 @@ public class ConnectionMgmtView
         // Node datasetNode = NodeFactory.createBlankNode();
         ResourceCache resourceCache = new ResourceCache();
         SparqlQueryConnection conn = RDFConnectionFactory.connect(ds);
+        QueryExecutionFactoryQuery qef = new QueryExecutionFactoryDataset(ds);
         ShapedNode sn = ShapedNode.create(datasetNode, schema, resourceCache, conn);
 //        LookupService<Node, ResourceMetamodel> metaDataService = ResourceExplorer.createMetamodelLookup(conn);
 
@@ -149,7 +152,7 @@ public class ConnectionMgmtView
 
         Model prefixes = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl");
         LookupService<Node, String> labelService =
-                LabelUtils.createLookupServiceForLabels(LabelUtils.getLabelLookupService(conn, RDFS.label, prefixes), prefixes, prefixes).cache();
+                LabelUtils.createLookupServiceForLabels(LabelUtils.getLabelLookupService(qef, RDFS.label, prefixes), prefixes, prefixes).cache();
 
 
         TreeGrid<Path<Node>> treeGrid = ShaclTreeGrid.createShaclEditor(

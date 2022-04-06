@@ -23,11 +23,11 @@ public class CmdDcatFileRm
 
 
     public Integer call() {
-        DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo(Path.of(""));
+        DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo();
 
         for (String file : files) {
 
-            Path relPath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), Path.of(file));
+            Path relPath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), file);
 
             ResourceInDataset status = DcatRepoLocalUtils.getFileStatus(repo, relPath);
             if (status != null) {
