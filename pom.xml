@@ -67,6 +67,8 @@
 		<jenax.version>4.5.0-1-SNAPSHOT</jenax.version>
 		<vaadin-jena.version>4.5.0-1-SNAPSHOT</vaadin-jena.version>
 
+		<guava.version>31.0.1-jre</guava.version>
+
 		<aksw-commons.version>0.9.3-SNAPSHOT</aksw-commons.version>
 		<gson.version>2.8.9</gson.version>
 
@@ -93,6 +95,17 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.maven.shared</groupId>
+				<artifactId>maven-invoker</artifactId>
+				<version>2.1.1</version>
+			</dependency>
 
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -339,11 +352,11 @@
 				<version>${jena.version}</version>
 			</dependency>
 
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.apache.jena</groupId> -->
-<!-- 				<artifactId>jena-geosparql</artifactId> -->
-<!-- 				<version>${jena.version}</version> -->
-<!-- 			</dependency> -->
+			<!-- <dependency> -->
+			<!-- <groupId>org.apache.jena</groupId> -->
+			<!-- <artifactId>jena-geosparql</artifactId> -->
+			<!-- <version>${jena.version}</version> -->
+			<!-- </dependency> -->
 
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
