@@ -77,6 +77,7 @@ import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.ExprUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.spark.api.java.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,8 +258,16 @@ public class CmdDcatFileTransformApply
                 .setGroupId(srcEntity.getGroupId())
                 .setArtifactId(srcEntity.getArtifactId())
                 .setVersion(srcEntity.getVersion());
-            tgtEntity.getClassifiers().addAll(srcEntity.getClassifiers());
-            tgtEntity.getClassifiers().add(tag);
+
+            String c = srcEntity.getClassifier();
+            c = c == null || c.isBlank()
+                    ? tag
+                    : c.trim() + "-" + tag;
+
+            tgtEntity.setClassifier(c);
+
+            //tgtEntity.getClassifiers().addAll(srcEntity.getClassifiers());
+            //tgtEntity.getClassifiers().add(tag);
 
 
             RdfEntityInfo tgtEntityInfo = ContentTypeUtils.deriveHeadersFromFileName(tgtFileExtension);

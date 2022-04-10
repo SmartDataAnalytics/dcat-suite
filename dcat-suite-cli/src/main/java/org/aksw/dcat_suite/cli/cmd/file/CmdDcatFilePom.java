@@ -5,14 +5,21 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat.utils.DcatUtils;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.util.iterator.WrappedIterator;
+import org.apache.jena.vocabulary.DCAT;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Resource;
@@ -26,6 +33,7 @@ public class CmdDcatFilePom
     implements Callable<Integer>
 {
     protected String buildDirName = "target";
+
 
 
     @Override
@@ -51,9 +59,12 @@ public class CmdDcatFilePom
         DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo();
 
         Path basePath = repo.getBasePath();
-        Dataset dataset = repo.getDataset();
+        Dataset fileCentricDataset = repo.getDataset();
 
-        Model model = dataset.getUnionModel();
+
+
+
+        Model model = fileCentricDataset.getUnionModel();
 
         Collection<DcatDataset> datasets = DcatUtils.listDcatDatasets(model);
 
