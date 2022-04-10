@@ -1,7 +1,7 @@
 title: "DCAT Suite"
 #remote_theme: pmarsceill/just-the-docs
 search_enabled: true
-logo: "assets/images/dcat-suite-logo.png"
+#logo: "assets/images/dcat-suite-logo.png"
 markdown: kramdown
 kramdown:
   parse_block_html: true
