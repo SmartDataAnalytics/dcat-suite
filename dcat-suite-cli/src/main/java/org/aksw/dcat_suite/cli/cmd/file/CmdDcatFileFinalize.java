@@ -98,7 +98,7 @@ public class CmdDcatFileFinalize
             DcatDataset dds = m.createResource(g).as(DcatDataset.class);
 
             // Add all triples of graphs that declare themselves as distributions of that dataset
-            List<Node> distGs = WrappedIterator.create(ds.asDatasetGraph().find(Node.ANY, dds.asNode(), DCAT.distribution.asNode(), dds.asNode()))
+            List<Node> distGs = WrappedIterator.create(ds.asDatasetGraph().find(Node.ANY, dds.asNode(), DCAT.distribution.asNode(), Node.ANY))
                 .mapWith(Quad::getGraph)
                 .toList();
 
