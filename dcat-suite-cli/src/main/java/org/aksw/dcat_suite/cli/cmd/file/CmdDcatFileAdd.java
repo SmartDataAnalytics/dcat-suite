@@ -7,12 +7,15 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.aksw.commons.io.util.StdIo;
+import org.aksw.commons.util.string.FileName;
 import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -21,19 +24,17 @@ import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfoDefault;
-import org.aksw.jena_sparql_api.rx.entity.util.GraphEntityUtils;
-import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.reprogen.core.MapperProxyUtils;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+
+import com.google.common.collect.Iterables;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -94,12 +95,18 @@ public class CmdDcatFileAdd
             version = localDate.toString();
         }
 
+        // TODO Convert entity info to file extension
+        // Fallback: Use the file extension of the supplied file
+        FileName fileName = FileNameUtils.deriveFileName(file, entityInfo);
+        String type = Stream.concat(Stream.of(fileName.getContentPart()), fileName.getEncodingParts().stream())
+                .collect(Collectors.joining("."));
+
         // GraphEntityUtils.getOrCreateModel(repoDs, null)
 
         // Derive the base name; remove file extensions
         String baseName = artifactId != null
                 ? artifactId
-                : FileNameUtils.deriveFileName(file, entityInfo).getBaseName();
+                : fileName.getBaseName();
 
         // String datasetId = "#" + groupId.replace('.', '/') + "/" + baseName + "/" + version;
         String datasetId = groupId + ":" + baseName + ":" + version;
@@ -148,7 +155,7 @@ public class CmdDcatFileAdd
         dcatDistribution.addProperty(RDF.type, DCAT.Distribution);
         dcatDistribution.setDownloadUrl(filePath.toString());
 
-
+        dcatDistribution.as(MavenEntity.class).setType(type);
 
 
 

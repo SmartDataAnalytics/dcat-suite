@@ -1,0 +1,35 @@
+PREFIX mvn: <http://dataid.dbpedia.org/ns/core#>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+DELETE {
+  GRAPH ?distGraph { ?dist dcat:downloadURL ?url }
+}
+INSERT {
+  GRAPH ?distGraph { ?dist dcat:downloadURL ?mvnUrn }
+}
+WHERE {
+  GRAPH ?datasetGraph {
+    ?dataset
+      mvn:groupId ?g ; mvn:artifactId ?a ; owl:versionInfo ?v
+  }
+
+  GRAPH ?any { ?dataset dcat:distribution ?dist }
+
+  GRAPH ?distGraph {
+    ?dist dcat:downloadURL ?url .
+    OPTIONAL { ?dist mvn:classifier ?c }
+    OPTIONAL { ?dist mvn:type ?t }
+  }
+
+  FILTER(BOUND(?url))
+
+  # FILTER (fs:exists(?url))
+
+  BIND(coalesce(?c, '') AS ?cc)
+  BIND(if(?cc = '', '', concat(':', ?cc)) AS ?ccc)
+  BIND(coalesce(?t, '') AS ?tt)
+  BIND(if(?tt = '', if(?cc = '', '', ':jar'), concat(':', ?tt)) AS ?ttt)
+  BIND(concat(?g, ':', ?a, ':', ?v, ?ttt, ?ccc) AS ?mvnId)
+  BIND(IRI(concat('urn:mvn:', ?mvnId)) AS ?mvnUrn)
+}

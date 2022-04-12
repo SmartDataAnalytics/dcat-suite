@@ -6,7 +6,7 @@ import picocli.CommandLine.Command;
         CmdDcatFileInit.class,
         CmdDcatFileProjectParent.class,
         CmdDcatFileAdd.class,
-        CmdDcatFilePom.class,
+        CmdDcatFileMvnParent.class,
         CmdDcatFileRm.class,
         CmdDcatFileFinalize.class,
         CmdDcatFileTransformParent.class,

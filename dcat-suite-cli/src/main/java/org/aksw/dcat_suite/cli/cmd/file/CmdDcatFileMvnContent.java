@@ -5,31 +5,27 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.dcat.utils.DcatUtils;
-import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.util.iterator.WrappedIterator;
-import org.apache.jena.vocabulary.DCAT;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Parent;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import picocli.CommandLine.Command;
 
-@Command(name = "pom", separator = "=", description="Prepare a maven project from the dataset description", mixinStandardHelpOptions = true)
-public class CmdDcatFilePom
+@Command(name = "content", separator = "=", description="Prepare a maven project from the dataset description", mixinStandardHelpOptions = true)
+public class CmdDcatFileMvnContent
     implements Callable<Integer>
 {
     protected String buildDirName = "target";
@@ -83,26 +79,47 @@ public class CmdDcatFilePom
             childPom.setArtifactId(artifactId);
             childPom.setGroupId(mvnEntity.getGroupId());
             childPom.setVersion(mvnEntity.getVersion());
+            childPom.setPackaging("pom");
 
 
             Build build = new Build();
-            Resource resource = new Resource();
-            resource.setDirectory("../../");
 
-            build.addResource(resource);
+            if (false) {
+
+                Resource resource = new Resource();
+                resource.setDirectory("../../");
+
+                for (DcatDistribution dist : d.getBasicDistributions()) {
+                    String downloadUrl = dist.getDownloadUrl();
+                    if (downloadUrl != null) {
+                        resource.addInclude(downloadUrl);
+                    }
+                }
+
+                build.addResource(resource);
+            } else {
+
+                Plugin plugin = BuildHelperUtils.createPlugin();
+
+                for (DcatDistribution dist : d.getBasicDistributions()) {
+                    MavenEntity distMvnEntity = dist.as(MavenEntity.class);
+
+                    String downloadUrl = dist.getDownloadUrl();
+                    if (downloadUrl != null) {
+                        BuildHelperUtils.attachArtifact(plugin,
+                                Path.of("../../").resolve(downloadUrl).toString(),
+                                distMvnEntity.getType(), distMvnEntity.getClassifier());
+
+                    }
+                }
+                build.addPlugin(plugin);
+            }
             childPom.setBuild(build);
 
 
             // Get the graph having the same name as the dataset
             // copy it to the resources folder
 
-
-            for (DcatDistribution dist : d.getBasicDistributions()) {
-                String downloadUrl = dist.getDownloadUrl();
-                if (downloadUrl != null) {
-                    resource.addInclude(downloadUrl);
-                }
-            }
 
             parentPom.addModule(artifactId);
 
@@ -136,3 +153,31 @@ public class CmdDcatFilePom
     }
 
 }
+
+
+/*
+<plugin>
+<groupId>org.codehaus.mojo</groupId>
+<artifactId>build-helper-maven-plugin</artifactId>
+<version>1.8</version>
+<executions>
+  <execution>
+    <id>attach-artifacts</id>
+    <phase>package</phase>
+    <goals>
+      <goal>attach-artifact</goal>
+    </goals>
+    <configuration>
+      <artifacts>
+        <artifact>
+          <file>some file</file>
+          <type>extension of your file </type>
+          <classifier>optional</classifier>
+        </artifact>
+        ...
+      </artifacts>
+    </configuration>
+  </execution>
+</executions>
+</plugin>
+*/
