@@ -10,22 +10,21 @@ import java.util.concurrent.Callable;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
+import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
 import org.aksw.dcat.utils.DcatUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import picocli.CommandLine.Command;
 
 @Command(name = "content", separator = "=", description="Prepare a maven project from the dataset description", mixinStandardHelpOptions = true)
-public class CmdDcatFileMvnContent
+public class CmdDcatMvnizeContent
     implements Callable<Integer>
 {
     protected String buildDirName = "target";
@@ -34,13 +33,10 @@ public class CmdDcatFileMvnContent
 
     @Override
     public Integer call() throws Exception {
-        MavenXpp3Reader pomReader = new MavenXpp3Reader();
+
         MavenXpp3Writer pomWriter = new MavenXpp3Writer();
 
-        org.apache.maven.model.Model parentPom;
-        try (InputStream in = this.getClass().getClassLoader().getResourceAsStream("dcat.template.pom.xml")) {
-            parentPom = pomReader.read(in);
-        }
+        org.apache.maven.model.Model parentPom = DcatRepoLocalMvnUtils.loadDefaultPomTemplateModel();
 
         parentPom.setGroupId("myGroupId");
         parentPom.setArtifactId("myArtifactId");

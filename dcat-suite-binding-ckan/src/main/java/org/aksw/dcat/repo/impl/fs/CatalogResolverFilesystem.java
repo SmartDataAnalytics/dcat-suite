@@ -107,6 +107,9 @@ public class CatalogResolverFilesystem
         this.hashSpaceFolder = downloadBaseFolder.resolve("by-md5");
     }
 
+    public Path getDcatRepoRoot() {
+        return dcatRepoRoot;
+    }
 
     public Path findExistingDataset(String datasetId) {
         Path relPath = UriToPathUtils.resolvePath(datasetId);

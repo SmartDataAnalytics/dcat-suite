@@ -14,12 +14,11 @@ import org.apache.jena.riot.RDFFormat;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-/** Add a file to the current dcat catalog */
-@Command(name = "status", separator = "=", description="Show DCAT file status", mixinStandardHelpOptions = true)
+@Command(name = "status", separator = "=", description="Show local/remote DCAT status", mixinStandardHelpOptions = true)
 public class CmdDcatFileStatus
     implements Callable<Integer>
 {
-    @Parameters(description = "Files to add as datasets to the current dcat repository")
+    @Parameters(description = "Files for which to show status information")
     public List<String> files = new ArrayList<>();
 
     public Integer call() {

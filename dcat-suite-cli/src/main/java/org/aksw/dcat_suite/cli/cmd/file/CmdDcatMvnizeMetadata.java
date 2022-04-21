@@ -43,8 +43,8 @@ import picocli.CommandLine.Parameters;
  * @author raven
  *
  */
-@Command(name = "mvnmeta", separator = "=", description="Set up the maven metadata project", mixinStandardHelpOptions = true)
-public class CmdDcatFileMvnizeMetadata
+@Command(name = "metadata", separator = "=", description="Generate the maven project to publish dcat metadata", mixinStandardHelpOptions = true)
+public class CmdDcatMvnizeMetadata
     implements Callable<Integer>
 {
     @Parameters
@@ -53,13 +53,9 @@ public class CmdDcatFileMvnizeMetadata
 
     @Override
     public Integer call() throws Exception {
-        MavenXpp3Reader pomReader = new MavenXpp3Reader();
         MavenXpp3Writer pomWriter = new MavenXpp3Writer();
 
-        org.apache.maven.model.Model parentPom;
-        try (InputStream in = this.getClass().getClassLoader().getResourceAsStream("dcat.template.pom.xml")) {
-            parentPom = pomReader.read(in);
-        }
+        org.apache.maven.model.Model parentPom = DcatRepoLocalMvnUtils.loadDefaultPomTemplateModel();
 
         parentPom.setGroupId("myGroupId");
         parentPom.setArtifactId("myArtifactId");
@@ -81,12 +77,12 @@ public class CmdDcatFileMvnizeMetadata
 //        Dataset fileCentricDataset = repo.getDataset();
 
         for (String fileName : dcatFiles) {
-           Dataset xds = RDFDataMgrEx.readAsGiven(DatasetFactory.create(), fileName);
+            Dataset xds = RDFDataMgrEx.readAsGiven(DatasetFactory.create(), fileName);
 
-           xds = CmdDcatFileFinalize.makeDatasetCentric(xds);
-           UpdateRequest ur = SparqlStmtMgr.loadSparqlStmts("dcat-download-to-mvn.rq").get(0).getAsUpdateStmt().getUpdateRequest();
+            xds = CmdDcatFileFinalize.makeDatasetCentric(xds);
+            UpdateRequest ur = SparqlStmtMgr.loadSparqlStmts("dcat-download-to-mvn.rq").get(0).getAsUpdateStmt().getUpdateRequest();
 
-           UpdateExecutionFactory.create(ur, xds).execute();
+            UpdateExecutionFactory.create(ur, xds).execute();
 
             Model model = xds.getUnionModel();
 

@@ -14,6 +14,7 @@ import org.aksw.jenax.connection.datasource.RdfDataSource;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RDFDataMgr;
@@ -30,6 +31,8 @@ public class DcatRepoLocalImpl
 
     protected RdfDataEngineFromDataset dataSource;
 
+    protected Dataset configDataset;
+
     // Maybe gitRepository should go to a separate class
     protected Repository gitRepository;
 
@@ -44,18 +47,27 @@ public class DcatRepoLocalImpl
         this.gitRepository = gitRepository;
         // this.dataSource = dataSource;
 
-        Model confModel = RDFDataMgr.loadModel(confFile.toString());
-        // Get the confg resource
-        DcatRepoConfig conf = confModel.listResourcesWithProperty(RDF.type, RepoConfig)
-                .nextOptional().map(r -> r.as(DcatRepoConfig.class)).orElse(null);
+        this.configDataset = DcatRepoLocalUtils.createDifsFromFile(configFile);
 
-        StoreDefinition storeDef = conf.getEngineConf().as(StoreDefinition.class)
-                .setSingleFile(true)
-                .setStorePath("dcat.trig");
+        Txn.executeRead(configDataset, () -> {
+            // Get the confg resource
+            DcatRepoConfig conf = getConfigResource(configDataset);
 
-        this.dataSource = RdfDataEngineFromDataset.create(DifsFactory.newInstance()
-                .setRepoRootPath(repoRootFolder)
-                .setStoreDefinition(storeDef).connectAsDataset(), true);
+            Model copy = ModelFactory.createDefaultModel();
+            copy.add(conf.getModel());
+
+            StoreDefinition storeDef = conf.getEngineConf().inModel(copy).as(StoreDefinition.class)
+                    .setSingleFile(true)
+                    .setStorePath("dcat.trig");
+
+            try {
+                this.dataSource = RdfDataEngineFromDataset.create(DifsFactory.newInstance()
+                        .setRepoRootPath(repoRootFolder)
+                        .setStoreDefinition(storeDef).connectAsDataset(), true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
@@ -121,5 +133,19 @@ public class DcatRepoLocalImpl
     @Override
     public Dataset getDataset() {
         return dataSource.getDataset();
+    }
+
+    @Override
+    public Dataset getConfig() {
+        return this.configDataset;
+    }
+
+    @Override
+    public DcatRepoConfig getConfigResource(Dataset configDataset) {
+        Model model = configDataset.getDefaultModel();
+        DcatRepoConfig conf = model.listResourcesWithProperty(RDF.type, RepoConfig)
+                .nextOptional().map(r -> r.as(DcatRepoConfig.class)).orElse(null);
+
+        return conf;
     }
 }

@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 
 import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.io.util.FileUtils;
+import org.aksw.commons.io.util.symlink.SymbolicLinkStrategies;
+import org.aksw.commons.io.util.symlink.SymbolicLinkStrategy;
+import org.aksw.commons.io.util.symlink.SymbolicLinkStrategyFile;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -22,6 +25,7 @@ import org.aksw.dcat.jena.domain.api.DcatDownloadUrl;
 import org.aksw.dcat.jena.domain.api.DcatIdType;
 import org.aksw.dcat.mgmt.api.DataProject;
 import org.aksw.dcat.mgmt.vocab.DCATX;
+import org.aksw.difs.builder.DifsFactory;
 import org.aksw.difs.system.domain.StoreDefinition;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
@@ -48,6 +52,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -187,6 +192,29 @@ public class DcatRepoLocalUtils {
         return loadLocalRepo(configFile);
     }
 
+
+    /**
+     * Create a difs dataset from a given file with locks and transactions
+     * managed in sibling directories of that file.
+     *
+     * @param datasetFile
+     * @return
+     * @throws IOException
+     */
+    public static Dataset createDifsFromFile(Path datasetFile) throws IOException {
+        StoreDefinition d = ModelFactory.createDefaultModel().createResource().as(StoreDefinition.class)
+                .setSingleFile(true)
+                .setStorePath(datasetFile.toString())
+                ;
+
+        Dataset result = DifsFactory.newInstance().setStoreDefinition(d)
+            .setSymbolicLinkStrategy(SymbolicLinkStrategies.FILE)
+            .setRepoRootPath(datasetFile.getParent())
+            .setUseJournal(true)
+            .setCreateIfNotExists(false)
+            .connectAsDataset();
+        return result;
+    }
 
     /** Create a repo object from a specific config file */
     public static DcatRepoLocal loadLocalRepo(Path configFile) {

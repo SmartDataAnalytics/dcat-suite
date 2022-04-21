@@ -8,7 +8,6 @@ import java.nio.file.attribute.FileTime;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -17,24 +16,23 @@ import java.util.stream.Stream;
 import org.aksw.commons.io.util.StdIo;
 import org.aksw.commons.util.string.FileName;
 import org.aksw.commons.util.string.FileNameUtils;
+import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.conjure.utils.ContentTypeUtils;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
-import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfoDefault;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.reprogen.core.MapperProxyUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
-
-import com.google.common.collect.Iterables;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -49,26 +47,42 @@ public class CmdDcatFileAdd
     public List<String> files = new ArrayList<>();
 
     /** Default group id can be read from the dcat repo conf file */
-    @Option(names= {"-g", "--groupId"}, arity = "1", required = true)
-    public String groupId;
+    @Option(names= {"-g", "--groupId"}, arity = "1")
+    public String groupId = null;
 
     @Option(names= {"-a", "--artifactId"}, arity = "1", description = "Artifact ID. Defaults to base file name (known file extensions are removed)", required = false)
-    public String artifactId;
+    public String artifactId = null;
 
     /** Version for the file being added - if absent use its modified date */
     @Option(names= {"-v", "--version"}, arity = "1", description = "Version to assign to a dataset derived from a file. Defaults to the file's local date, e.g. 2020-12-31", required = false)
-    public String version;
+    public String version = null;
+
+
+    @Option(names= {"--dataset" }, description = "Generate the dataset part")
+    public boolean dataset = false;
+
+    @Option(names= {"--content" }, description = "Generate the content part")
+    public boolean content = false;
 
 
     @Override
     public Integer call() throws Exception {
 
+        // If neither dataset nor content was explicitly requested then activate both
+        if (!dataset && !content) {
+            dataset = content = true;
+        }
+
         if (artifactId != null && files.size() > 1) {
             throw new IllegalArgumentException("Cannot add multiple files if an artifactId is specified");
         }
 
-
         DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo(Path.of(""));
+
+        // Try to get a group from the properties if it is null
+        if (groupId == null) {
+            groupId = repo.getMemConfig().as(DcatRepoConfig.class).getProperties().get("groupId");
+        }
 
         Dataset repoDs = repo.getDataset();
         repoDs.begin(ReadWrite.WRITE);
@@ -108,9 +122,14 @@ public class CmdDcatFileAdd
                 ? artifactId
                 : fileName.getBaseName();
 
+        // String prefix = "#";
+        String prefix = "urn:mvn:";
+
         // String datasetId = "#" + groupId.replace('.', '/') + "/" + baseName + "/" + version;
-        String datasetId = groupId + ":" + baseName + ":" + version;
-        String datasetIri = "#" + datasetId;
+        String datesetArtifactId = baseName + "-dataset";
+
+        String datasetId = groupId + ":" + datesetArtifactId + ":" + version;
+        String datasetIri = prefix + datasetId;
 
         Dataset ds = DatasetFactory.create();
         //DcatDataset dcatDataset = GraphEntityUtils.newModelByTimestamp(ds).getSelfResource().as(DcatDataset.class);
@@ -133,8 +152,17 @@ public class CmdDcatFileAdd
 
         mvn.setGroupId(groupId);
         mvn.setVersion(version);
-        mvn.setArtifactId(baseName);
+        mvn.setArtifactId(datesetArtifactId);
         // mvn.addProperty(DCTerms.identifier, datasetId);
+
+
+
+        String fn = filePath.toString();
+        Resource fileContent = ds.getNamedModel(fn).createResource(fn);
+        RdfEntityInfo tgt = fileContent.as(RdfEntityInfo.class);
+        RdfEntityInfo.copy(tgt, entityInfo);
+
+        MapperProxyUtils.skolemize(fn + "#", tgt, map -> map.remove(RDF.nil));
 
 
 
@@ -145,8 +173,11 @@ public class CmdDcatFileAdd
         }
 
 
-        String distributionIri = "#" + datasetId + ":" + distributionType;
-        DcatDistribution dcatDistribution = ds.getNamedModel(filePath.toString()).createResource(distributionIri)
+        String distributionArtifactId = baseName;
+        String distributionId = groupId + ":" + distributionArtifactId + ":" + version;
+        String distributionIri = prefix + distributionId + ":" + distributionType;
+        String distributionGraphIri = distributionIri; // filePath.toString()
+        DcatDistribution dcatDistribution = ds.getNamedModel(distributionGraphIri).createResource(distributionIri)
                 .as(DcatDistribution.class);
 
         //DcatDistribution dcatDistribution = GraphEntityUtils.newModelByTimestamp(ds).getSelfResource().as(DcatDistribution.class);
@@ -155,17 +186,16 @@ public class CmdDcatFileAdd
         dcatDistribution.addProperty(RDF.type, DCAT.Distribution);
         dcatDistribution.setDownloadUrl(filePath.toString());
 
-        dcatDistribution.as(MavenEntity.class).setType(type);
+        MavenEntity mvnDistribution = dcatDistribution.as(MavenEntity.class);
+
+        mvnDistribution.setGroupId(groupId);
+        mvnDistribution.setVersion(version);
+        mvnDistribution.setArtifactId(baseName);
+        mvnDistribution.setType(type);
 
 
-
-        RdfEntityInfo tgt = dcatDistribution.as(RdfEntityInfo.class);
-        RdfEntityInfo.copy(tgt, entityInfo);
-
-        //MapperProxyUtils.s
-        MapperProxyUtils.skolemize("", dcatDistribution.as(RdfEntityInfoDefault.class),
-                map -> map.remove(RDF.nil));
-        // MapperProxyUtils.
+//        MapperProxyUtils.skolemize(distributionIri + "/", dcatDistribution.as(RdfEntityInfo.class),
+//                map -> map.remove(RDF.nil));
 
         dcatDataset.inModel(dcatDistribution.getModel()).as(DcatDataset.class)
             .getDistributionsAs(DcatDistribution.class).add(dcatDistribution);

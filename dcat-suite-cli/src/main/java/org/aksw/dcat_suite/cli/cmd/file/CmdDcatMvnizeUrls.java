@@ -20,8 +20,8 @@ import picocli.CommandLine.Command;
  * @author raven
  *
  */
-@Command(name = "meta", separator = "=", description="Set up the maven metadata project", mixinStandardHelpOptions = true)
-public class CmdDcatFileMvnMetadata
+@Command(name = "urls", separator = "=", description="Convert local (download) URLs to maven URNs", mixinStandardHelpOptions = true)
+public class CmdDcatMvnizeUrls
     implements Callable<Integer>
 {
     @Override

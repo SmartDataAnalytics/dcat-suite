@@ -57,7 +57,8 @@ public class CmdDcatFileFinalize
                 String id = DcatIdUtils.createDatasetId(dcatDataset);
                 dcatDataset.setIdentifier(id);
 
-                renames.put(r.asNode(), NodeFactory.createURI("#" + id));
+                String prefix = "urn:mvn:"; // "#"
+                renames.put(r.asNode(), NodeFactory.createURI(prefix + id));
             }
         }
 
