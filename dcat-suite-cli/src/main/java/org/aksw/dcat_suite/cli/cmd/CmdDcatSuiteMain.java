@@ -3,6 +3,7 @@ package org.aksw.dcat_suite.cli.cmd;
 import java.util.List;
 
 import org.aksw.dcat_suite.cli.cmd.catalog.CmdDcatCatalogEnrich;
+import org.aksw.dcat_suite.cli.cmd.file.CmdDcatAnnotationParent;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileAdd;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileInit;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileParent;
@@ -21,6 +22,7 @@ import picocli.CommandLine.Parameters;
     CmdDcatFileAdd.class,
     CmdDcatFileRm.class,
     CmdDcatMvnizeParent.class,
+    CmdDcatAnnotationParent.class,
     CmdDeploy.class,
     CmdEnrich.class,
     CmdExpand.class,

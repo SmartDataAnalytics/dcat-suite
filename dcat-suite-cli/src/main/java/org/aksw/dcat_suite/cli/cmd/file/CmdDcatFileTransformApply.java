@@ -69,7 +69,6 @@ import org.apache.jena.riot.RDFFormatVariant;
 import org.apache.jena.riot.RDFWriterRegistry;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFOps;
-import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.expr.Expr;
@@ -77,7 +76,6 @@ import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.util.ExprUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.spark.api.java.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +141,9 @@ public class CmdDcatFileTransformApply
     public boolean virtualDistribution;
 
 
+    @Option(names= {"--annotation"}, description = "'Annotate' the input entity - creates a graph rather than a file") //; default ${DEFAULT-VALUE}", arity="0", fallbackValue = "true")
+    public boolean isAnnotation;
+
 
 //
 //        String str = String.join("\n",
@@ -189,16 +190,24 @@ public class CmdDcatFileTransformApply
         Path transformFilePath = DcatRepoLocalUtils.normalizeRelPath(repo.getBasePath(), transformFileOrId);
         Resource transformRes = repo.getDataset().getUnionModel().createResource(transformFilePath.toString());
 
-        DcatDistribution transformDist = DcatUtils.resolveDistribution(transformRes);
-        DcatIdType transformIt = DcatIdType.of(transformIdType);
 
-        Resource transformId = DcatUtils.getRelatedId(transformDist, transformIt);
+        // Load the transformation
+        Model transformModel;
+        DcatDistribution transformDist = null;
+        if (Files.exists(transformFilePath)) {
+             transformModel = RDFDataMgr.loadModel(transformFilePath.toString());
+        } else {
+            transformDist = DcatUtils.resolveDistribution(transformRes);
+            DcatIdType transformIt = DcatIdType.of(transformIdType);
 
+            Resource transformId = DcatUtils.getRelatedId(transformDist, transformIt);
 
-
-        Model transformModel = loadDistributionAsModel(repo.getBasePath(), transformDist); // RDFDataMgr.loadModel(transformFileOrId);
+            transformModel = loadDistributionAsModel(repo.getBasePath(), transformDist); // RDFDataMgr.loadModel(transformFileOrId);
+        }
 
         Job job = JobUtils.getOnlyJob(transformModel);
+
+
 
 
 
@@ -223,174 +232,265 @@ public class CmdDcatFileTransformApply
                 throw new RuntimeException("No status information available about " + path + "; Use 'dcat file add' first");
             }
 
-            // Create the union model in order to allow traversal among all graphs
-            DcatDistribution dist = graphAndDist.inModel(graphAndDist.getDataset().getUnionModel())
-                    .as(DcatDistribution.class);
+            DcatDistribution dist = null;
+
+            Path srcFile;
+            if (Files.exists(path)) {
+                srcFile = path;
+            } else {
+
+                // Create the union model in order to allow traversal among all graphs
+                dist = graphAndDist.inModel(graphAndDist.getDataset().getUnionModel())
+                        .as(DcatDistribution.class);
 
 
-
-            Path srcFile = Path.of(dist.getDownloadUrl());
+                srcFile = Path.of(dist.getDownloadUrl());
+            }
 
             String srcFileName = srcFile.getFileName().toString();
 
-            Resource srcFileNameRes = dist.getModel().createResource(srcFileName);
+            // Resource srcFileNameRes = dist.getModel().createResource(srcFileName);
 
-            String inputVal = DcatRepoLocalUtils.getDcatId(repo, srcFile, inputIdType);
-            logger.info("Using content identifier " + inputVal);
-
-            Set<DcatDataset> datasets = dist.getDcatDatasets(DcatDataset.class);
-
-            DcatDataset srcDataset = Iterables.getOnlyElement(datasets, null);
-            if (srcDataset == null) {
-                throw new RuntimeException("File " + path + " must appear in exacly 1 dataset; appears in: " + datasets.size());
-            }
-
-            MavenEntity srcEntity = srcDataset.as(MavenEntity.class);
-
-
-            RdfEntityInfo srcEntityInfo = dist.as(RdfEntityInfo.class);
-            String srcBaseName = FileNameUtils.deriveFileName(srcFileName, srcEntityInfo).getBaseName();
 
             String tag = Objects.requireNonNull(ObjectUtils.coalesce(() -> customTag, job::getTag),
                     "Transformation does not specify a tag; a custom one needs to be provided using --tag");
 
-            MavenEntity tgtEntity = targetDataset.as(MavenEntity.class)
-                .setGroupId(srcEntity.getGroupId())
-                .setArtifactId(srcEntity.getArtifactId())
-                .setVersion(srcEntity.getVersion());
+            String inputVal;
+            String outputId = null;
 
-            String c = srcEntity.getClassifier();
-            c = c == null || c.isBlank()
-                    ? tag
-                    : c.trim() + "-" + tag;
+            Path tgtFile = null;
+            RDFFormat tgtFileRdfFormat = null;
 
-            tgtEntity.setClassifier(c);
+            Resource srcEntity;
+            RdfEntityInfo tgtEntityInfo;
 
-            //tgtEntity.getClassifiers().addAll(srcEntity.getClassifiers());
-            //tgtEntity.getClassifiers().add(tag);
+            if (isAnnotation) {
+                inputVal = srcFile.toString();
+                outputId = inputVal + "~~" + tag;
 
-
-            RdfEntityInfo tgtEntityInfo = ContentTypeUtils.deriveHeadersFromFileName(tgtFileExtension);
-            String tgtContentType = tgtEntityInfo.getContentType();
-
-            Table<Lang, RDFFormatVariant, RDFFormat> cands = HashBasedTable.create();
-            RDFWriterRegistry.registered().stream()
-                .filter(rdfFormat -> RDFLanguagesEx.matchesContentType(rdfFormat.getLang(), tgtContentType))
-                .forEach(rdfFormat -> cands.put(rdfFormat.getLang(), rdfFormat.getVariant(), rdfFormat));
-
-            Map<RDFFormatVariant, RDFFormat> variantToFormat = Iterables.getOnlyElement(cands.rowMap().values());
-            RDFFormat rdfFormat = variantToFormat.get(RDFFormat.BLOCKS);
-
-            List<String> elements = Arrays.asList(srcBaseName, tag, tgtFileExtension).stream()
-                    .filter(item -> !item.isEmpty())
-                    .collect(Collectors.toList());
-
-            String tgtFileName = String.join(".", elements);
-
-            Path tgtFile = srcFile.resolveSibling(tgtFileName);
+                DcatDistribution srcEntityTmp = ModelFactory.createDefaultModel().createResource().as(DcatDistribution.class);
+                srcEntityTmp.setDownloadUrl(inputVal);
 
 
-            // String provFileName = tgtFileName + ".prov.ttl";
+                srcEntity = srcEntityTmp;
+                tgtEntityInfo = null;
+            } else {
 
-            if (Files.exists(tgtFile)) {
-                // TODO Check whether its part of the catalog
-                throw new FileAlreadyExistsException(tgtFile.toString());
+                // Assemble information to build the target file name
+                // This includes content type and encoding
+
+                inputVal = DcatRepoLocalUtils.getDcatId(repo, srcFile, inputIdType);
+                logger.info("Using content identifier " + inputVal);
+
+                Set<DcatDataset> datasets = dist.getDcatDatasets(DcatDataset.class);
+
+                DcatDataset srcDataset = Iterables.getOnlyElement(datasets, null);
+                if (srcDataset == null) {
+                    throw new RuntimeException("File " + path + " must appear in exacly 1 dataset; appears in: " + datasets.size());
+                }
+
+                MavenEntity srcEntityTmp = srcDataset.as(MavenEntity.class);
+
+
+                RdfEntityInfo srcEntityInfo = dist.as(RdfEntityInfo.class);
+                String srcBaseName = FileNameUtils.deriveFileName(srcFileName, srcEntityInfo).getBaseName();
+
+                MavenEntity tgtEntity = targetDataset.as(MavenEntity.class)
+                    .setGroupId(srcEntityTmp.getGroupId())
+                    .setArtifactId(srcEntityTmp.getArtifactId())
+                    .setVersion(srcEntityTmp.getVersion());
+
+                String c = srcEntityTmp.getClassifier();
+                c = c == null || c.isBlank()
+                        ? tag
+                        : c.trim() + "-" + tag;
+
+                srcEntity = srcEntityTmp;
+                tgtEntity.setClassifier(c);
+
+                //tgtEntity.getClassifiers().addAll(srcEntity.getClassifiers());
+                //tgtEntity.getClassifiers().add(tag);
+
+
+                tgtEntityInfo = ContentTypeUtils.deriveHeadersFromFileName(tgtFileExtension);
+                String tgtContentType = tgtEntityInfo.getContentType();
+
+                Table<Lang, RDFFormatVariant, RDFFormat> cands = HashBasedTable.create();
+                RDFWriterRegistry.registered().stream()
+                    .filter(rdfFormat -> RDFLanguagesEx.matchesContentType(rdfFormat.getLang(), tgtContentType))
+                    .forEach(rdfFormat -> cands.put(rdfFormat.getLang(), rdfFormat.getVariant(), rdfFormat));
+
+                Map<RDFFormatVariant, RDFFormat> variantToFormat = Iterables.getOnlyElement(cands.rowMap().values());
+                RDFFormat rdfFormat = variantToFormat.get(RDFFormat.BLOCKS);
+
+                List<String> elements = Arrays.asList(srcBaseName, tag, tgtFileExtension).stream()
+                        .filter(item -> !item.isEmpty())
+                        .collect(Collectors.toList());
+
+                String tgtFileName = String.join(".", elements);
+
+                tgtFile = srcFile.resolveSibling(tgtFileName);
+
+
+                // String provFileName = tgtFileName + ".prov.ttl";
+
+                if (Files.exists(tgtFile)) {
+                    // TODO Check whether its part of the catalog
+                    throw new FileAlreadyExistsException(tgtFile.toString());
+                }
+
+
             }
 
-
             if (!virtualDistribution) {
-                Function<OutputStream, OutputStream> encoder = DcatRepoLocalUtils.createOutputStreamEncoder(tgtEntityInfo.getContentEncodings());
 
-                try(OutputStream out = encoder.apply(Files.newOutputStream(tgtFile))) {
-                    StreamRDF sink = StreamRDFWriterEx.getWriterStream(out, rdfFormat, null);  // StreamRDFWriter.getWriterStream(out, rdfFormat);
+                if (isAnnotation) {
+                    RdfDataPod dataPod = runWorkflow(repo, srcEntity, false, transformDist, job, srcFile, srcFileName, tag, inputVal,
+                            tgtFile);
 
-                    Model jobInstModel = ModelFactory.createDefaultModel();
+                    Model model = dataPod.getModel();
 
-                    // Op op = job.getOp();
-                    DataRef dataRef = jobInstModel.createResource().as(DataRefUrl.class)
-                            .setDataRefUrl(srcFileName)
-                            ;
+                    Dataset repoDataset = repo.getDataset();
+                    String effOutputId = outputId;
+                    Txn.executeWrite(repoDataset, () -> {
+                        Model targetModel = repoDataset.getNamedModel(effOutputId);
+
+                        targetModel.add(model);
+                    });
+
+                } else {
+                    Function<OutputStream, OutputStream> encoder = DcatRepoLocalUtils.createOutputStreamEncoder(tgtEntityInfo.getContentEncodings());
+
+                    try(OutputStream out = encoder.apply(Files.newOutputStream(tgtFile))) {
+                        StreamRDF sink = StreamRDFWriterEx.getWriterStream(out, tgtFileRdfFormat, null);  // StreamRDFWriter.getWriterStream(out, rdfFormat);
+
+                        RdfDataPod dataPod = runWorkflow(repo, srcEntity, true, transformRes, job, srcFile, srcFileName, tag, inputVal,
+                                tgtFile);
+
+                        Model model = dataPod.getModel();
+                        sink.start();
+                        StreamRDFOps.sendGraphToStream(model.getGraph(), sink);
+                        sink.finish();
+                        out.flush();
+                        // RDFDataMgr.write(out, model, RDFFormat.TURTLE_PRETTY);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
 
 
-                    // Resource transformFileRes = transformFile.toString();
-                    // NodeRef jobRef = NodeRef.createForFile(jobInstModel, transformFileOrId.toString(), null, null);
-                    NodeRef jobRef = NodeRef.createForDcatEntity(jobInstModel, transformRes.asNode(), null, null);
-                    // NodeRef jobRef = jobInstanceModel.createResource()
+                }
 
-                    JobInstance jobInst = jobInstModel.createResource().as(JobInstance.class);
-                    jobInst.setJobRef(jobRef);
+            }
 
-                    Map<String, Node> envMap = jobInst.getEnvMap();
+            RDFDataMgr.write(StdIo.openStdOutWithCloseShield(), targetDataset.getModel(), RDFFormat.TURTLE_PRETTY);
+
+        }
+        return 0;
+    }
+
+    public RdfDataPod runWorkflow(DcatRepoLocal repo,
+            Resource srcEntity,
+            boolean createProv,
+            Resource transformRes, Job job, Path srcFile, String srcFileName,
+            String tag, String inputVal, Path tgtFile) throws IOException {
+        Model jobInstModel = ModelFactory.createDefaultModel();
+
+        // Op op = job.getOp();
+        DataRef dataRef = jobInstModel.createResource().as(DataRefUrl.class)
+                .setDataRefUrl(srcFileName)
+                ;
+
+
+        // Resource transformFileRes = transformFile.toString();
+        // NodeRef jobRef = NodeRef.createForFile(jobInstModel, transformFileOrId.toString(), null, null);
+        // NodeRef jobRef = jobInstanceModel.createResource()
+
+        JobInstance jobInst = jobInstModel.createResource().as(JobInstance.class);
+
+        if (transformRes != null) {
+            NodeRef jobRef = NodeRef.createForDcatEntity(jobInstModel, transformRes.asNode(), null, null);
+            jobInst.setJobRef(jobRef);
+        } else {
+            jobInst.setJob(job);
+            jobInstModel.add(job.getModel());
+        }
+
+
+
+        Map<String, Node> envMap = jobInst.getEnvMap();
 
 //                    envMap.put("INPUT", NodeFactory.createLiteral(srcFile.toString() + "#content"));
-                    envMap.put("INPUT", NodeFactory.createLiteral(inputVal));
-                    envMap.put("CLASSIFIER", NodeFactory.createLiteral(tag));
+        envMap.put("INPUT", NodeFactory.createLiteral(inputVal));
+        envMap.put("CLASSIFIER", NodeFactory.createLiteral(tag));
 
 //                    jobInst.getEnvMap().put("B", NodeFactory.createURI("http://ex.org/B/"));
 //                    jobInst.getEnvMap().put("D", NodeFactory.createURI("http://ex.org/D/"));
 
-                    // Try to bind yet unbound params
-                    for (JobParam param : job.getParams()) {
-                        String name = param.getParamName();
-                        if (!envMap.containsKey(name)) {
-                            Expr expr = param.getDefaultValueExpr();
+        // Try to bind yet unbound params
+        for (JobParam param : job.getParams()) {
+            String name = param.getParamName();
+            if (!envMap.containsKey(name)) {
+                Expr expr = param.getDefaultValueExpr();
 
-                            if (expr != null) {
-                                String str = expr.toString();
-                                String str2 = Envsubst.envsubst(str, x -> envMap.get(x).toString(false));
-                                expr = ExprUtils.parse(str2);
-                                Map<Var, Node> tmp = envMap.entrySet().stream().collect(Collectors
-                                        .toMap(e -> Var.alloc(e.getKey()), Entry::getValue));
-                                Binding b = BindingUtils.fromMap(tmp);
-                                //Set<Var> vars = expr.getVarsMentioned();
+                if (expr != null) {
+                    String str = expr.toString();
+                    String str2 = Envsubst.envsubst(str, x -> envMap.get(x).toString(false));
+                    expr = ExprUtils.parse(str2);
+                    Map<Var, Node> tmp = envMap.entrySet().stream().collect(Collectors
+                            .toMap(e -> Var.alloc(e.getKey()), Entry::getValue));
+                    Binding b = BindingUtils.fromMap(tmp);
+                    //Set<Var> vars = expr.getVarsMentioned();
 
-                                NodeValue nv = ExprUtils.eval(expr, b);
-                                envMap.put(name, NodeFactory.createLiteral(nv.getNode().toString(false)));
-                            }
-                        }
-                    }
-
-
-                    Op inputOp = OpDataRefResource.from(dataRef);
-                    if (Boolean.TRUE.equals(unionDefaultGraphMode)) {
-                        inputOp = OpUnionDefaultGraph.create(inputOp);
-                    }
-
-                    jobInst.getOpVarMap().put("ARG", inputOp);
+                    NodeValue nv = ExprUtils.eval(expr, b);
+                    envMap.put(name, NodeFactory.createLiteral(nv.getNode().toString(false)));
+                }
+            }
+        }
 
 
+        Op inputOp = OpDataRefResource.from(dataRef);
+        if (Boolean.TRUE.equals(unionDefaultGraphMode)) {
+            inputOp = OpUnionDefaultGraph.create(inputOp);
+        }
 
-                    Dataset repoDataset = repo.getDataset();
-                    Txn.executeWrite(repoDataset, () -> {
-                        Entity res = createProvenanceData(repoDataset, srcFile, jobInst, tgtFile);
+        jobInst.getOpVarMap().put("ARG", inputOp);
 
-                        MapperProxyUtils.skolemize("", res,
-                                map -> map.remove(RDF.nil));
 
-                        // createProvenanceData(repo.getDataset(), srcFile, Arrays.asList(transformFilePath), tgtFile);
-                    });
 
-                    OpJobInstance opJobInst = OpJobInstance.create(jobInst.getModel(), jobInst);
-                    // job.add
+        Dataset repoDataset = repo.getDataset();
+        if (createProv) {
+            Txn.executeWrite(repoDataset, () -> {
+                Entity res = createProvenanceData(repoDataset, srcFile, jobInst, tgtFile);
 
-                    // Map<String, Op> dataRefMapping = new HashMap<>();
+                MapperProxyUtils.skolemize("", res,
+                        map -> map.remove(RDF.nil));
 
-                    HttpResourceRepositoryFromFileSystemImpl httpRepo = HttpResourceRepositoryFromFileSystemImpl.createDefault();
+                // createProvenanceData(repo.getDataset(), srcFile, Arrays.asList(transformFilePath), tgtFile);
+            });
+        }
 
-                    TaskContext taskContext = new TaskContext(srcEntity, new HashMap<>(), new HashMap<>());
+        OpJobInstance opJobInst = OpJobInstance.create(jobInst.getModel(), jobInst);
+        // job.add
 
-                    Model repoUnionModel = repoDataset.getUnionModel();
-                    taskContext.getCtxModels().put("thisCatalog", repoUnionModel);
+        // Map<String, Op> dataRefMapping = new HashMap<>();
 
-                    OpVisitor<RdfDataPod> opExecutor = new OpExecutorDefault(
-                            httpRepo,
-                            // httpRepo.getCacheStore(),
-                            taskContext,
-                            new HashMap<>(),
-                            // srcFileNameRes,
-                            RDFFormat.TURTLE_BLOCKS);
+        HttpResourceRepositoryFromFileSystemImpl httpRepo = HttpResourceRepositoryFromFileSystemImpl.createDefault();
 
-                    RdfDataPod dataPod = opJobInst.accept(opExecutor);
+
+        TaskContext taskContext = new TaskContext(srcEntity, new HashMap<>(), new HashMap<>());
+
+        Model repoUnionModel = repoDataset.getUnionModel();
+        taskContext.getCtxModels().put("thisCatalog", repoUnionModel);
+
+        OpVisitor<RdfDataPod> opExecutor = new OpExecutorDefault(
+                httpRepo,
+                // httpRepo.getCacheStore(),
+                taskContext,
+                new HashMap<>(),
+                // srcFileNameRes,
+                RDFFormat.TURTLE_BLOCKS);
+
+        RdfDataPod dataPod = opJobInst.accept(opExecutor);
 //
 //                    RdfDataPod dataPod = ExecutionUtils.executeJob(
 //                            job,
@@ -399,24 +499,7 @@ public class CmdDcatFileTransformApply
 //                            taskContext,
 //                            srcFileNameRes,
 //                            RDFFormat.TURTLE_BLOCKS);
-
-                    Model model = dataPod.getModel();
-                    sink.start();
-                    StreamRDFOps.sendGraphToStream(model.getGraph(), sink);
-                    sink.finish();
-                    out.flush();
-                    // RDFDataMgr.write(out, model, RDFFormat.TURTLE_PRETTY);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-
-            }
-
-            RDFDataMgr.write(StdIo.openStdOutWithCloseShield(), targetDataset.getModel(), RDFFormat.TURTLE_PRETTY);
-
-        }
-        return 0;
+        return dataPod;
     }
 
     public static Function<Object, Resource> anyToResource(Model model) {

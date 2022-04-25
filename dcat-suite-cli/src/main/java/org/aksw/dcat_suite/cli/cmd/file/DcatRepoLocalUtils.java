@@ -112,13 +112,18 @@ public class DcatRepoLocalUtils {
 //
 //        return result;
 
-        List<ResourceInDataset> tmp = WrappedIterator.create(
-                dataset.asDatasetGraph().find(pathNode, Node.ANY, DCAT.downloadURL.asNode(), pathNode))
-        .mapWith(quad -> (ResourceInDataset)new ResourceInDatasetImpl(dataset, quad.getGraph().getURI(), quad.getSubject()))
-        .toList();
+        ResourceInDataset rid = new ResourceInDatasetImpl(dataset, pathStr, pathNode);
+        if (rid.getModel().isEmpty()) {
+            rid = null;
+        }
+        return rid;
+//        List<ResourceInDataset> tmp = WrappedIterator.create(
+//                dataset.asDatasetGraph().find(pathNode, Node.ANY, DCAT.downloadURL.asNode(), pathNode))
+//        .mapWith(quad -> (ResourceInDataset)new ResourceInDatasetImpl(dataset, quad.getGraph().getURI(), quad.getSubject()))
+//        .toList();
 
 
-        return IterableUtils.expectZeroOrOneItems(tmp);
+        // return IterableUtils.expectZeroOrOneItems(tmp);
     }
 
     /**
