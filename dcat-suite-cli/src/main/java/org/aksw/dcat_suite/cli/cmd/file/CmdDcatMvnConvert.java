@@ -27,6 +27,15 @@ public class CmdDcatMvnConvert
     @Option(names = { "-s", "--separator"}, description = "Separator; defaults to ${DEFAULT-VALUE}", defaultValue = "/")
     public String separator;
 
+    @Option(names = { "--prefix"}, description = "Enable prefix")
+    public boolean prependPrefix;
+
+    @Option(names = { "--snapshot-prefix" }, description = "Prefix for snapshot versions; defaults to ${DEFAULT-VALUE}", defaultValue = "snapshots")
+    public String snapshotPrefix;
+
+    @Option(names = { "--release-prefix" }, description = "Prefix for release versions; defaults to ${DEFAULT-VALUE}", defaultValue = "internal")
+    public String internalPrefix;
+
 
     @Override
     public Integer call() throws Exception {
@@ -38,10 +47,17 @@ public class CmdDcatMvnConvert
             outputFilename = true;
         }
 
+        boolean isSnapshot = mvnId.getVersion().toUpperCase().endsWith("-SNAPSHOT");
+
+        String prefix = prependPrefix
+                ? isSnapshot ? snapshotPrefix : internalPrefix
+                : null
+                ;
+
         String pathStr = outputDirectories ? MavenEntityCore.toPath(mvnId) : null;
         String fileName = outputFilename ? MavenEntityCore.toFileName(mvnId) : null;
 
-        String result = Arrays.asList(pathStr, fileName).stream()
+        String result = Arrays.asList(prefix, pathStr, fileName).stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(separator));
 

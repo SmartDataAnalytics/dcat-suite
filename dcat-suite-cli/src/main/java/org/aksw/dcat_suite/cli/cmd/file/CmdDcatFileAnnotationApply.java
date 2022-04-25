@@ -65,6 +65,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+// NO LONGER USED - annotation mode is now integrated in CmdDcatFileTransformApply
+
 /**
  * Apply a annotation to the artifact registry or a file.
  *
