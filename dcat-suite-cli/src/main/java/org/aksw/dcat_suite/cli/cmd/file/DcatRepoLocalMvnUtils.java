@@ -13,9 +13,9 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 public class DcatRepoLocalMvnUtils {
 
     public static Path getDefaultPomTemplate() {
-        CatalogResolverFilesystem catalogResolver = CatalogResolverFilesystem.createDefault();
-        Path repoRoot = catalogResolver.getDcatRepoRoot();
-        Path pomXmlFile = repoRoot.resolve("pom.xml");
+        Path repoRoot = CatalogResolverFilesystem.getDefaultRepoDir();
+        // Path repoRoot = catalogResolver.getDcatRepoRoot();
+        Path pomXmlFile = repoRoot.resolve("template.pom.xml");
         if (!Files.exists(pomXmlFile)) {
             throw new RuntimeException("No default pom.xml found at " + pomXmlFile);
         }

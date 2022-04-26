@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import org.aksw.commons.io.util.FileUtils;
+import org.aksw.commons.io.util.symlink.SymbolicLinkStrategies;
+import org.aksw.commons.io.util.symlink.SymbolicLinkStrategy;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.difs.builder.DifsFactory;
 import org.aksw.difs.system.domain.StoreDefinition;
@@ -63,6 +65,7 @@ public class DcatRepoLocalImpl
             try {
                 this.dataSource = RdfDataEngineFromDataset.create(DifsFactory.newInstance()
                         .setRepoRootPath(repoRootFolder)
+                        .setSymbolicLinkStrategy(SymbolicLinkStrategies.FILE)
                         .setStoreDefinition(storeDef).connectAsDataset(), true);
             } catch (IOException e) {
                 throw new RuntimeException(e);

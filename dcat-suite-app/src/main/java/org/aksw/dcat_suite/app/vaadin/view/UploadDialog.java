@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
-import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefSparqlEndpoint;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRefSparqlEndpoint;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
 import org.aksw.jena_sparql_api.conjure.dataset.engine.ExecutionUtils;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
@@ -163,7 +163,7 @@ public class UploadDialog
 				// RDFConnection.connect(serviceUrl);
 				Model model = ModelFactory.createDefaultModel();
 				Op op = ConjureBuilderImpl.start()
-					.fromDataRef(DataRefSparqlEndpoint.create(model, serviceUrl))
+					.fromDataRef(RdfDataRefSparqlEndpoint.create(model, serviceUrl))
 					.construct(QLib.everything())
 					.getOp();
 				

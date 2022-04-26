@@ -31,7 +31,7 @@ import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.dcat.repo.impl.model.SearchResult;
 import org.aksw.dcat.utils.DcatUtils;
-import org.aksw.dcat_suite.cli.cmd.CmdDcatSuiteMain;
+import org.aksw.dcat_suite.cli.cmd.CmdDcatParent;
 import org.aksw.dcat_suite.cli.cmd.CmdDeployVirtuoso;
 import org.aksw.dcat_suite.clients.DkanClient;
 import org.aksw.dcat_suite.clients.PostProcessor;
@@ -163,7 +163,7 @@ public class MainCliDcatSuite {
 
     public static int mainCore(String[] args) throws Exception {
 
-        int result = new CommandLine(new CmdDcatSuiteMain())
+        int result = new CommandLine(new CmdDcatParent())
                 .setExecutionExceptionHandler((ex, commandLine, parseResult) -> {
                     boolean debugMode = true;
                     if (debugMode) {

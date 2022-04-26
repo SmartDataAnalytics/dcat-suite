@@ -8,6 +8,7 @@ import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileAdd;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileInit;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileParent;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileRm;
+import org.aksw.dcat_suite.cli.cmd.file.CmdDcatFileStatus;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatMvnParent;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatMvnizeParent;
 import org.aksw.dcat_suite.cli.cmd.file.CmdDcatPropParent;
@@ -17,6 +18,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "dcat", separator = "=", description = "Show DCAT information", subcommands = {
+    CmdDcatFileStatus.class,
     CmdDcatFileInit.class,
     CmdDcatPropParent.class,
     CmdDcatFileAdd.class,
@@ -38,7 +40,7 @@ import picocli.CommandLine.Parameters;
     CmdDcatFileParent.class,
     CmdDcatMvnParent.class
 })
-public class CmdDcatSuiteMain {
+public class CmdDcatParent {
     @Parameters(description = "Non option args")
     protected List<String> nonOptionArgs;
 

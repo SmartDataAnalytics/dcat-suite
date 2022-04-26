@@ -5,19 +5,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.io.util.symlink.SymbolicLinkStrategies;
-import org.aksw.commons.io.util.symlink.SymbolicLinkStrategy;
-import org.aksw.commons.io.util.symlink.SymbolicLinkStrategyFile;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
@@ -27,6 +26,11 @@ import org.aksw.dcat.mgmt.api.DataProject;
 import org.aksw.dcat.mgmt.vocab.DCATX;
 import org.aksw.difs.builder.DifsFactory;
 import org.aksw.difs.system.domain.StoreDefinition;
+import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
+import org.aksw.jena_sparql_api.conjure.dataref.core.api.DataRefVisitor;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRef;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRefGraph;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRefUrl;
 import org.aksw.jena_sparql_api.http.domain.api.RdfEntityInfo;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
@@ -44,15 +48,12 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.util.ResourceUtils;
-import org.apache.jena.util.iterator.WrappedIterator;
-import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -362,4 +363,44 @@ public class DcatRepoLocalUtils {
         return result;
     }
 
+
+
+    public static Entry<RdfDataRef, Model> resolveContent(String input, DataRefVisitor<? extends RdfDataPod> dataEngineCreator) {
+//        IRIxResolver resolver = IRIxResolver.create().allowRelative(true).build();
+//        IRIx irix = resolver.resolve(input);
+//        String iriStr = irix.toString();
+
+//        RdfDataRef dataRef;
+//        RdfDataPod rdfDataEngine;
+
+        RdfDataRef dataRef = RdfDataRefUrl.create(ModelFactory.createDefaultModel(), input);
+        RdfDataPod rdfDataEngine = dataRef.accept(dataEngineCreator);
+
+        if (rdfDataEngine == null) {
+            dataRef = RdfDataRefGraph.create(ModelFactory.createDefaultModel(), input);
+            rdfDataEngine = dataRef.accept(dataEngineCreator);
+        }
+
+        Model model = rdfDataEngine.getModel();
+
+        return new SimpleEntry<>(dataRef, model);
+
+//        Resource transformRes = repo.getDataset().getUnionModel().createResource(transformFilePath.toString());
+//
+//
+//        // Load the transformation
+//        Model transformModel;
+//        DcatDistribution transformDist = null;
+//        if (Files.exists(transformFilePath)) {
+//             transformModel = RDFDataMgr.loadModel(transformFilePath.toString());
+//        } else {
+//            transformDist = DcatUtils.resolveDistribution(transformRes);
+//            DcatIdType transformIt = DcatIdType.of(transformIdType);
+//
+//            Resource transformId = DcatUtils.getRelatedId(transformDist, transformIt);
+//
+//            transformModel = loadDistributionAsModel(repo.getBasePath(), transformDist); // RDFDataMgr.loadModel(transformFileOrId);
+//        }
+//
+    }
 }

@@ -23,7 +23,7 @@ import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPods;
-import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRef;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRef;
 import org.aksw.jena_sparql_api.conjure.resourcespec.ResourceSpecUtils;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jenax.arq.connection.RDFConnectionModular;
@@ -137,7 +137,7 @@ public class CatalogResolverUtils {
             Collection<DcatResolver> resolvers = config.resolvers(DcatResolver.class);
             for(DcatResolver resolverSpec : resolvers) {
 
-                DataRef dataRef = resolverSpec.getDataRef();
+                RdfDataRef dataRef = resolverSpec.getDataRef();
 
                 // Try to map as a DataRef
                 //DataRef dataRef = JenaPluginUtils.polymorphicCast(resolverSpec, DataRef.class);
@@ -146,7 +146,7 @@ public class CatalogResolverUtils {
 
                     logger.info("Loaded catalog: " + dataPod + " from " + dataRef);
 
-                    SparqlQueryConnection conn = dataPod.openConnection();
+                    SparqlQueryConnection conn = dataPod.getConnection();
 
                     // Wrap with client side construct because ... virtuoso
                     conn = new SparqlQueryConnectionJsa(

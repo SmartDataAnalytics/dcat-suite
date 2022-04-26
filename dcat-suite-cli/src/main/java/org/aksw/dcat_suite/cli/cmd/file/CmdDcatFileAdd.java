@@ -106,7 +106,7 @@ public class CmdDcatFileAdd
                 throw new RuntimeException("Could not derive a version from file's last modified date: " + filePath);
             }
             LocalDate localDate = LocalDate.ofInstant(fileTime.toInstant(), ZoneId.systemDefault());
-            version = localDate.toString();
+            version = localDate.toString() + ".1-SNAPSHOT";
         }
 
         // TODO Convert entity info to file extension

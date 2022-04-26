@@ -78,10 +78,15 @@ public class CatalogResolverFilesystem
 
     //protected CatalogResolver delegate;
 
-    public static CatalogResolverFilesystem createDefault() {
-        String homeDir = System.getProperty(StandardSystemProperty.USER_HOME.key());
+    public static Path getDefaultRepoDir() {
+        String homeDir = StandardSystemProperty.USER_HOME.value();
 
-        Path root = Paths.get(homeDir).resolve(".dcat");
+        Path result = Paths.get(homeDir).resolve(".dcat");
+        return result;
+    }
+
+    public static CatalogResolverFilesystem createDefault() {
+        Path root = getDefaultRepoDir();
         return new CatalogResolverFilesystem(root);
     }
 

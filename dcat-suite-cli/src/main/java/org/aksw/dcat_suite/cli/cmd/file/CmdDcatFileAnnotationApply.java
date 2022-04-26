@@ -18,8 +18,8 @@ import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.DcatUtils;
 import org.aksw.dcat_suite.cli.main.DcatOps;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
-import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRef;
-import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefUrl;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRef;
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRefUrl;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.Op;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.OpDataRefResource;
 import org.aksw.jena_sparql_api.conjure.dataset.algebra.OpJobInstance;
@@ -202,7 +202,7 @@ public class CmdDcatFileAnnotationApply
                     "Transformation does not specify a tag; a custom one needs to be provided using --tag");
 
             String inputVal = srcFile.toString();
-            String outputId = inputVal + "~~" + tag;
+            String outputId = inputVal + DcatSuiteConstants.ANNOTATION_SEPARATOR + tag;
 
 
             if (!virtualDistribution) {
@@ -211,7 +211,7 @@ public class CmdDcatFileAnnotationApply
                     Model jobInstModel = ModelFactory.createDefaultModel();
 
                     // Op op = job.getOp();
-                    DataRef dataRef = jobInstModel.createResource().as(DataRefUrl.class)
+                    RdfDataRef dataRef = jobInstModel.createResource().as(RdfDataRefUrl.class)
                             .setDataRefUrl(srcFileName)
                             ;
 
@@ -286,6 +286,7 @@ public class CmdDcatFileAnnotationApply
                     taskContext.getCtxModels().put("thisCatalog", repoUnionModel);
 
                     OpVisitor<RdfDataPod> opExecutor = new OpExecutorDefault(
+                            repoDataset,
                             httpRepo,
                             // httpRepo.getCacheStore(),
                             taskContext,

@@ -19,10 +19,10 @@ public class CmdDcatMvnConvert
     public String mvnIdStr;
 
     @Option(names = { "-d", "--directories"})
-    public boolean outputDirectories;
+    public boolean includeDirectories;
 
     @Option(names = { "-f", "--filename"})
-    public boolean outputFilename;
+    public boolean includeFilename;
 
     @Option(names = { "-s", "--separator"}, description = "Separator; defaults to ${DEFAULT-VALUE}", defaultValue = "/")
     public String separator;
@@ -40,26 +40,13 @@ public class CmdDcatMvnConvert
     @Override
     public Integer call() throws Exception {
 
-        MavenEntityCore mvnId = MavenEntityCore.parse(mvnIdStr);
-
-        if (!outputDirectories && !outputFilename) {
-            outputDirectories = true;
-            outputFilename = true;
+        if (!includeDirectories && !includeFilename) {
+            includeDirectories = true;
+            includeFilename = true;
         }
 
-        boolean isSnapshot = mvnId.getVersion().toUpperCase().endsWith("-SNAPSHOT");
-
-        String prefix = prependPrefix
-                ? isSnapshot ? snapshotPrefix : internalPrefix
-                : null
-                ;
-
-        String pathStr = outputDirectories ? MavenEntityCore.toPath(mvnId) : null;
-        String fileName = outputFilename ? MavenEntityCore.toFileName(mvnId) : null;
-
-        String result = Arrays.asList(prefix, pathStr, fileName).stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(separator));
+        MavenEntityCore entity = MavenEntityCore.parse(mvnIdStr);
+        String result = MavenEntityCore.toPath(entity, snapshotPrefix, internalPrefix, separator, prependPrefix, includeDirectories, includeFilename);
 
         System.out.println(result);
 

@@ -2,8 +2,10 @@ package org.aksw.dcat_suite.cli.cmd.file;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.function.Supplier;
 
+import org.aksw.dcat.jena.domain.api.MavenEntityCore;
+import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.Invoker;
 
 public class ArtifactResolverMavenRemote
@@ -11,24 +13,39 @@ public class ArtifactResolverMavenRemote
 {
     protected ArtifactResolverMavenLocal localResolver;
     protected Invoker invoker;
-    protected List<String> remoteRepositories;
+
+    // Factory for preconfigured invocation requests of the dependency:get goal
+    protected Supplier<InvocationRequest> invocationRequestFactory;
 
     public ArtifactResolverMavenRemote(ArtifactResolverMavenLocal localResolver,
             Invoker invoker,
-            List<String> remoteRepositories) {
+            Supplier<InvocationRequest> invocationRequestFactory) {
         super();
         this.localResolver = localResolver;
         this.invoker = invoker;
-        this.remoteRepositories = remoteRepositories;
+        this.invocationRequestFactory = invocationRequestFactory;
     }
 
     @Override
-    public Path resolve(String artifact) throws Exception {
-        Path result = localResolver.resolve(artifact);
-        if (!Files.exists(result)) {
-            MavenUtils.dependencyGet(invoker, artifact, remoteRepositories);
+    public Path resolve(ArtifactResolutionRequest request) throws Exception {
 
-            if (!Files.exists(result)) {
+        // Remove a preceeding urn:mvn:
+        String tmp = request.getArtifactId();
+        MavenEntityCore mvnEntity = MavenEntityCore.parse(tmp);
+        String artifact = MavenEntityCore.toString(mvnEntity);
+
+        Path result = null;
+        if (!request.updateCache()) {
+            result = localResolver.resolve(request);
+        }
+
+        if (result == null || !Files.exists(result)) {
+            InvocationRequest mvnRequest = invocationRequestFactory.get();
+            MavenUtils.dependencyGet(invoker, artifact, null, mvnRequest);
+
+            result = localResolver.resolve(request);
+
+            if (result == null || !Files.exists(result)) {
                 throw new RuntimeException(String.format("Sanity check failed: Remote retrieval of %s raised no error but artifact not available at %s", artifact, result));
             }
         }

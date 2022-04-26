@@ -15,7 +15,8 @@ public class ArtifactResolverMavenLocal
     }
 
     @Override
-    public Path resolve(String artifact) {
+    public Path resolve(ArtifactResolutionRequest request) {
+        String artifact = request.getArtifactId();
         MavenEntityCore mvnId = MavenEntityCore.parse(artifact);
 
         String path = MavenEntityCore.toPath(mvnId);

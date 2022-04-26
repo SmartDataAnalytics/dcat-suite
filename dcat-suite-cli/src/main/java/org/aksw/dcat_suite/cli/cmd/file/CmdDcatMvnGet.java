@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,14 +49,17 @@ public class CmdDcatMvnGet
     @Option(names= { "-r", "--remoteRepositories" })
     public List<String> remoteRepositories = new ArrayList<>();
 
+    @Option(names= { "-P" }, description = "Maven profiles to activate")
+    public List<String> profiles = new ArrayList<>();
+
     @Parameters
     protected List<String> artifacts;
 
     public Integer call() throws Exception {
 
-
         Invoker invoker = new DefaultInvoker();
-        ArtifactResolver artifactResolver = MavenUtils.createDefaultArtifactResolver(invoker, remoteRepositories);
+        Path templatePomXml = DcatRepoLocalMvnUtils.getDefaultPomTemplate();
+        ArtifactResolver artifactResolver = MavenUtils.createDefaultArtifactResolver(invoker, templatePomXml, profiles, remoteRepositories);
 
 
         for (String artifact : artifacts) {
@@ -75,7 +79,13 @@ public class CmdDcatMvnGet
 
             String physicalMvnId = MavenEntityCore.toString(mvnId);
 
-            Path path = artifactResolver.resolve(physicalMvnId);
+            ArtifactResolutionRequest req = new ArtifactResolutionRequestImpl();
+            req.setArtifactId(physicalMvnId);
+
+            Path path = artifactResolver.resolve(req);
+//            if (!Files.exists(path)) {
+//                throw new NoSuchFileException(path.toString());
+//            }
 
             Dataset dataset = DatasetFactory.create();
             Lang lang = RDFLanguages.fileExtToLang(fileExt);
