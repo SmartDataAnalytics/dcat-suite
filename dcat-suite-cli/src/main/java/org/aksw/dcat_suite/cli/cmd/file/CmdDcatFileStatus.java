@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -20,10 +21,8 @@ import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.Invoker;
-import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.google.common.collect.Streams;
-import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
 import picocli.CommandLine.Command;
@@ -62,6 +61,7 @@ public class CmdDcatFileStatus
 
             // Get the distributions of fileGraph (if any)
             List<ResourceInDataset> distributions = WrappedIterator.create(repoDs.asDatasetGraph().find(Node.ANY, Node.ANY, DCAT.downloadURL.asNode(), fileGraph))
+                .filterKeep(quad -> Objects.equals(quad.getGraph(), quad.getSubject()))
                 .mapWith(quad -> (ResourceInDataset)new ResourceInDatasetImpl(repoDs, quad.getGraph().getURI(), quad.getSubject()))
                 .toList();
 

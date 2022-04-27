@@ -49,6 +49,7 @@ import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromF
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
+import org.aksw.jenax.arq.util.node.NodeEnvsubst;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
 import org.aksw.jenax.model.prov.Activity;
 import org.aksw.jenax.model.prov.Entity;
@@ -75,6 +76,8 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.graph.NodeTransform;
+import org.apache.jena.sparql.graph.NodeTransformLib;
 import org.apache.jena.sparql.util.ExprUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.RDF;
@@ -389,8 +392,6 @@ public class CmdDcatFileTransformApply
                     // TODO Check whether its part of the catalog
                     throw new FileAlreadyExistsException(tgtFile.toString());
                 }
-
-
             }
 
             if (!virtualDistribution) {
@@ -513,15 +514,24 @@ public class CmdDcatFileTransformApply
                 Expr expr = param.getDefaultValueExpr();
 
                 if (expr != null) {
-                    String str = expr.toString();
-                    String str2 = Envsubst.envsubst(str, x -> envMap.get(x).toString(false));
+                    // Substitute string placeholders such as ${VAR}
+                    String str = ExprUtils.fmtSPARQL(expr);
+                    String str2 = Envsubst.envsubst(str, x -> {
+                        Node e = Objects.requireNonNull(envMap.get(x), "No entry for " + x);
+                        return e.toString(false);
+                    });
                     expr = ExprUtils.parse(str2);
+
+                    // Substitute node placeholders such as <env://VAR>
+                    NodeTransform nodeTransform = x -> NodeEnvsubst.substWithNode(x, envMap::get);
+                    Expr finalExpr = NodeTransformLib.transform(nodeTransform, expr);
+
                     Map<Var, Node> tmp = envMap.entrySet().stream().collect(Collectors
                             .toMap(e -> Var.alloc(e.getKey()), Entry::getValue));
                     Binding b = BindingUtils.fromMap(tmp);
                     //Set<Var> vars = expr.getVarsMentioned();
 
-                    NodeValue nv = ExprUtils.eval(expr, b);
+                    NodeValue nv = ExprUtils.eval(finalExpr, b);
                     envMap.put(name, NodeFactory.createLiteral(nv.getNode().toString(false)));
                 }
             }
