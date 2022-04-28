@@ -1,24 +1,24 @@
 package org.aksw.dcat_suite.cli.cmd.file;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
-import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
-import org.aksw.dcat.repo.impl.fs.CatalogResolverFilesystem;
-import org.aksw.dcat.utils.DcatUtils;
+import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
+import org.aksw.jenax.arq.util.execution.QueryExecutionUtils;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Model;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
 import picocli.CommandLine.Command;
@@ -56,15 +56,21 @@ public class CmdDcatMvnizeContent
 
 
 
-        Model model = fileCentricDataset.getUnionModel();
+        // Model model = fileCentricDataset.getUnionModel();
 
-        Collection<DcatDataset> datasets = DcatUtils.listDcatDatasets(model);
+        // Collection<DcatDistribution> distributions = DcatUtils.listDcatDistributions(model);
+
+        Query distQuery = QueryFactory.create("PREFIX dcat: <http://www.w3.org/ns/dcat#> SELECT DISTINCT ?x { GRAPH ?x { { ?x a dcat:Distribution } UNION { ?x dcat:downloadURL [] } UNION { [] dcat:distribution ?x } } }");
+        List<DcatDistribution> distributions = QueryExecutionUtils.executeList(
+                q -> QueryExecutionFactory.create(q, fileCentricDataset), distQuery).stream()
+                .map(x -> new ResourceInDatasetImpl(fileCentricDataset, x.getURI(), x).as(DcatDistribution.class))
+                .collect(Collectors.toList());
 
         Path buildDir = Path.of("target").toAbsolutePath();;
         Files.createDirectories(buildDir);
         // Group datasets by their group id
 
-        for (DcatDataset d : datasets) {
+        for (DcatDistribution d : distributions) {
             MavenEntity mvnEntity = d.as(MavenEntity.class);
             String artifactId = mvnEntity.getArtifactId();
 
@@ -84,29 +90,28 @@ public class CmdDcatMvnizeContent
 
                 Resource resource = new Resource();
                 resource.setDirectory("../../");
-
-                for (DcatDistribution dist : d.getBasicDistributions()) {
-                    String downloadUrl = dist.getDownloadUrl();
-                    if (downloadUrl != null) {
-                        resource.addInclude(downloadUrl);
-                    }
-                }
+//
+//                for (DcatDistribution dist : d.getBasicDistributions()) {
+//                    String downloadUrl = dist.getDownloadUrl();
+//                    if (downloadUrl != null) {
+//                        resource.addInclude(downloadUrl);
+//                    }
+//                }
 
                 build.addResource(resource);
             } else {
 
                 Plugin plugin = BuildHelperUtils.createPlugin();
 
-                for (DcatDistribution dist : d.getBasicDistributions()) {
-                    MavenEntity distMvnEntity = dist.as(MavenEntity.class);
+//                for (DcatDistribution dist : d.getBasicDistributions()) {
+                MavenEntity distMvnEntity = d.as(MavenEntity.class);
 
-                    String downloadUrl = dist.getDownloadUrl();
-                    if (downloadUrl != null) {
-                        BuildHelperUtils.attachArtifact(plugin,
-                                Path.of("../../").resolve(downloadUrl).toString(),
-                                distMvnEntity.getType(), distMvnEntity.getClassifier());
+                String downloadUrl = d.getDownloadUrl();
+                if (downloadUrl != null) {
+                    BuildHelperUtils.attachArtifact(plugin,
+                            Path.of("../../").resolve(downloadUrl).toString(),
+                            distMvnEntity.getType(), distMvnEntity.getClassifier());
 
-                    }
                 }
                 build.addPlugin(plugin);
             }

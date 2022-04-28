@@ -101,7 +101,7 @@ public class CmdDcatMvnizeMetadata
 
                 MavenEntityCoreImpl metadataArtifact = new MavenEntityCoreImpl(dsMvnId);
 
-                metadataArtifact.setArtifactId(metadataArtifact.getArtifactId() + "-dcat-metadata");
+                metadataArtifact.setArtifactId(metadataArtifact.getArtifactId()); // + "-dcat-metadata");
                 metadataArtifact.setType("trig");
 
                 String datasetFilename = MavenEntityCore.toFileName(dsMvnId);

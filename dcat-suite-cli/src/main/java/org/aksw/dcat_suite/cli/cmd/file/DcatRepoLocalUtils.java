@@ -265,17 +265,17 @@ public class DcatRepoLocalUtils {
         // Path path = StandardSystemProperty.USER_DIR.
         // Path currentFolder = Path.of("").toAbsolutePath();
 
-        Path conf = findDcatRepoConfig(currentFolder);
-        if (conf != null) {
-            if (currentFolder.equals(conf.getParent())) {
+        Path conf = currentFolder.toAbsolutePath().resolve(DEFAULT_REPO_CONF_FILENAME);
+
+        Path existingConf = findDcatRepoConfig(currentFolder);
+        if (existingConf != null) {
+            if (existingConf.equals(conf)) {
                 throw new RuntimeException("Configuration already exists in the current folder: " + conf);
             } else {
                 logger.warn("Creating a store nested inside another one because"
-                        + "there already exists a config at this parent folder: " + conf);
+                        + "there already exists a config at this parent folder: " + existingConf);
                 // throw new RuntimeException("A file already exists (TODO force flag not yet implemented) at " + conf);
             }
-        } else {
-            conf = currentFolder.resolve(DEFAULT_REPO_CONF_FILENAME);
         }
 
         // Path confAbsPath = conf.toAbsolutePath();

@@ -7,13 +7,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,6 +23,8 @@ import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
+import org.aksw.dcat.jena.domain.api.MavenEntityCore;
+import org.aksw.dcat.jena.domain.api.MavenEntityCoreImpl;
 import org.aksw.dcat_suite.cli.main.DcatOps;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPodFactoryAdvancedImpl;
@@ -198,7 +198,7 @@ public class CmdDcatFileTransformApply
 
         HttpResourceRepositoryFromFileSystemImpl httpRepo = HttpResourceRepositoryFromFileSystemImpl.createDefault();
         Dataset repoDataset = repo.getDataset();
-        // srcEntity
+
         TaskContext taskContext = new TaskContext(null, new HashMap<>(), new HashMap<>());
 
         Model repoUnionModel = repoDataset.getUnionModel();
@@ -275,12 +275,12 @@ public class CmdDcatFileTransformApply
             } else {
 
                 // Create the union model in order to allow traversal among all graphs
-                dist = graphAndDist.inModel(graphAndDist.getDataset().getUnionModel())
-                        .as(DcatDistribution.class);
-
-
                 srcFile = Path.of(dist.getDownloadUrl());
             }
+
+            dist = graphAndDist.inModel(graphAndDist.getDataset().getUnionModel())
+                    .as(DcatDistribution.class);
+
 
             String srcFileName = srcFile.getFileName().toString();
 
@@ -316,12 +316,16 @@ public class CmdDcatFileTransformApply
                         .setDataRefUrl(inputVal);
 
                 tgtDataRef = ModelFactory.createDefaultModel().createResource(tgtGraphName + "/output").as(RdfDataRefGraph.class)
-                        .setGraphIri(provGraphName);
+                        .setGraphIri(tgtGraphName);
 
                 srcEntity = srcEntityTmp;
                 tgtEntityInfo = null;
             } else {
-                inputVal = DcatRepoLocalUtils.getDcatId(repo, srcFile, inputIdType);
+                // inputVal = DcatRepoLocalUtils.getDcatId(repo, srcFile, inputIdType);
+                inputVal = srcFile.toString();
+
+                // ResourceInDataset dist = new ResourceInDatasetImpl(repoDataset, inputVal, NodeFactory.createURI(inputVal));
+
                 logger.info("Using content identifier " + inputVal);
 
                 srcDataRef = RdfDataRefUrl.create(ModelFactory.createDefaultModel(), inputVal);
@@ -329,18 +333,16 @@ public class CmdDcatFileTransformApply
                 // Assemble information to build the target file name
                 // This includes content type and encoding
 
+                // tgtGraphName = inputVal + "." + tag;
 
-                tgtGraphName = inputVal + DcatSuiteConstants.ANNOTATION_SEPARATOR + tag;
-                provGraphName = tgtGraphName + DcatSuiteConstants.ANNOTATION_SEPARATOR + "prov";
-
-                Set<DcatDataset> datasets = dist.getDcatDatasets(DcatDataset.class);
-
-                DcatDataset srcDataset = Iterables.getOnlyElement(datasets, null);
-                if (srcDataset == null) {
-                    throw new RuntimeException("File " + path + " must appear in exacly 1 dataset; appears in: " + datasets.size());
-                }
-
-                MavenEntity srcEntityTmp = srcDataset.as(MavenEntity.class);
+//                Set<DcatDataset> datasets = dist.getDcatDatasets(DcatDataset.class);
+//
+//                DcatDataset srcDataset = Iterables.getOnlyElement(datasets, null);
+//                if (srcDataset == null) {
+//                    throw new RuntimeException("File " + path + " must appear in exacly 1 dataset; appears in: " + datasets.size());
+//                }
+//
+                MavenEntity srcEntityTmp = dist.as(MavenEntity.class);
 
 
                 RdfEntityInfo srcEntityInfo = dist.as(RdfEntityInfo.class);
@@ -372,13 +374,17 @@ public class CmdDcatFileTransformApply
                     .forEach(rdfFormat -> cands.put(rdfFormat.getLang(), rdfFormat.getVariant(), rdfFormat));
 
                 Map<RDFFormatVariant, RDFFormat> variantToFormat = Iterables.getOnlyElement(cands.rowMap().values());
-                RDFFormat rdfFormat = variantToFormat.get(RDFFormat.BLOCKS);
+                tgtFileRdfFormat = variantToFormat.get(RDFFormat.BLOCKS);
 
-                List<String> elements = Arrays.asList(srcBaseName, tag, tgtFileExtension).stream()
-                        .filter(item -> !item.isEmpty())
-                        .collect(Collectors.toList());
+//                List<String> elements = Arrays.asList(srcBaseName, tag, tgtFileExtension).stream()
+//                        .filter(item -> !item.isEmpty())
+//                        .collect(Collectors.toList());
+                MavenEntityCore mvnId = new MavenEntityCoreImpl("", srcBaseName, "", tgtFileExtension, tag);
+                String tgtFileName = MavenEntityCore.toFileName(mvnId);
+                // String tgtFileName = String.join(".", elements);
 
-                String tgtFileName = String.join(".", elements);
+                tgtGraphName = tgtFileName;
+                provGraphName = tgtGraphName + DcatSuiteConstants.ANNOTATION_SEPARATOR + "prov";
 
                 tgtFile = srcFile.resolveSibling(tgtFileName);
 
@@ -416,6 +422,7 @@ public class CmdDcatFileTransformApply
                         String effTgtGraphName = tgtGraphName;
                         Txn.executeWrite(repoDataset, () -> {
                             Model targetModel = repoDataset.getNamedModel(effTgtGraphName);
+                            targetModel.removeAll();
 
                             targetModel.add(model);
                         });
@@ -544,12 +551,11 @@ public class CmdDcatFileTransformApply
 
         jobInst.getOpVarMap().put("ARG", inputOp);
 
-
-
         Dataset repoDataset = repo.getDataset();
         if (createProv) {
             Txn.executeWrite(repoDataset, () -> {
                 Model provModel = repoDataset.getNamedModel(provGraphName);
+                provModel.removeAll();
 
                 Resource activity = provModel.createResource(provGraphName);
 
