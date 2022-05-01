@@ -27,7 +27,7 @@ import picocli.CommandLine.Command;
 public class CmdDcatMvnizeContent
     implements Callable<Integer>
 {
-    protected String buildDirName = "target";
+    protected String buildDirName = "target/content";
 
 
 
@@ -66,7 +66,7 @@ public class CmdDcatMvnizeContent
                 .map(x -> new ResourceInDatasetImpl(fileCentricDataset, x.getURI(), x).as(DcatDistribution.class))
                 .collect(Collectors.toList());
 
-        Path buildDir = Path.of("target").toAbsolutePath();;
+        Path buildDir = basePath.resolve(buildDirName); // Path.of("target").toAbsolutePath();;
         Files.createDirectories(buildDir);
         // Group datasets by their group id
 
@@ -85,6 +85,8 @@ public class CmdDcatMvnizeContent
 
 
             Build build = new Build();
+
+            Path moduleDir = buildDir.resolve(artifactId);
 
             if (false) {
 
@@ -107,9 +109,12 @@ public class CmdDcatMvnizeContent
                 MavenEntity distMvnEntity = d.as(MavenEntity.class);
 
                 String downloadUrl = d.getDownloadUrl();
+
                 if (downloadUrl != null) {
+                    String relPath = moduleDir.relativize(basePath.resolve(downloadUrl)).toString();
+
                     BuildHelperUtils.attachArtifact(plugin,
-                            Path.of("../../").resolve(downloadUrl).toString(),
+                            relPath,
                             distMvnEntity.getType(), distMvnEntity.getClassifier());
 
                 }
@@ -124,7 +129,6 @@ public class CmdDcatMvnizeContent
 
             parentPom.addModule(artifactId);
 
-            Path moduleDir = buildDir.resolve(artifactId);
             Files.createDirectories(moduleDir);
 
             try (OutputStream out = Files.newOutputStream(moduleDir.resolve("pom.xml"))) {

@@ -544,7 +544,8 @@ public class CmdDcatFileTransformApply
             }
         }
 
-        Op inputOp = OpDataRefResource.from(JenaPluginUtils.polymorphicCast(srcDataRef.inModel(jobInstModel), RdfDataRef.class));
+        RdfDataRef dataRef = JenaPluginUtils.polymorphicCast(srcDataRef.inModel(jobInstModel), RdfDataRef.class);
+        Op inputOp = OpDataRefResource.from(dataRef);
         if (Boolean.TRUE.equals(unionDefaultGraphMode)) {
             inputOp = OpUnionDefaultGraph.create(inputOp);
         }

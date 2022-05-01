@@ -120,7 +120,7 @@ public class CmdDcatFileAdd
         // Derive the base name; remove file extensions
         String baseName = artifactId != null
                 ? artifactId
-                : fileName.getBaseName();
+                : fileName.getBaseName().replace('.', '-');
 
         // String prefix = "#";
         String prefix = "urn:mvn:";

@@ -1,6 +1,7 @@
 package org.aksw.dcat.utils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -9,15 +10,23 @@ import java.util.stream.Stream;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
+import org.aksw.jenax.arq.util.execution.QueryExecutionUtils;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.ext.com.google.common.collect.Streams;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.DCAT;
@@ -93,6 +102,38 @@ public class DcatUtils {
                 .mapWith(r -> r.as(DcatDistribution.class))
                 .toSet();
 
+        return result;
+    }
+
+    public static Collection<DatasetOneNg> listDistributionGraphs(Dataset dataset) {
+        Collection<DatasetOneNg> result;
+        try (RDFConnection conn = RDFConnection.connect(dataset)) {
+            result = listDistributionGraphNodes(conn).stream()
+                    .map(node -> DatasetOneNgImpl.create(dataset, node))
+                    .collect(Collectors.toList());
+        }
+        return result;
+    }
+
+    public static Collection<DatasetOneNg> listDatasetGraphs(Dataset dataset) {
+        Collection<DatasetOneNg> result;
+        try (RDFConnection conn = RDFConnection.connect(dataset)) {
+            result = listDatasetGraphNodes(conn).stream()
+                    .map(node -> DatasetOneNgImpl.create(dataset, node))
+                    .collect(Collectors.toList());
+        }
+        return result;
+    }
+
+    public static Collection<Node> listDatasetGraphNodes(SparqlQueryConnection conn) {
+        Query distQuery = QueryFactory.create("PREFIX dcat: <http://www.w3.org/ns/dcat#> SELECT DISTINCT ?x { GRAPH ?x { { ?x a dcat:Dataset } UNION { ?x dcat:distribution [] } } }");
+        List<Node> result = QueryExecutionUtils.executeList(conn::query, distQuery);
+        return result;
+    }
+
+    public static Collection<Node> listDistributionGraphNodes(SparqlQueryConnection conn) {
+        Query distQuery = QueryFactory.create("PREFIX dcat: <http://www.w3.org/ns/dcat#> SELECT DISTINCT ?x { GRAPH ?x { { ?x a dcat:Distribution } UNION { ?x dcat:downloadURL [] } UNION { [] dcat:distribution ?x } } }");
+        List<Node> result = QueryExecutionUtils.executeList(conn::query, distQuery);
         return result;
     }
 

@@ -9,15 +9,17 @@ INSERT {
   GRAPH ?distGraph { ?dist dcat:downloadURL ?mvnUrn }
 }
 WHERE {
-  GRAPH ?datasetGraph {
-    ?dataset
-      mvn:groupId ?g ; mvn:artifactId ?a ; owl:versionInfo ?v
-  }
+#  GRAPH ?datasetGraph {
+#    ?dataset
+#      mvn:groupId ?g ; mvn:artifactId ?a ; owl:versionInfo ?v
+#  }
 
   GRAPH ?any { ?dataset dcat:distribution ?dist }
 
   GRAPH ?distGraph {
     ?dist dcat:downloadURL ?url .
+
+    ?dist mvn:groupId ?g ; mvn:artifactId ?a ; owl:versionInfo ?v .
     OPTIONAL { ?dist mvn:classifier ?c }
     OPTIONAL { ?dist mvn:type ?t }
   }

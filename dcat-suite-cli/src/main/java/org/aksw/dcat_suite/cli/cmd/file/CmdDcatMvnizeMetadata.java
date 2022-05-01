@@ -1,12 +1,14 @@
 package org.aksw.dcat_suite.cli.cmd.file;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
@@ -17,19 +19,17 @@ import org.aksw.dcat.jena.domain.api.MavenEntityCoreImpl;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
-import org.aksw.jenax.arq.util.quad.DatasetUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
 import picocli.CommandLine.Command;
@@ -50,6 +50,8 @@ public class CmdDcatMvnizeMetadata
     @Parameters
     public List<String> dcatFiles = new ArrayList<>();
 
+    protected String buildDirName = "target/metadata";
+
 
     @Override
     public Integer call() throws Exception {
@@ -66,7 +68,10 @@ public class CmdDcatMvnizeMetadata
         parent.setArtifactId(parentPom.getArtifactId());
         parent.setVersion(parentPom.getVersion());
 
-        Path buildDir = Path.of("target-meta").toAbsolutePath();;
+        DcatRepoLocal repo = DcatRepoLocalUtils.findLocalRepo();
+        Path baseDir = repo.getBasePath();
+
+        Path buildDir = baseDir.resolve(buildDirName).toAbsolutePath();;
         Files.createDirectories(buildDir);
         // Group datasets by their group id
 
@@ -80,17 +85,42 @@ public class CmdDcatMvnizeMetadata
             Dataset xds = RDFDataMgrEx.readAsGiven(DatasetFactory.create(), fileName);
 
             xds = CmdDcatFileFinalize.makeDatasetCentric(xds);
+
+            RDFDataMgrEx.writeAsGiven(System.out, xds, RDFFormat.TRIG_BLOCKS, null);
+
             UpdateRequest ur = SparqlStmtMgr.loadSparqlStmts("dcat-download-to-mvn.rq").get(0).getAsUpdateStmt().getUpdateRequest();
 
             UpdateExecutionFactory.create(ur, xds).execute();
 
-            Model model = xds.getUnionModel();
+            // Model model = xds.getUnionModel();
 
-            Collection<DcatDataset> datasets = DcatUtils.listDcatDatasets(model);
+            // Create the distribution graphs: For every distribution create a copy of all referenced file graphs
+            // thereby replacing the file name with the distribution id.
 
-            for (DcatDataset d : datasets) {
+
+            // Collect all graphs relevant to the datasets. These are all graphs
+            // whose IRI starts with the dataset id or the distribution ids.
+
+            Collection<DatasetOneNg> datasetGraphs = DcatUtils.listDatasetGraphs(xds);
+
+            for (DatasetOneNg datasetGraph : datasetGraphs) {
+                DcatDataset d = datasetGraph.getSelfResource().as(DcatDataset.class);
+                Node datasetGraphNode = d.asNode();
+                String datasetGraphIri = datasetGraphNode.getURI();
+
+                Map<Node, Node> map = CmdDcatFileFinalize.listRelatedGraphs(xds, datasetGraphIri, datasetGraphIri);
+                Set<Node> graphSet = new LinkedHashSet<>();
+                graphSet.add(datasetGraphNode);
+                graphSet.addAll(map.keySet());
+
+                Dataset finalDataset = DatasetFactory.create();
+                for (Node graph : graphSet) {
+                    DatasetOneNg dong = DatasetOneNgImpl.create(xds, graph);
+                    finalDataset.asDatasetGraph().addAll(dong.asDatasetGraph());
+                }
+
                 // Dataset ds = DatasetUtils.createFromResource(d);
-                DatasetOneNg ds = DatasetOneNgImpl.create(xds, d.getURI());
+                // DatasetOneNg ds = DatasetOneNgImpl.create(xds, d.getURI());
                 // xds.getNamedModel(d.getURI()).as(DcatDataset.class);
 
                 MavenEntity dsMvnId = d.as(MavenEntity.class);
@@ -109,7 +139,7 @@ public class CmdDcatMvnizeMetadata
                 Path datasetFile = datasetFolder.resolve("dcat.trig");
 
                 try (OutputStream out = Files.newOutputStream(datasetFile)) {
-                    RDFDataMgrEx.writeAsGiven(out, ds, RDFFormat.TRIG_BLOCKS, null);
+                    RDFDataMgrEx.writeAsGiven(out, finalDataset, RDFFormat.TRIG_BLOCKS, null);
                     out.flush();
                 }
 
@@ -128,7 +158,7 @@ public class CmdDcatMvnizeMetadata
 
                 Plugin plugin = BuildHelperUtils.createPlugin();
                 for (DcatDistribution dist : d.getBasicDistributions()) {
-                    MavenEntity mvnId = dist.as(MavenEntity.class);
+                    // MavenEntity mvnId = dist.as(MavenEntity.class);
                     // TODO Generate dependencies?
 
                     BuildHelperUtils.attachArtifact(plugin,
