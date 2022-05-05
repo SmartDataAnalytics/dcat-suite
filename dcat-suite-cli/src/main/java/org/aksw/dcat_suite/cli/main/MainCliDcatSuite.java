@@ -19,6 +19,7 @@ import org.aksw.ckan_deploy.core.DcatDeployVirtuosoUtils;
 import org.aksw.ckan_deploy.core.DcatExpandUtils;
 import org.aksw.ckan_deploy.core.DcatRepository;
 import org.aksw.ckan_deploy.core.DcatRepositoryDefault;
+import org.aksw.commons.util.derby.DerbyUtils;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.repo.api.CatalogResolver;
@@ -147,7 +148,8 @@ public class MainCliDcatSuite {
 
     public static void main(String[] args) throws Exception {
         // Disable creation of a derby.log file ; triggered by the GeoSPARQL module
-        System.setProperty("derby.stream.error.field", "org.aksw.sparql_integrate.cli.DerbyUtil.DEV_NULL");
+        // System.setProperty("derby.stream.error.field", "org.aksw.sparql_integrate.cli.DerbyUtil.DEV_NULL");
+        DerbyUtils.disableDerbyLog();
 
         JenaSystem.init();
 

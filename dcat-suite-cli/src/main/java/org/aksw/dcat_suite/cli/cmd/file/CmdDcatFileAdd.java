@@ -162,8 +162,8 @@ public class CmdDcatFileAdd
         RdfEntityInfo tgt = fileContent.as(RdfEntityInfo.class);
         RdfEntityInfo.copy(tgt, entityInfo);
 
-        // ## is the marker for annotations about whatever the identifier before the ## refers to
-        MapperProxyUtils.skolemize(fn + "##", tgt, map -> map.remove(RDF.nil));
+        // __ is the marker for annotations about whatever the identifier before the __ refers to
+        MapperProxyUtils.skolemize(fn + "__", tgt, map -> map.remove(RDF.nil));
 
 
 

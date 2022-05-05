@@ -24,6 +24,7 @@ import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateRequest;
@@ -157,14 +158,21 @@ public class CmdDcatMvnizeMetadata
                 Build build = new Build();
 
                 Plugin plugin = BuildHelperUtils.createPlugin();
-                for (DcatDistribution dist : d.getBasicDistributions()) {
-                    // MavenEntity mvnId = dist.as(MavenEntity.class);
-                    // TODO Generate dependencies?
 
-                    BuildHelperUtils.attachArtifact(plugin,
-                            datasetFile.getFileName().toString(), metadataArtifact.getType(), metadataArtifact.getClassifier());
+                Model unionModel = xds.getUnionModel();
+                DcatDataset dd = d.inModel(unionModel).as(DcatDataset.class);
 
-                }
+
+//                for (DcatDistribution dist : dd.getBasicDistributions()) {
+//                    MavenEntity mvnId = dist.as(MavenEntity.class);
+//                    // TODO Generate dependencies?
+//
+//                    BuildHelperUtils.attachArtifact(plugin,
+//                            datasetFile.getFileName().toString(), mvnId.getType(), mvnId.getClassifier());
+//
+//                }
+                BuildHelperUtils.attachArtifact(plugin,
+                        datasetFile.getFileName().toString(), "trig", null);
                 build.addPlugin(plugin);
                 childPom.setBuild(build);
 

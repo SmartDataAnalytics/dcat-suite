@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -19,6 +18,7 @@ import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
 import org.aksw.jenax.arq.util.node.NodeEnvsubst;
 import org.aksw.jenax.arq.util.node.NodeTransformLib2;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.var.Vars;
 import org.aksw.jenax.sparql.query.rx.SparqlRx;
@@ -30,14 +30,11 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.ReadWrite;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.graph.NodeTransform;
 import org.apache.jena.sparql.graph.NodeTransformLib;
-import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 
@@ -162,7 +159,21 @@ public class CmdDcatFileFinalize
         }
 
         Map<String, String> allRenamesStr = toIriMap(anyToDataset);
-        NodeTransformLib2.applyNodeTransform(NodeTransformLib2.substPrefix(allRenamesStr, "__"), result);
+        // NodeTransformLib2.applyNodeTransform(NodeTransformLib2.substPrefix(allRenamesStr, "__"), result);
+
+        NodeTransform nodeXform = NodeTransformLib2.substPrefix(allRenamesStr, "__");
+        // Rename file names as objects of downloadUrls to the distribution
+        // Otherwise lift file names to dataset-based identifiers
+        NodeTransformLib2.applyQuadTransform(q -> q.getPredicate().equals(DCAT.downloadURL.asNode())
+                    ? QuadUtils.applyNodeTransform(
+                            QuadUtils.applyNodeTransform(q, nodeXform, true, true, true, false),
+                            fileToDist::get, false, false, false, true)
+                    : NodeTransformLib.transform(nodeXform, q)
+                , result.asDatasetGraph());
+
+        // NodeTransformLib.tr
+        // NodeTransformLib2.ap
+
 
         return result;
     }
