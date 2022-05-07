@@ -112,7 +112,7 @@ public class DataProjectMgmtView
     protected ObservableValue<Path> activePath = ObservableValueImpl.create(null);
 
     protected HorizontalLayout headingLayout;
-    
+
     protected Dimension logoDim = new Dimension(256, 256);
     protected Image logoImg;
     protected Div description;
@@ -139,21 +139,21 @@ public class DataProjectMgmtView
 
     protected Dataset dataset;
 
-    
-    protected Tab datasetsTab;
-	protected Tab resourcesTab;
-	protected Tab filesTab;
-	
-	protected VerticalLayout content;
-    
-	protected BrowseRepoComponent fileBrowser;
-	protected QACProvider gtfsValidator;
 
-	protected LeafletMap leafletMap;
-	
-	/** Vector layer */
-	protected LayerGroup group;
-	
+    protected Tab datasetsTab;
+    protected Tab resourcesTab;
+    protected Tab filesTab;
+
+    protected VerticalLayout content;
+
+    protected BrowseRepoComponent fileBrowser;
+    protected QACProvider gtfsValidator;
+
+    protected LeafletMap leafletMap;
+
+    /** Vector layer */
+    protected LayerGroup group;
+
     public DataProjectMgmtView(
             @Autowired GroupMgrFactory dcatRepoMgr,
             @Autowired QACProvider gtfsValidator
@@ -161,8 +161,8 @@ public class DataProjectMgmtView
 //            FileRepoResolver fileRepoResolver
             ) throws Exception {
 
-    	this.gtfsValidator = gtfsValidator;
-    	
+        this.gtfsValidator = gtfsValidator;
+
         headingLayout = new HorizontalLayout();
         headingLayout.setWidthFull();
 
@@ -171,8 +171,8 @@ public class DataProjectMgmtView
 //        logoImg.getStyle().set("float", "left");
         logoImg.setMaxWidth((int)logoDim.getWidth(), Unit.PIXELS);
         logoImg.setMaxHeight((int)logoDim.getHeight(), Unit.PIXELS);
-        
-        
+
+
         VerticalLayout headingAndDescriptionSeparator = new VerticalLayout();
 
         heading = new H1();
@@ -226,38 +226,38 @@ public class DataProjectMgmtView
 
         VaadinGridUtils.allowMultipleVisibleItemDetails(datasetGrid);
         datasetGrid.setItemDetailsRenderer(new ComponentRenderer<>(() -> new DatasetDetailsView(() -> {
-			datasetGrid.getElement().executeJs("requestAnimationFrame((function() { this.notifyResize(); }).bind(this))");
+            datasetGrid.getElement().executeJs("requestAnimationFrame((function() { this.notifyResize(); }).bind(this))");
         }), DatasetDetailsView::setDataset));
-        
-        
+
+
         headingAndDescriptionSeparator.add(heading);
         headingAndDescriptionSeparator.add(description);
 
         headingLayout.add(logoImg);
         headingLayout.add(headingAndDescriptionSeparator);
 
-        
+
         add(headingLayout);
-        
+
         Button gitPushBtn = new Button("Git Sync");
         add(gitPushBtn);
-        
+
         gitPushBtn.addClickListener(ev -> {
-        	Repository gitRepo = groupMgr.get().getGitRepository();
-        	try (Git git = new Git(gitRepo)) {
-	        	try {
-	        		//git.pull().call();
-		        	git.add().setUpdate(true).addFilepattern(".").call();
-		        	git.add().addFilepattern(".").call();
-		        	git.commit().setMessage("Updated").call();
-		        	Notification.show("Sync sucessful");
-	        	} catch (Exception e) {
-	            	Notification.show("Sync failed");
-	        		throw new RuntimeException(e);
-	        	}
-        	}
+            Repository gitRepo = groupMgr.get().getGitRepository();
+            try (Git git = new Git(gitRepo)) {
+                try {
+                    //git.pull().call();
+                    git.add().setUpdate(true).addFilepattern(".").call();
+                    git.add().addFilepattern(".").call();
+                    git.commit().setMessage("Updated").call();
+                    Notification.show("Sync sucessful");
+                } catch (Exception e) {
+                    Notification.show("Sync failed");
+                    throw new RuntimeException(e);
+                }
+            }
         });
-        
+
 //        MapOptions options = new DefaultMapOptions();
 //        options.setCenter(new LatLng(47.070121823, 19.204101562500004));
 //        options.setZoom(7);
@@ -270,41 +270,41 @@ public class DataProjectMgmtView
 //
 //        add(leafletMap);
 //        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
-        
-        
-        
+
+
+
         datasetsTab = new Tab(
-        	VaadinIcon.CONNECT.create(),
-			new Span("Datasets")
-			//createBadge("24")
-		);
+            VaadinIcon.CONNECT.create(),
+            new Span("Datasets")
+            //createBadge("24")
+        );
 
         resourcesTab = new Tab(
-			VaadinIcon.RECORDS.create(),
-			new Span("Resources")
-			//createBadge("439")
-		);
+            VaadinIcon.RECORDS.create(),
+            new Span("Resources")
+            //createBadge("439")
+        );
 
-		filesTab = new Tab(
-			VaadinIcon.FILE.create(),
-			new Span("Files")
-			//createBadge("439")
-		);
+        filesTab = new Tab(
+            VaadinIcon.FILE.create(),
+            new Span("Files")
+            //createBadge("439")
+        );
 //		Tab cancelled = new Tab(
 //			new Span("Cancelled"),
 //			createBadge("5")
 //		);
-        
+
         Tabs tabs = new Tabs();
         tabs.setHeightFull();
         tabs.add(datasetsTab, resourcesTab, filesTab);
         content = new VerticalLayout();
-		content.setSpacing(false);
-		
-    	tabs.addSelectedChangeListener(event -> setContent(event.getSelectedTab()));
-    	setContent(tabs.getSelectedTab());		
-    	
-    	
+        content.setSpacing(false);
+
+        tabs.addSelectedChangeListener(event -> setContent(event.getSelectedTab()));
+        setContent(tabs.getSelectedTab());
+
+
 //          createTab(VaadinIcon.HOME, "Home", DmanLandingPageView.class),
 //          createTab(VaadinIcon.FOLDER_ADD, "New Data Project", NewDataProjectView.class),
 //          createTab(VaadinIcon.EYE, "Browse", BrowseRepoView.class),
@@ -314,13 +314,13 @@ public class DataProjectMgmtView
 
         add(tabs, content);
 
-        
+
 //        add(datasetGrid);
 //        AppLayout appLayout = new AppLayout();
 //        appLayout.addToDrawer(datasetGrid);
 //        appLayout.setContent(new Paragraph("Main content"));
 //        add(appLayout);
-        
+
 
 //        add(addDatasetBtn);
 
@@ -328,32 +328,32 @@ public class DataProjectMgmtView
         // setSizeFull();
 
 //        add(addDatasetBtn);
-        
-        
-        
+
+
+
         GridContextMenu<DcatDataset> contextMenu = datasetGrid.addContextMenu();
         contextMenu.addOpenedChangeListener(ev -> {
             if (!ev.isOpened()) {
                 contextMenu.removeAll();
             }
         });
-        
+
         contextMenu.setDynamicContentHandler(r -> {
-        	// Resource r = qs.getResource("s");
-        	
-        	int numOptions = 0;
+            // Resource r = qs.getResource("s");
+
+            int numOptions = 0;
             contextMenu.addItem("Actions for " + r).setEnabled(false);
             contextMenu.add(new Hr());
-            
+
             contextMenu.addItem("Delete", ev -> {
                 ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
                         String.format("You are about to delete: %s (affects %d triples). This operation cannot be undone.", r.asNode(), dataset.asDatasetGraph().getGraph(r.asNode()).size()),
                         "Delete", x -> {
-                        	Txn.executeWrite(dataset, () -> {
-                        		dataset.asDatasetGraph().removeGraph(r.asNode());
-                        	});
-                        	updateView();
-                        	
+                            Txn.executeWrite(dataset, () -> {
+                                dataset.asDatasetGraph().removeGraph(r.asNode());
+                            });
+                            updateView();
+
                             // TODO Show a notification if delete failed
                         }, "Cancel", x -> {});
                 //dialog.setConfirmButtonTheme("error primary");
@@ -368,17 +368,17 @@ public class DataProjectMgmtView
             return true;
         });
 
-        
-		MapOptions mapOptions = new DefaultMapOptions();
+
+        MapOptions mapOptions = new DefaultMapOptions();
         mapOptions.setCenter(new LatLng(47.070121823, 19.204101562500004));
         mapOptions.setZoom(7);
         mapOptions.setPreferCanvas(true);
 
-        
+
 //        Button x = new Button("Dialog");
 //        x.addClickListener(ev -> {
 //        	Dialog dlg = new Dialog();
-//        	
+//
 //	        LeafletMap map = new LeafletMap(mapOptions);
 //	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
 ////	        map.setWidth(512, Unit.PIXELS);
@@ -395,31 +395,31 @@ public class DataProjectMgmtView
 //        	dlg.open();
 //        });
 //        add(x);
-        
-        
+
+
         if (false) {
         Grid<String> testGrid = new Grid<>();
-        
+
         testGrid.addComponentColumn(str -> {
-        	Div r = new Div();
-        	r.add(str);
-	        
+            Div r = new Div();
+            r.add(str);
+
 //	        VaadinGeoUtils.toGeoJson(ConvertLatLon.toLiteral(0, 0).asNode()).addTo(group);
-	        LeafletMap map = new LeafletMap(mapOptions);
-	        r.setWidth(512, Unit.PIXELS);
-	        r.setHeight(512, Unit.PIXELS);
+            LeafletMap map = new LeafletMap(mapOptions);
+            r.setWidth(512, Unit.PIXELS);
+            r.setHeight(512, Unit.PIXELS);
 
 //	        Button btn = new Button("test");
-	        UI.getCurrent().access(() -> {
-		         map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-			        FeatureGroup group = new FeatureGroup();
-			        group.addTo(map);
-			        GeoJsonJenaUtils.toWgs84GeoJson(GeometryWrapper.fromPoint(0, 0, SRS_URI.DEFAULT_WKT_CRS84)).addTo(group);
-	        });
-	        
-	        
-	
-	        add(map);
+            UI.getCurrent().access(() -> {
+                 map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+                    FeatureGroup group = new FeatureGroup();
+                    group.addTo(map);
+                    GeoJsonJenaUtils.toWgs84GeoJson(GeometryWrapper.fromPoint(0, 0, SRS_URI.DEFAULT_WKT_CRS84)).addTo(group);
+            });
+
+
+
+            add(map);
 
 //	        btn.addClickListener(ev -> {
 //	        });
@@ -428,144 +428,144 @@ public class DataProjectMgmtView
 
 
 
-	        r.add(map);
-	        
+            r.add(map);
+
 //		        FeatureGroup group = new FeatureGroup();
-	        // group.addTo(map);
-        	// r.add(map);
-	        return r;
+            // group.addTo(map);
+            // r.add(map);
+            return r;
         });
         testGrid.setItems("a", "b", "c");
-        
+
         add(testGrid);
 
 
         {
-	        LeafletMap map = new LeafletMap(mapOptions);
-	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-	        map.setWidth(512, Unit.PIXELS);
-	        map.setHeight(512, Unit.PIXELS);
-	        add(map);
+            LeafletMap map = new LeafletMap(mapOptions);
+            map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+            map.setWidth(512, Unit.PIXELS);
+            map.setHeight(512, Unit.PIXELS);
+            add(map);
         }
         {
-	        LeafletMap map = new LeafletMap(mapOptions);
-	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-	        map.setWidth(512, Unit.PIXELS);
-	        map.setHeight(512, Unit.PIXELS);
-	        add(map);
+            LeafletMap map = new LeafletMap(mapOptions);
+            map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+            map.setWidth(512, Unit.PIXELS);
+            map.setHeight(512, Unit.PIXELS);
+            add(map);
         }
         {
-	        LeafletMap map = new LeafletMap(mapOptions);
-	        map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-	        map.setWidth(512, Unit.PIXELS);
-	        map.setHeight(512, Unit.PIXELS);
-	        add(map);
+            LeafletMap map = new LeafletMap(mapOptions);
+            map.setBaseUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+            map.setWidth(512, Unit.PIXELS);
+            map.setHeight(512, Unit.PIXELS);
+            add(map);
         }
         }
     }
-  
-    
-    public Function<org.aksw.commons.path.core.Path<Node>, String> pathToString(org.aksw.commons.path.core.Path<Node> basePath) {    	
-        return path -> { 
-        	Dataset dataset = groupMgr.get().getDataset();
 
-        	// FIXME Starting a txn on every lookup is far from optimal
-        	String location = Txn.calculateRead(dataset, () ->
-        		 Optional.ofNullable(GraphEntityUtils.getSelfResource(dataset, path.getSegments()))
-        		 	.map(r -> r.as(DcatDistribution.class).getDownloadUrl()).orElse(null));
-        	
-        	Node node = path == null || path.getNameCount() == 0 ? null : path.getFileName().toSegment();
 
-        	String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.toString(false)); // + ": " + node.getClass());
-        	        	
-        	if (location != null) {
-        		str += " --- " + location;
-        	}
-        	
-        	return str;
+    public Function<org.aksw.commons.path.core.Path<Node>, String> pathToString(org.aksw.commons.path.core.Path<Node> basePath) {
+        return path -> {
+            Dataset dataset = groupMgr.get().getDataset();
+
+            // FIXME Starting a txn on every lookup is far from optimal
+            String location = Txn.calculateRead(dataset, () ->
+                 Optional.ofNullable(GraphEntityUtils.getSelfResource(dataset, path.getSegments()))
+                     .map(r -> r.as(DcatDistribution.class).getDownloadUrl()).orElse(null));
+
+            Node node = path == null || path.getNameCount() == 0 ? null : path.getFileName().toSegment();
+
+            String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.toString(false)); // + ": " + node.getClass());
+
+            if (location != null) {
+                str += " --- " + location;
+            }
+
+            return str;
         };
     }
 
     protected void setContent(Tab tab) {
-    	content.removeAll();
-		if (tab.equals(datasetsTab)) {
-			content.add(datasetGrid, addDatasetBtn);
-		} else if (tab.equals(filesTab)) {
-			content.add(fileBrowser);
-		} else {
-			
-	        HierarchicalConfigurableFilterDataProvider<org.aksw.commons.path.core.Path<Node>, Void, UnaryXExpr> folderDataProvider =
-	                new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset(), false).withConfigurableFilter();
+        content.removeAll();
+        if (tab.equals(datasetsTab)) {
+            content.add(datasetGrid, addDatasetBtn);
+        } else if (tab.equals(filesTab)) {
+            content.add(fileBrowser);
+        } else {
 
-	    	Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathOpsNode.newAbsolutePath());
-	    	
-	        TreeGrid<org.aksw.commons.path.core.Path<Node>> artifactTreeGrid = new TreeGrid<>();
-		    //folderTreeGrid.setSizeFull();
+            HierarchicalConfigurableFilterDataProvider<org.aksw.commons.path.core.Path<Node>, Void, UnaryXExpr> folderDataProvider =
+                    new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset(), false).withConfigurableFilter();
 
-		    Column<?> hierarchyColumn = artifactTreeGrid.addHierarchyColumn(path -> {
-	            // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
-	            return pathToString.apply(path);
-	            // return path.toString();
-	        }); //.setKey("key");
+            Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathOpsNode.newAbsolutePath());
 
-		    // folderTreeGrid.addColumn(p -> "");
-	        hierarchyColumn.setResizable(true);
-	        hierarchyColumn.setFrozen(true);
-	    	
-	        artifactTreeGrid.setDataProvider(folderDataProvider);
-	        artifactTreeGrid.setSizeFull();
-	        artifactTreeGrid.setHeightByRows(true);
-	        // artifactTreeGrid.setUniqueKeyDataGenerator("key", path -> path.toString());
-	        artifactTreeGrid.addItemClickListener(ev -> {
-	        	org.aksw.commons.path.core.Path<Node> item = ev.getItem();
-	        	if (!artifactTreeGrid.isExpanded(item)) {
-	        		artifactTreeGrid.expand(item);
-	        	}
-	    	});
-	        
-	        GridContextMenu<org.aksw.commons.path.core.Path<Node>> contextMenu = artifactTreeGrid.addContextMenu();
-	        contextMenu.setDynamicContentHandler(path -> {
-	        	contextMenu.removeAll();
-	        	
-	        	int numOptions = 0;
-	            contextMenu.addItem("Actions for " + path).setEnabled(false);
-	            contextMenu.add(new Hr());
-	            
-	            contextMenu.addItem("Delete Tree", ev -> {
-                	List<Node> graphNodes = Txn.calculateRead(dataset, () ->
-            	        GraphEntityUtils.findEntities(dataset, path.getSegments(), true));
-                	
-                	System.out.println("Lookup with: " + path.getSegments());
-                	System.out.println("Graph nodes " + graphNodes);
-                	
-	                ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
-	                        String.format("You are about to delete: %s (affects %d graphs). This operation cannot be undone.", path.getSegments(), graphNodes.size()),
-	                        "Delete", x -> {
-	                        	Txn.executeWrite(dataset, () -> {
-	                        		for (Node node : graphNodes) {
-	                        			dataset.asDatasetGraph().removeGraph(node);
-	                        		}
-	                        	});
-	                        	// updateView();
-	                        	artifactTreeGrid.getDataProvider().refreshAll();
-	                        	
-	                            // TODO Show a notification if delete failed
-	                        }, "Cancel", x -> {});
-	                //dialog.setConfirmButtonTheme("error primary");
-	                dialog.open();
-	            });
-	            ++numOptions;
+            TreeGrid<org.aksw.commons.path.core.Path<Node>> artifactTreeGrid = new TreeGrid<>();
+            //folderTreeGrid.setSizeFull();
 
-	            if (numOptions == 0) {
-	                contextMenu.addItem("(no actions available)").setEnabled(false);
-	            }
-	        	
-	            return true;
-	        });
-	        
-	        
-			content.add(artifactTreeGrid);
-		}
+            Column<?> hierarchyColumn = artifactTreeGrid.addHierarchyColumn(path -> {
+                // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
+                return pathToString.apply(path);
+                // return path.toString();
+            }); //.setKey("key");
+
+            // folderTreeGrid.addColumn(p -> "");
+            hierarchyColumn.setResizable(true);
+            hierarchyColumn.setFrozen(true);
+
+            artifactTreeGrid.setDataProvider(folderDataProvider);
+            artifactTreeGrid.setSizeFull();
+            artifactTreeGrid.setHeightByRows(true);
+            // artifactTreeGrid.setUniqueKeyDataGenerator("key", path -> path.toString());
+            artifactTreeGrid.addItemClickListener(ev -> {
+                org.aksw.commons.path.core.Path<Node> item = ev.getItem();
+                if (!artifactTreeGrid.isExpanded(item)) {
+                    artifactTreeGrid.expand(item);
+                }
+            });
+
+            GridContextMenu<org.aksw.commons.path.core.Path<Node>> contextMenu = artifactTreeGrid.addContextMenu();
+            contextMenu.setDynamicContentHandler(path -> {
+                contextMenu.removeAll();
+
+                int numOptions = 0;
+                contextMenu.addItem("Actions for " + path).setEnabled(false);
+                contextMenu.add(new Hr());
+
+                contextMenu.addItem("Delete Tree", ev -> {
+                    List<Node> graphNodes = Txn.calculateRead(dataset, () ->
+                        GraphEntityUtils.findEntities(dataset, path.getSegments(), true));
+
+                    System.out.println("Lookup with: " + path.getSegments());
+                    System.out.println("Graph nodes " + graphNodes);
+
+                    ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
+                            String.format("You are about to delete: %s (affects %d graphs). This operation cannot be undone.", path.getSegments(), graphNodes.size()),
+                            "Delete", x -> {
+                                Txn.executeWrite(dataset, () -> {
+                                    for (Node node : graphNodes) {
+                                        dataset.asDatasetGraph().removeGraph(node);
+                                    }
+                                });
+                                // updateView();
+                                artifactTreeGrid.getDataProvider().refreshAll();
+
+                                // TODO Show a notification if delete failed
+                            }, "Cancel", x -> {});
+                    //dialog.setConfirmButtonTheme("error primary");
+                    dialog.open();
+                });
+                ++numOptions;
+
+                if (numOptions == 0) {
+                    contextMenu.addItem("(no actions available)").setEnabled(false);
+                }
+
+                return true;
+            });
+
+
+            content.add(artifactTreeGrid);
+        }
     }
 
     @Override
@@ -578,27 +578,27 @@ public class DataProjectMgmtView
             DcatRepoLocal repo = groupMgr.get();
             dataset = repo.getDataset();
         }
-        
+
         fileBrowser = new BrowseRepoComponent(groupMgr.get(), gtfsValidator) {
-        	@Override
-        	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
-        		int result = super.addExtraOptions(contextMenu, relPath);
-        	
+            @Override
+            public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
+                int result = super.addExtraOptions(contextMenu, relPath);
+
                 // View (RDF) Metadata
                 contextMenu.addItem("Set as Logo ...", ev -> {
-            		Dataset dataset = dcatRepo.getDataset();
-            		Txn.executeWrite(dataset, () -> {
-            			dataset.getNamedModel(".").createResource(".")
-            				.as(DataProject.class)
-            				.setDepiction(relPath.toString());
-            		});
-                	updateView();
+                    Dataset dataset = dcatRepo.getDataset();
+                    Txn.executeWrite(dataset, () -> {
+                        dataset.getNamedModel(".").createResource(".")
+                            .as(DataProject.class)
+                            .setDepiction(relPath.toString());
+                    });
+                    updateView();
                 });
 
-        		
-        		
-        		return result;
-        	}
+
+
+                return result;
+            }
         };
 
         // dcatRepo = groupMgr.get();
@@ -618,7 +618,7 @@ public class DataProjectMgmtView
 
         SparqlQueryParser parser = SparqlQueryParserImpl.create(SparqlParserConfig.newInstance()
                 .setSharedPrefixes(DefaultPrefixes.get())
-        		.setIrixResolverAsGiven()
+                .setIrixResolverAsGiven()
                 .setBaseURI(""));
         //Query q = parser.apply("SELECT * { GRAPH <" + groupId + "> { ?s <http://www.w3.org/2000/01/rdf-schema#member> ?o } }");
         Query q = parser.apply("SELECT ?s ?g { GRAPH ?g { ?s a dcat:Dataset } }");
@@ -628,10 +628,10 @@ public class DataProjectMgmtView
             dataset = repo.getDataset();
 
             Txn.executeRead(dataset, () ->
-            	//RDFDataMgr.write(System.out, dataset, RDFFormat.TRIG_PRETTY)
-            	StreamRDFWriterEx.writeAsGiven(dataset.asDatasetGraph(), System.out, RDFFormat.NQUADS, null, null)
+                //RDFDataMgr.write(System.out, dataset, RDFFormat.TRIG_PRETTY)
+                StreamRDFWriterEx.writeAsGiven(dataset.asDatasetGraph(), System.out, RDFFormat.NQUADS, null, null)
             );
-            
+
             VaadinSparqlUtils.setQueryForGridResource(
                     datasetGrid,
                     (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
@@ -639,49 +639,49 @@ public class DataProjectMgmtView
                     DcatDataset.class,
                     "s",
                     QuerySolutionUtils.newGraphAwareBindingMapper(dataset, "s", "g")
-            		);
+                    );
 
-    		Dataset dataset = repo.getDataset();
+            Dataset dataset = repo.getDataset();
 
-    		String logoUrl = Txn.calculateRead(dataset, () -> {
-    			StreamResource sr = null;
-    			
-    			DataProject dp = dataset.getNamedModel(".").createResource(".")
-    				.as(DataProject.class);
-    			
-    			return dp.getDepiction();
-    		});
-    		
-			if (logoUrl != null) {
-        		Path logoPath = logoUrl == null ? null : groupMgr.getBasePath().resolve(logoUrl);
-        		// new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png"))
+            String logoUrl = Txn.calculateRead(dataset, () -> {
+                StreamResource sr = null;
 
-        		if (Files.exists(logoPath)) {
-	        		
-	        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	        		try {
-	        			BufferedImage img = ImageIO.read(Files.newInputStream(logoPath));
-	        			BufferedImage img2 = ImageUtils.scaleImage(img, logoDim);
-	        			
-	        			ImageIO.write(img2, "png", baos);
-	        		} catch (Exception e) {
-	        			throw new RuntimeException(e);
-	        		}
-	
-	        		StreamResource sr = baos == null ? null : new StreamResource("logo.png", () -> new ByteArrayInputStream(baos.toByteArray()));
-	//        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> {
-	//					try {
-	//						return Files.newInputStream(logoPath);
-	//					} catch (IOException e) {
-	//						throw new RuntimeException(e);
-	//					}
-	//				});
-	        		
-	        		if (sr != null) {
-	        			logoImg.setSrc(sr);
-	        		}
-        		}	
-			}    		
+                DataProject dp = dataset.getNamedModel(".").createResource(".")
+                    .as(DataProject.class);
+
+                return dp.getDepiction();
+            });
+
+            if (logoUrl != null) {
+                Path logoPath = logoUrl == null ? null : groupMgr.getBasePath().resolve(logoUrl);
+                // new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png"))
+
+                if (Files.exists(logoPath)) {
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    try {
+                        BufferedImage img = ImageIO.read(Files.newInputStream(logoPath));
+                        BufferedImage img2 = ImageUtils.scaleImage(img, logoDim);
+
+                        ImageIO.write(img2, "png", baos);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    StreamResource sr = baos == null ? null : new StreamResource("logo.png", () -> new ByteArrayInputStream(baos.toByteArray()));
+    //        		StreamResource sr = logoPath == null ? null : new StreamResource("logo.png", () -> {
+    //					try {
+    //						return Files.newInputStream(logoPath);
+    //					} catch (IOException e) {
+    //						throw new RuntimeException(e);
+    //					}
+    //				});
+
+                    if (sr != null) {
+                        logoImg.setSrc(sr);
+                    }
+                }
+            }
 
             // logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");
 
@@ -693,15 +693,15 @@ public class DataProjectMgmtView
         datasetGrid.getDataProvider().refreshAll();
     }
 
-    
-	/**
-	 * Helper method for creating a badge.
-	 */
-	public static Span createBadge(String str) {
-		Span badge = new Span(str);
-		badge.getElement().getThemeList().add("badge small contrast");
-		badge.getStyle().set("margin-inline-start", "var(--lumo-space-xs)");
-		return badge;
-	}
-		
+
+    /**
+     * Helper method for creating a badge.
+     */
+    public static Span createBadge(String str) {
+        Span badge = new Span(str);
+        badge.getElement().getThemeList().add("badge small contrast");
+        badge.getStyle().set("margin-inline-start", "var(--lumo-space-xs)");
+        return badge;
+    }
+
 }

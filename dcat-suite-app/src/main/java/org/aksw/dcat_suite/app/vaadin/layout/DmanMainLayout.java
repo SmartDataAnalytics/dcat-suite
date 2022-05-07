@@ -1,23 +1,32 @@
 package org.aksw.dcat_suite.app.vaadin.layout;
 
+import javax.annotation.security.PermitAll;
+
+import org.aksw.dcat_suite.app.session.UserSession;
 import org.aksw.dcat_suite.app.vaadin.view.BrowseRepoView;
 import org.aksw.dcat_suite.app.vaadin.view.CatalogMgmtView;
 import org.aksw.dcat_suite.app.vaadin.view.ConnectionMgmtView;
 import org.aksw.dcat_suite.app.vaadin.view.DmanLandingPageView;
 import org.aksw.dcat_suite.app.vaadin.view.NewDataProjectView;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 
@@ -34,6 +43,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 // @JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
 @Theme(value = Lumo.class)
 @JsModule("@vaadin/vaadin-lumo-styles/badge.js")
+@PermitAll
 public class DmanMainLayout
     extends AppLayout
 {
@@ -43,7 +53,7 @@ public class DmanMainLayout
     protected Button connectionMgmtBtn;
 
 
-    public DmanMainLayout () {
+    public DmanMainLayout (UserSession userSession) {
         drawerToggle = new DrawerToggle();
 
         H1 title = new H1("MClient Data Manager");
@@ -51,21 +61,47 @@ public class DmanMainLayout
           .set("font-size", "var(--lumo-font-size-l)")
           .set("margin", "0");
 
+
+
+        HorizontalLayout navbarLayout = new HorizontalLayout();
+        navbarLayout.setWidthFull();
+        navbarLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+
+        Div div = new Div();
+        div.setText("Hello " + userSession.getUser().getAccountName());
+        div.getElement().getStyle().set("font-size", "xx-large");
+
+        // Image image = new Image(userSession.getUser().getPicture(), "User Image");
+
+        String LOGOUT_SUCCESS_URL = "/";
+        Button logoutButton = new Button("Logout", click -> {
+            UI.getCurrent().getPage().setLocation(LOGOUT_SUCCESS_URL);
+            SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+            logoutHandler.logout(
+                    VaadinServletRequest.getCurrent().getHttpServletRequest(), null,
+                    null);
+        });
+
+        // setAlignItems(Alignment.CENTER);
+        navbarLayout.add(div, logoutButton);
+
+
         // setDrawerOpened(true);
-        addToNavbar(drawerToggle, title);
+        addToNavbar(drawerToggle);
+        addToNavbar(navbarLayout, title);
         addToDrawer(getTabs());
     }
 
 
     private Tabs getTabs() {
-    	RouteTabs tabs = new RouteTabs();
-    	tabs.add(
-    	        createTab(VaadinIcon.HOME, "Home", DmanLandingPageView.class),
-    	        createTab(VaadinIcon.FOLDER_ADD, "New Data Project", NewDataProjectView.class),
-    	        createTab(VaadinIcon.EYE, "Browse", BrowseRepoView.class),
-    	        createTab(VaadinIcon.CONNECT, "Connections", ConnectionMgmtView.class),
-    	        createTab(VaadinIcon.DATABASE, "Catalogs", CatalogMgmtView.class)
-    	);
+        RouteTabs tabs = new RouteTabs();
+        tabs.add(
+                createTab(VaadinIcon.HOME, "Home", DmanLandingPageView.class),
+                createTab(VaadinIcon.FOLDER_ADD, "New Data Project", NewDataProjectView.class),
+                createTab(VaadinIcon.EYE, "Browse", BrowseRepoView.class),
+                createTab(VaadinIcon.CONNECT, "Connections", ConnectionMgmtView.class),
+                createTab(VaadinIcon.DATABASE, "Catalogs", CatalogMgmtView.class)
+        );
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
 //      Tabs tabs = new Tabs();
 //      tabs.add(
@@ -94,6 +130,6 @@ public class DmanMainLayout
       // return new Tab(link);
       return link;
     }
-    
-    
+
+
 }

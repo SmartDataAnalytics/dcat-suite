@@ -87,7 +87,7 @@ public class MainView extends VerticalLayout {
         upload.addSucceededListener(event -> {
             Notification.show(String.format("Upload succeeded. Filename: '%s'", event.getFileName()));
             ServletContext sCtx = getServletContext();
-            String dirName = sCtx.getRealPath("upload"); 
+            String dirName = sCtx.getRealPath("upload");
             File dir = new File(dirName);
             if (!dir.exists()) dir.mkdirs();
             File longPath = new File(event.getFileName());
@@ -148,7 +148,7 @@ public class MainView extends VerticalLayout {
     }
 
     public String getLatestServerPath () {
-    	return this.enrichFile;
+        return this.enrichFile;
     }
 
     public VerticalLayout getContent() {
