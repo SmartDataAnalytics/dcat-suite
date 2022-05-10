@@ -42,13 +42,13 @@ public class GroupMgrImpl
     protected String[] relPath;
 
     public static String[] mavenCoordinateToSegments(String mvn) {
-    	String[] result = Arrays.asList(mvn.split(":")).stream()
-    		.flatMap(part -> Arrays.asList(part.split("\\.")).stream())
-    		.collect(Collectors.toList())
-    		.toArray(new String[0]);
-    	return result;
+        String[] result = Arrays.asList(mvn.split(":")).stream()
+            .flatMap(part -> Arrays.asList(part.split("\\.")).stream())
+            .collect(Collectors.toList())
+            .toArray(new String[0]);
+        return result;
     }
-    
+
     public GroupMgrImpl(String groupId, Path basePath) {
         super();
         this.groupId = groupId;
@@ -71,7 +71,7 @@ public class GroupMgrImpl
 
             Files.createDirectories(path);
             DcatRepoLocalUtils.init(path);
-            
+
             // FIXME Is there a Git/nio version? .toFile() will break for virtual file systems...
             Git.init().setDirectory(path.toFile()).call();
         } catch (Exception e) {
@@ -83,7 +83,7 @@ public class GroupMgrImpl
     public DcatRepoLocal get() {
         return DcatRepoLocalUtils.getLocalRepo(getBasePath());
     }
-    
+
     @Override
     public void delete() {
         throw new UnsupportedOperationException("net yet implemeted");

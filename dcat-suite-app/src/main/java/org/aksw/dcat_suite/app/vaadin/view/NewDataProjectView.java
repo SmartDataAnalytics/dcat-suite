@@ -57,8 +57,8 @@ public class NewDataProjectView
         groupIdField.setLabel("Group ID");
         groupIdField.setPlaceholder("e.g. org.mydomain.myproject");
         groupIdField.setWidthFull();
-        
-        
+
+
         createBtn = new Button("Create");
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_LARGE);
 
@@ -83,7 +83,7 @@ public class NewDataProjectView
 
         // groupIdField.
     }
-    
+
     public void createGroup() {
         String groupId = groupIdField.getValue();
 

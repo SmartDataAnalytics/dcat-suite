@@ -5,7 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
+import org.aksw.dcat_suite.app.model.api.SystemSpace;
+import org.aksw.dcat_suite.app.model.api.UserSpaceMgr;
 import org.aksw.dcat_suite.app.model.impl.GroupMgrImpl;
+import org.aksw.dcat_suite.app.model.impl.SystemSpaceImpl;
+import org.aksw.dcat_suite.app.model.impl.UserSpaceMgrImpl;
 import org.aksw.dcat_suite.app.qualifier.FileStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -38,16 +42,22 @@ public class Config {
 
         // return Paths.of(StandardSystemProperty.JAVA_IO_TMPDIR.value() + "/dman"); // Paths.get("/var/www/webdav/gitalog/files");
     }
-    
+
     @Bean
     public QACProvider gtfsValidator() {
-    	return new QACProvider();
+        return new QACProvider();
     }
 
 //    @Bean
 //    public FileRepoResolver fileRepoResolver(@FileStore Path path) {
 //        return path::resolve;
 //    }
+
+    @Bean
+    public SystemSpace systemSpace(@FileStore Path path) {
+        UserSpaceMgr userSpaceMgr = new UserSpaceMgrImpl(path);
+        return new SystemSpaceImpl(userSpaceMgr);
+    }
 
 
     @Bean

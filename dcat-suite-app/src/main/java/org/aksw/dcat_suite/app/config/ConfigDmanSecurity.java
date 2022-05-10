@@ -21,7 +21,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 @EnableWebSecurity
 @Configuration
-public class ConfigDcatMgrSecurity extends WebSecurityConfigurerAdapter {
+public class ConfigDmanSecurity extends WebSecurityConfigurerAdapter {
 
     private static final String LOGIN_URL = "/login";
     private static final String LOGOUT_URL = "/logout";
@@ -37,7 +37,7 @@ public class ConfigDcatMgrSecurity extends WebSecurityConfigurerAdapter {
         http
 
             // Allow all flow internal requests.
-            .authorizeRequests().requestMatchers(ConfigDcatMgrSecurity::isFrameworkInternalRequest).permitAll()
+            .authorizeRequests().requestMatchers(ConfigDmanSecurity::isFrameworkInternalRequest).permitAll()
 
             // Restrict access to our application.
             .and().authorizeRequests().anyRequest().authenticated()

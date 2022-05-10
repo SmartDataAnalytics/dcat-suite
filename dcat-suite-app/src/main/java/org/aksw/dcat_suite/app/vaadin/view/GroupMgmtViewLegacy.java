@@ -89,9 +89,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 
-@Route(value = ":user/:project*", layout = DmanMainLayout.class)
+@Route(value = "group/:groupId*", layout = DmanMainLayout.class)
 @PageTitle("Data Project Management")
-public class DataProjectMgmtView
+public class GroupMgmtViewLegacy
     extends VerticalLayout
     implements BeforeEnterObserver
 {
@@ -154,7 +154,7 @@ public class DataProjectMgmtView
     /** Vector layer */
     protected LayerGroup group;
 
-    public DataProjectMgmtView(
+    public GroupMgmtViewLegacy(
             @Autowired GroupMgrFactory dcatRepoMgr,
             @Autowired QACProvider gtfsValidator
 //            @Autowired Dataset dataset,
