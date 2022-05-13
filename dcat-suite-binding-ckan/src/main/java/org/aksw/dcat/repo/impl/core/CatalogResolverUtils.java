@@ -27,7 +27,7 @@ import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRef;
 import org.aksw.jena_sparql_api.conjure.resourcespec.ResourceSpecUtils;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jenax.arq.connection.RDFConnectionModular;
-import org.aksw.jenax.arq.connection.core.QueryExecutionFactorySparqlQueryConnection;
+import org.aksw.jenax.arq.connection.core.QueryExecutionFactoryOverSparqlQueryConnection;
 import org.aksw.jenax.arq.connection.core.RDFConnectionBuilder;
 import org.aksw.jenax.arq.connection.core.SparqlQueryConnectionJsa;
 import org.aksw.jenax.sparql.relation.api.TernaryRelation;
@@ -151,7 +151,7 @@ public class CatalogResolverUtils {
                     // Wrap with client side construct because ... virtuoso
                     conn = new SparqlQueryConnectionJsa(
                             FluentQueryExecutionFactory
-                            .from(new QueryExecutionFactorySparqlQueryConnection(conn))
+                            .from(new QueryExecutionFactoryOverSparqlQueryConnection(conn))
                             .config()
                                 .withClientSideConstruct()
                             .end()

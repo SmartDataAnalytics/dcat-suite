@@ -69,7 +69,7 @@ public class UserSession implements Serializable {
                 userSpace = systemSpace.getUserSpaceMgr().get(accountName);
 
                 userSpace.createIfNotExists();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 

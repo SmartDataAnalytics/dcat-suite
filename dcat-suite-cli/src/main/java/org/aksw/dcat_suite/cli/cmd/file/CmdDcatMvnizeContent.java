@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
-import org.aksw.jenax.arq.util.execution.QueryExecutionUtils;
+import org.aksw.jenax.arq.util.exec.QueryExecutionUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecutionFactory;
