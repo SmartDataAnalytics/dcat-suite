@@ -61,11 +61,11 @@
 	</developers>
 
 	<properties>
-		<jena.version>4.5.0</jena.version>
+		<jena.version>4.6.0-SNAPSHOT</jena.version>
 		<!-- <jenax.subversion>1-SNAPSHOT</jenax.subversion> -->
 
-		<jenax.version>4.5.0-1-SNAPSHOT</jenax.version>
-		<vaadin-jena.version>4.5.0-1-SNAPSHOT</vaadin-jena.version>
+		<jenax.version>4.6.0-1-SNAPSHOT</jenax.version>
+		<vaadin-jena.version>4.6.0-1-SNAPSHOT</vaadin-jena.version>
 
 		<guava.version>31.0.1-jre</guava.version>
 
