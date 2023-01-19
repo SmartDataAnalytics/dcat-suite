@@ -54,13 +54,13 @@ public abstract class GtfsUtils {
         GeometryWrapper result =
             GeoSparqlExAggregators.aggGeometryWrapperCollection(new ExprVar(Vars.x), false).accumulateAll(
                 gtfsDao.getAllStops().stream()
-                .map(stop -> new BindingEnv(BindingFactory.binding(
+                .map(stop -> BindingFactory.binding(
                         Vars.x,
                         // ConvertLatLon.toLiteral(stop.getLat(), stop.getLon()).asNode()
                         // Note: ConvertLatLon is GeometryWrapper.fromPoint + validation; we skip validation
                         GeometryWrapper.fromPoint(stop.getLat(), stop.getLon(), SRS_URI.WGS84_CRS).asNode()
-                        ), null))
-            )
+                        )),
+               null)
             // .map(GeometryWrapper::extract)
             .orElse(null);
 

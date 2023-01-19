@@ -1,15 +1,13 @@
 package org.aksw.dcat_suite.app.vaadin.layout;
 
-import javax.annotation.security.PermitAll;
-
 import org.aksw.dcat_suite.app.session.UserSession;
 import org.aksw.dcat_suite.app.vaadin.view.BrowseRepoView;
 import org.aksw.dcat_suite.app.vaadin.view.CatalogMgmtView;
 import org.aksw.dcat_suite.app.vaadin.view.ConnectionMgmtView;
 import org.aksw.dcat_suite.app.vaadin.view.DmanLandingPageView;
+import org.aksw.dcat_suite.app.vaadin.view.HistoryView;
 import org.aksw.dcat_suite.app.vaadin.view.MyProjectsView;
 
-import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -26,7 +24,6 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.theme.Theme;
@@ -106,7 +103,8 @@ public class DmanMainLayout
                 createTab(VaadinIcon.FOLDER_ADD, "My Projects", MyProjectsView.class,
                         new RouteParameters("user", userSession.getUser().getAccountName())),
                 createTab(VaadinIcon.CONNECT, "Connections", ConnectionMgmtView.class, null),
-                createTab(VaadinIcon.DATABASE, "Catalogs", CatalogMgmtView.class, null)
+                createTab(VaadinIcon.DATABASE, "Catalogs", CatalogMgmtView.class, null),
+                createTab(VaadinIcon.ACCORDION_MENU, "History", HistoryView.class, null)
         );
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
 //      Tabs tabs = new Tabs();

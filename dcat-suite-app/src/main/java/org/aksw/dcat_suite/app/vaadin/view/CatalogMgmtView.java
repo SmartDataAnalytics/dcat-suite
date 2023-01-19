@@ -115,7 +115,6 @@ public class CatalogMgmtView
                 q,
                 vars);
 
-        VaadinSparqlUtils.configureGridFilter(catalogsGrid, catalogsGridHeaderRow, vars);
-
+        VaadinSparqlUtils.configureGridFilter(catalogsGrid, catalogsGridHeaderRow, vars, var -> str -> VaadinSparqlUtils.createFilterExpr(var, str).orElse(null));
     }
 }
