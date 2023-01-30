@@ -45,7 +45,6 @@ import com.vaadin.flow.theme.lumo.Lumo;
 // @JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
 @Theme(value = Lumo.class)
 @JsModule("@vaadin/vaadin-lumo-styles/badge.js")
-@PermitAll
 public class DmanMainLayout
     extends AppLayout
 {

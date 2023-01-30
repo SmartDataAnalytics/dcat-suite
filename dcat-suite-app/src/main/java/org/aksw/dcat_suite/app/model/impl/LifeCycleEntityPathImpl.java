@@ -34,7 +34,7 @@ public class LifeCycleEntityPathImpl
         userPath = PathUtils.resolve(basePath, relPath);
     }
 
-    public Path getUserPath() {
+    public Path getEntityPath() {
         return userPath;
     }
 
@@ -45,8 +45,7 @@ public class LifeCycleEntityPathImpl
     }
 
     @Override
-    public void create() {
-        try {
+    public void create() throws Exception {
             Path path = getBasePath();
 
             logger.info("Creating entity for " + entityId + " at " + path);
@@ -56,9 +55,6 @@ public class LifeCycleEntityPathImpl
 
             // FIXME Is there a Git/nio version? .toFile() will break for virtual file systems...
             // Git.init().setDirectory(path.toFile()).call();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     //@Override
@@ -67,7 +63,7 @@ public class LifeCycleEntityPathImpl
     //}
 
     @Override
-    public void delete() {
+    public void delete() throws Exception {
         throw new UnsupportedOperationException("net yet implemeted");
     }
 

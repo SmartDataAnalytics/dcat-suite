@@ -38,7 +38,7 @@ public abstract class LifeCycleEntityMgrPathBase<T extends LifeCycleEntity>
         return Files.list(basePath)
             .map(path -> {
                 Resource r = ModelFactory.createDefaultModel().createResource(); //.as(FileEntity.class);
-                r.addLiteral(RDFS.label, Objects.toString(path));
+                r.addLiteral(RDFS.label, Objects.toString(path.getFileName()));
                 return r;
             });
     }

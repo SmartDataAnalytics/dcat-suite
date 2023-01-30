@@ -5,16 +5,16 @@ public interface LifeCycleEntity {
     // A local name
     // String getName();
 
-    void delete();
+    void delete() throws Exception;
 
     boolean exists();
-    void create();
+    void create() throws Exception;
 
     // void open();
     // isOpen();
     // void close();
 
-    default void createIfNotExists() {
+    default void createIfNotExists() throws Exception {
         if (!exists()) {
             create();
         }

@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -23,6 +24,8 @@ import org.aksw.dcat.mgmt.api.DataProject;
 import org.aksw.dcat_suite.app.QACProvider;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
+import org.aksw.dcat_suite.app.model.api.UserProject;
+import org.aksw.dcat_suite.app.session.UserSession;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
@@ -83,22 +86,30 @@ import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.server.StreamResource;
 
 @Route(value = ":user/:project*", layout = DmanMainLayout.class)
 @PageTitle("Data Project Management")
 public class DataProjectMgmtView
     extends VerticalLayout
-    implements BeforeEnterObserver
+    implements BeforeEnterObserver, AfterNavigationHandler
 {
     static { JenaSystem.init(); }
 
-    protected GroupMgrFactory dcatRepoMgr;
-    protected GroupMgr groupMgr;
+    protected UserSession userSession;
+
+    protected DcatRepoLocal dcatRepo;
+    protected UserProject userProject;
+
+    // protected GroupMgrFactory dcatRepoMgr;
+    // protected GroupMgr groupMgr;
     // protected DcatRepoLocal dcatRepo;
 
 //    protected FileRepoResolver fileRepoResolver;
@@ -154,12 +165,24 @@ public class DataProjectMgmtView
     /** Vector layer */
     protected LayerGroup group;
 
+
+
+    public static UserProject getProject(UserSession userSession, RouteParameters params) throws IOException {
+        String user = params.get("user").orElse(null);
+        String project = params.get("project").orElse(null);
+        UserProject result = user != null && project != null ? userSession.getUserSpace().getProjectMgr().get(project) : null;
+        return result;
+    }
+
     public DataProjectMgmtView(
             @Autowired GroupMgrFactory dcatRepoMgr,
-            @Autowired QACProvider gtfsValidator
+            @Autowired QACProvider gtfsValidator,
+            UserSession userSession
 //            @Autowired Dataset dataset,
 //            FileRepoResolver fileRepoResolver
             ) throws Exception {
+
+        this.userSession = userSession;
 
         this.gtfsValidator = gtfsValidator;
 
@@ -185,11 +208,15 @@ public class DataProjectMgmtView
 
         // datasetGrid.setDataProvider(null);
 
-        this.dcatRepoMgr = dcatRepoMgr;
+        // this.dcatRepoMgr = dcatRepoMgr;
         // this.dataset = dataset;
 
         this.createGroupBtn.addClickListener(ev -> {
-            groupMgr.create();
+            try {
+                userProject.create();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 //            Txn.executeWrite(dataset, () -> {
 //                Model m = dataset.getNamedModel(groupId);
 //                Resource s = m.createResource(groupId);
@@ -243,7 +270,7 @@ public class DataProjectMgmtView
         add(gitPushBtn);
 
         gitPushBtn.addClickListener(ev -> {
-            Repository gitRepo = groupMgr.get().getGitRepository();
+            Repository gitRepo = userProject.getGitRepository();
             try (Git git = new Git(gitRepo)) {
                 try {
                     //git.pull().call();
@@ -464,10 +491,16 @@ public class DataProjectMgmtView
         }
     }
 
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+
+    }
+
+
 
     public Function<org.aksw.commons.path.core.Path<Node>, String> pathToString(org.aksw.commons.path.core.Path<Node> basePath) {
         return path -> {
-            Dataset dataset = groupMgr.get().getDataset();
+            Dataset dataset = userProject.getDcatRepo().getDataset();
 
             // FIXME Starting a txn on every lookup is far from optimal
             String location = Txn.calculateRead(dataset, () ->
@@ -495,7 +528,7 @@ public class DataProjectMgmtView
         } else {
 
             HierarchicalConfigurableFilterDataProvider<org.aksw.commons.path.core.Path<Node>, Void, UnaryXExpr> folderDataProvider =
-                    new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset(), false).withConfigurableFilter();
+                    new HierarchicalDataProviderFromCompositeId(userProject.getDcatRepo().getDataset(), false).withConfigurableFilter();
 
             Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathOpsNode.newAbsolutePath());
 
@@ -570,16 +603,21 @@ public class DataProjectMgmtView
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        groupId = event.getRouteParameters().get("groupId").orElse(null);
+        // groupId = event.getRouteParameters().get("groupId").orElse(null);
 
-        groupMgr = dcatRepoMgr.create(groupId);
+        try {
+            userProject = getProject(userSession, event.getRouteParameters());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        // groupMgr = dcatRepoMgr.create(groupId);
 
         if (groupExists) {
-            DcatRepoLocal repo = groupMgr.get();
+            DcatRepoLocal repo = userProject.getDcatRepo();
             dataset = repo.getDataset();
         }
 
-        fileBrowser = new BrowseRepoComponent(groupMgr.get(), gtfsValidator) {
+        fileBrowser = new BrowseRepoComponent(userProject.getDcatRepo(), gtfsValidator) {
             @Override
             public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
                 int result = super.addExtraOptions(contextMenu, relPath);
@@ -607,7 +645,7 @@ public class DataProjectMgmtView
     }
 
     protected void updateView() {
-        groupExists = groupMgr.exists(); // Txn.calculateRead(dataset, () -> dataset.containsNamedModel(groupId));
+        groupExists = userProject.exists(); // Txn.calculateRead(dataset, () -> dataset.containsNamedModel(groupId));
 
 
         heading.setText(groupId);
@@ -624,7 +662,7 @@ public class DataProjectMgmtView
         Query q = parser.apply("SELECT ?s ?g { GRAPH ?g { ?s a dcat:Dataset } }");
 
         if (groupExists) {
-            DcatRepoLocal repo = groupMgr.get();
+            DcatRepoLocal repo = userProject.getDcatRepo();;
             dataset = repo.getDataset();
 
             Txn.executeRead(dataset, () ->
@@ -653,7 +691,7 @@ public class DataProjectMgmtView
             });
 
             if (logoUrl != null) {
-                Path logoPath = logoUrl == null ? null : groupMgr.getBasePath().resolve(logoUrl);
+                Path logoPath = logoUrl == null ? null : userProject.getDcatRepo().getBasePath().resolve(logoUrl);
                 // new StreamResource("logo.png", () -> DataProjectMgmtView.class.getClassLoader().getResourceAsStream("mclient-logo.png"))
 
                 if (Files.exists(logoPath)) {

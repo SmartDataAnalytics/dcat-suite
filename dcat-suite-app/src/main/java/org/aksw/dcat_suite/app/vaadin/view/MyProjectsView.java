@@ -35,8 +35,10 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
 
-@Route(value = ":user/projects", layout = DmanMainLayout.class)
+@Route(value = ":user", layout = DmanMainLayout.class)
 public class MyProjectsView
     extends VerticalLayout
     implements BeforeEnterObserver, AfterNavigationObserver
@@ -114,6 +116,13 @@ public class MyProjectsView
         DataProvider<String, String> dataProvider = new CallbackDataProvider<>(query -> streamFactory.get().skip(query.getOffset()).limit(query.getLimit()), query -> (int)streamFactory.get().count());
         projectGrid.setDataProvider(dataProvider);
         projectGrid.addColumn(item -> item);
+
+        String accountName = userSession.getUser().getAccountName();
+        projectGrid.addItemClickListener(ev -> {
+            UI.getCurrent().navigate(DataProjectMgmtView.class, new RouteParameters(
+                    new RouteParam("user", accountName),
+                    new RouteParam("project", ev.getItem())));
+        });
         dataProvider.refreshAll();
 
         add(projectGrid);
@@ -175,14 +184,20 @@ public class MyProjectsView
         }
 
 
-        projectMgr.createIfNotExists();
+        try {
+            projectMgr.createIfNotExists();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         projectGrid.getDataProvider().refreshAll();
 
         // GroupMgr groupMgr = dcatRepoMgr.create(projectName);
         // groupMgr.createIfNotExists();
 
-        UI.getCurrent().navigate(DmanRoutes.group(projectName));
+        UI.getCurrent().navigate(DataProjectMgmtView.class, new RouteParameters(
+                new RouteParam("user", userSession.getUser().getAccountName()),
+                new RouteParam("project", projectName)));
     }
 
 }
