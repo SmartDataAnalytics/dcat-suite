@@ -30,8 +30,6 @@ import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.apache.jena.rdfconnection.SparqlQueryConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.graph.GraphFactory;
@@ -137,9 +135,9 @@ public class ConnectionMgmtView
         Dataset ds = DatasetFactory.create();
         // Node datasetNode = NodeFactory.createBlankNode();
         ResourceCache resourceCache = new ResourceCache();
-        SparqlQueryConnection conn = RDFConnectionFactory.connect(ds);
+        // SparqlQueryConnection conn = RDFConnectionFactory.connect(ds);
         QueryExecutionFactoryQuery qef = new QueryExecutionFactoryDataset(ds);
-        ShapedNode sn = ShapedNode.create(datasetNode, schema, resourceCache, conn);
+        ShapedNode sn = ShapedNode.create(datasetNode, schema, resourceCache, qef);
 //        LookupService<Node, ResourceMetamodel> metaDataService = ResourceExplorer.createMetamodelLookup(conn);
 
         Multimap<NodeSchema, Node> mm = HashMultimap.create();

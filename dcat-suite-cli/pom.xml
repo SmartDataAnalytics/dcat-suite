@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.aksw.dcat-suite</groupId>
 		<artifactId>dcat-suite-parent</artifactId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dcat-suite-cli</artifactId>
