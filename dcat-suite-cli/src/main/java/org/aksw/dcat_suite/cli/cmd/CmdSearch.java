@@ -7,28 +7,28 @@ import java.util.concurrent.Callable;
 import org.aksw.dcat.repo.api.CatalogResolver;
 import org.aksw.dcat_suite.cli.main.MainCliDcatSuite;
 
-import com.beust.jcommander.Parameter;
-
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 
 @Command(name = "search", separator = "=", description = "Search DCAT catalogs")
 public class CmdSearch
     implements Callable<Integer>
 {
-    @Parameter(description = "Search pattern (regex)")
+    @Parameters(description = "Search pattern (regex)")
     public List<String> nonOptionArgs;
 
 //		// ArtifactID - can refer to any dataset, distribution, download
 //		protected String artifactId;
-    @Parameter(names={"-c", "--catalog"}, description = "Catalog reference")
+    @Option(names={"-c", "--catalog"}, description = "Catalog reference")
     public List<String> catalogs = Collections.emptyList();
 
     // json output for processing by tools such as jq
-    @Parameter(names = "--jq", description = "json output")
+    @Option(names = "--jq", description = "json output")
     public boolean jsonOutput = false;
 
-    @Parameter(names = "--help", help = true)
+    @Option(names = "--help", help = true)
     public boolean help = false;
 
 
