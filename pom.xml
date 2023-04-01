@@ -158,11 +158,11 @@
 				<artifactId>jena-tdb2</artifactId>
 				<version>${jena.version}</version>
 			</dependency>
-                <dependency>
-                        <groupId>org.apache.jena</groupId>
-                        <artifactId>jena-querybuilder</artifactId>
-			<version>${jena.version}</version>
-                </dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-querybuilder</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
 
 			<!-- Conflict resolutions: Use Jackson version of jena ; conflict with 
 				jackan -->
@@ -229,25 +229,11 @@
 				<scope>import</scope>
 			</dependency>
 
-<!--
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-resources-prefixes</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-arq-rdfnode-in-dataset</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-facete-impl</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
--->
+			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-resources-prefixes</artifactId> 
+				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
+				<artifactId>jenax-arq-rdfnode-in-dataset</artifactId> <version>${jenax.version}</version> 
+				</dependency> <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-facete-impl</artifactId> 
+				<version>${jenax.version}</version> </dependency> -->
 
 
 			<!-- <dependency> -->
@@ -256,19 +242,10 @@
 			<!-- <version>${jenax.version}</version> -->
 			<!-- </dependency> -->
 
-<!--
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-models-dcat-api</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-models-prov</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
--->
+			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-models-dcat-api</artifactId> 
+				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
+				<artifactId>jenax-models-prov</artifactId> <version>${jenax.version}</version> 
+				</dependency> -->
 			<dependency>
 				<groupId>org.aksw.scaseco.vaadin</groupId>
 				<artifactId>vaadin-jena-core</artifactId>
@@ -287,61 +264,20 @@
 				<version>${vaadin-jena.version}</version>
 			</dependency>
 
-<!--
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-arq-relations</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-arq-plugins-bundle</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-fsrdfstore-facade</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-arq-datapaths</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-reprogen-core</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-reprogen-shacl</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-models-foaf</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-conjure-core</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.aksw.jenax</groupId>
-				<artifactId>jenax-arq-json</artifactId>
-				<version>${jenax.version}</version>
-			</dependency>
--->
+			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-arq-relations</artifactId> 
+				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
+				<artifactId>jenax-arq-plugins-bundle</artifactId> <version>${jenax.version}</version> 
+				</dependency> <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-fsrdfstore-facade</artifactId> 
+				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
+				<artifactId>jenax-arq-datapaths</artifactId> <version>${jenax.version}</version> 
+				</dependency> <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-reprogen-core</artifactId> 
+				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
+				<artifactId>jenax-reprogen-shacl</artifactId> <version>${jenax.version}</version> 
+				</dependency> <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-models-foaf</artifactId> 
+				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
+				<artifactId>jenax-conjure-core</artifactId> <version>${jenax.version}</version> 
+				</dependency> <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-arq-json</artifactId> 
+				<version>${jenax.version}</version> </dependency> -->
 			<!-- Bulk loading to virtuoso -->
 			<dependency>
 				<groupId>org.hobbit</groupId>
@@ -739,6 +675,18 @@
 
 
 	<repositories>
+		<!-- Repo for latest jena snapshots -->
+		<repository>
+			<id>apache-repo-snapshots</id>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>University Leipzig, AKSW Maven2 Internal Repository</name>
@@ -769,7 +717,6 @@
 			<name>AKSW Snapshot Repository</name>
 			<url>https://maven.aksw.org/repository/snapshots</url>
 		</snapshotRepository>
-
 	</distributionManagement>
 
 </project>
