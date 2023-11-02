@@ -3,39 +3,30 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>org.aksw.dcat-suite</groupId>
 	<artifactId>dcat-suite-parent</artifactId>
 	<version>1.1.2-SNAPSHOT</version>
-
 	<packaging>pom</packaging>
-
 	<name>DCAT Suite</name>
 	<description>DCAT APIs and CLIs for downloading, transforming and deploying datasets</description>
 	<url>https://github.com/SmartDataAnalytics/dcat-suite</url>
-
 	<modules>
 		<module>dcat-api-jena-core</module>
-
 		<module>dcat-suite-binding-ckan</module>
 		<module>dcat-suite-core</module>
 		<module>dcat-suite-cli</module>
 		<module>dcat-suite-debian-cli</module>
-
 		<module>dcat-experimental</module>
 		<module>dcat-suite-service</module>
 		<module>dcat-suite-server</module>
 		<module>dcat-suite-data-client</module>
 		<module>dcat-suite-bundle</module>
-
 		<module>dcat-suite-app</module>
 	</modules>
-
 	<issueManagement>
 		<url>https://github.com/SmartDataAnalytics/dcat-suite/issues</url>
 		<system>GitHub</system>
 	</issueManagement>
-
 	<licenses>
 		<license>
 			<name>Apache License 2.0</name>
@@ -43,14 +34,12 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
 	<scm>
 		<url>https://github.com/SmartDataAnalytics/dcat-suite</url>
 		<connection>scm:git:git://github.com/SmartDataAnalytics/dcat-suite.git</connection>
 		<developerConnection>scm:git:git@github.com:SmartDataAnalytics/dcat-suite.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
-
 	<developers>
 		<developer>
 			<name>Claus Stadler</name>
@@ -59,30 +48,21 @@
 			<organizationUrl>http://aksw.org</organizationUrl>
 		</developer>
 	</developers>
-
 	<properties>
-		<jena.version>4.8.0-SNAPSHOT</jena.version>
+		<jena.version>4.9.0</jena.version>
 		<!-- <jenax.subversion>1-SNAPSHOT</jenax.subversion> -->
-
-		<jenax.version>4.8.0-1-SNAPSHOT</jenax.version>
-		<vaadin-jena.version>4.8.0-1-SNAPSHOT</vaadin-jena.version>
-
+		<jenax.version>4.9.0-1-SNAPSHOT</jenax.version>
+		<vaadin-jena.version>4.9.0-1-SNAPSHOT</vaadin-jena.version>
 		<guava.version>31.0.1-jre</guava.version>
-
 		<aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
 		<gson.version>2.8.9</gson.version>
-
-		<conjure.version>1.0.1-SNAPSHOT</conjure.version>
-
+		<conjure.version>4.9.0-1-SNAPSHOT</conjure.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j.version>2.18.0</log4j.version>
-
 		<jackson.version>2.13.2</jackson.version>
 		<junit.version>4.13</junit.version>
 		<apache-http.version>4.5.10</apache-http.version>
-
 		<spring-boot.version>2.3.3.RELEASE</spring-boot.version>
-
 		<!-- Project Settings -->
 		<maven.compiler.release>11</maven.compiler.release>
 		<java.version.javadoc>http://java.sun.com/javase/8/docs/api/</java.version.javadoc>
@@ -91,8 +71,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<gpg.keyname>AKSW</gpg.keyname>
 	</properties>
-
-
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -100,59 +78,48 @@
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.maven.shared</groupId>
 				<artifactId>maven-invoker</artifactId>
 				<version>3.2.0</version>
 			</dependency>
-
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
 				<artifactId>gson</artifactId>
 				<version>${gson.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.conjure</groupId>
 				<artifactId>conjure-datasources</artifactId>
 				<version>${conjure.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpmime</artifactId>
 				<version>${apache-http.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-slf4j-impl</artifactId>
 				<version>${log4j.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.commons</groupId>
 				<artifactId>aksw-commons-io-utils</artifactId>
 				<version>${aksw-commons.version}</version>
 			</dependency>
-
 			<!-- <dependency> <groupId>org.hobbit</groupId> <artifactId>facete3-impl</artifactId> 
 				<version>1.2.0-SNAPSHOT</version> </dependency> -->
-
-
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-suite-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-tdb2</artifactId>
@@ -162,8 +129,13 @@
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-querybuilder</artifactId>
 				<version>${jena.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.jena</groupId>
+						<artifactId>jena-tdb</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
-
 			<!-- Conflict resolutions: Use Jackson version of jena ; conflict with 
 				jackan -->
 			<dependency>
@@ -171,13 +143,11 @@
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>com.fasterxml.jackson.datatype</groupId>
 				<artifactId>jackson-datatype-guava</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>info.picocli</groupId>
 				<artifactId>picocli</artifactId>
@@ -190,37 +160,31 @@
 				<artifactId>docker-service-api-docker-client</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-api-jena-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-suite-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-suite-binding-ckan</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.dcat-suite</groupId>
 				<artifactId>dcat-suite-cli</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.jenax</groupId>
 				<artifactId>jenax-arq-utils</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.jenax</groupId>
 				<artifactId>jenax-bom</artifactId>
@@ -228,20 +192,16 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
 			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-resources-prefixes</artifactId> 
 				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
 				<artifactId>jenax-arq-rdfnode-in-dataset</artifactId> <version>${jenax.version}</version> 
 				</dependency> <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-facete-impl</artifactId> 
 				<version>${jenax.version}</version> </dependency> -->
-
-
 			<!-- <dependency> -->
 			<!-- <groupId>org.aksw.jenax</groupId> -->
 			<!-- <artifactId>jenax-server-standalone</artifactId> -->
 			<!-- <version>${jenax.version}</version> -->
 			<!-- </dependency> -->
-
 			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-models-dcat-api</artifactId> 
 				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
 				<artifactId>jenax-models-prov</artifactId> <version>${jenax.version}</version> 
@@ -251,19 +211,16 @@
 				<artifactId>vaadin-jena-core</artifactId>
 				<version>${vaadin-jena.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.scaseco.vaadin</groupId>
 				<artifactId>vaadin-jena-geo</artifactId>
 				<version>${vaadin-jena.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.scaseco.vaadin</groupId>
 				<artifactId>vaadin-jena-shacl-editor</artifactId>
 				<version>${vaadin-jena.version}</version>
 			</dependency>
-
 			<!-- <dependency> <groupId>org.aksw.jenax</groupId> <artifactId>jenax-arq-relations</artifactId> 
 				<version>${jenax.version}</version> </dependency> <dependency> <groupId>org.aksw.jenax</groupId> 
 				<artifactId>jenax-arq-plugins-bundle</artifactId> <version>${jenax.version}</version> 
@@ -285,67 +242,56 @@
 				<version>1.0.0</version>
 				<!-- <scope>runtime</scope> -->
 			</dependency>
-
 			<dependency>
 				<groupId>org.hobbit</groupId>
 				<artifactId>virt_jena3</artifactId>
 				<version>1.0.0</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.jenax</groupId>
 				<artifactId>jenax-virtuoso</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.aksw.jenax</groupId>
 				<artifactId>jenax-arq-datasets-oneng</artifactId>
 				<version>${jenax.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-arq</artifactId>
 				<version>${jena.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-rdfconnection</artifactId>
 				<version>${jena.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-shacl</artifactId>
 				<version>${jena.version}</version>
 			</dependency>
-
 			<!-- <dependency> -->
 			<!-- <groupId>org.apache.jena</groupId> -->
 			<!-- <artifactId>jena-geosparql</artifactId> -->
 			<!-- <version>${jena.version}</version> -->
 			<!-- </dependency> -->
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot</artifactId>
 				<version>${spring-boot.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-autoconfigure</artifactId>
 				<version>${spring-boot.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-loader</artifactId>
 				<version>${spring-boot.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-web</artifactId>
@@ -357,13 +303,11 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-oauth2-client</artifactId>
 				<version>${spring-boot.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-jersey</artifactId>
@@ -375,12 +319,10 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-
 			<dependency>
 				<groupId>eu.trentorise.opendata</groupId>
 				<artifactId>jackan</artifactId>
 				<version>0.4.2</version>
-
 				<!-- Use the version provided by jena -->
 				<!-- <exclusions> -->
 				<!-- <exclusion> -->
@@ -389,48 +331,36 @@
 				<!-- </exclusion> -->
 				<!-- </exclusions> -->
 			</dependency>
-
-
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>${junit.version}</version>
 			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
-
-
 	<build>
 		<plugins>
-
 			<plugin>
 				<groupId>com.amashchenko.maven.plugin</groupId>
 				<artifactId>gitflow-maven-plugin</artifactId>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
-
 		</plugins>
-
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -443,7 +373,6 @@
 						</gitFlowConfig>
 					</configuration>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -454,7 +383,6 @@
 						<encoding>${project.build.sourceEncoding}</encoding>
 					</configuration>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
@@ -469,7 +397,6 @@
 						</execution>
 					</executions>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
@@ -489,7 +416,6 @@
 						<additionalparam>-Xdoclint:none</additionalparam>
 					</configuration>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
@@ -504,8 +430,6 @@
 						<skipTests>false</skipTests>
 					</configuration>
 				</plugin>
-
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-gpg-plugin</artifactId>
@@ -524,7 +448,6 @@
 						</execution>
 					</executions>
 				</plugin>
-
 				<plugin>
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nexus-staging-maven-plugin</artifactId>
@@ -536,13 +459,11 @@
 						<autoReleaseAfterClose>true</autoReleaseAfterClose>
 					</configuration>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
 					<version>2.8.2</version>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
@@ -564,12 +485,9 @@
 						<outputDirectory>${project.build.directory}/lib</outputDirectory>
 					</configuration>
 				</plugin>
-
-
 			</plugins>
 		</pluginManagement>
 	</build>
-
 	<profiles>
 		<!-- <profile> <id>doclint-java8-disable</id> <activation> <jdk>[1.8,)</jdk> 
 			</activation> <build> <plugins> <plugin> <groupId>org.apache.maven.plugins</groupId> 
@@ -578,7 +496,6 @@
 			<failOnError>false</failOnError> </configuration> </execution> </executions> 
 			<configuration> <additionalparam>-Xdoclint:none</additionalparam> </configuration> 
 			</plugin> </plugins> </build> </profile> -->
-
 		<profile>
 			<id>release</id>
 			<activation>
@@ -587,24 +504,19 @@
 					<value>true</value>
 				</property>
 			</activation>
-
 			<build>
 				<plugins>
-
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
 					</plugin>
-
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
 					</plugin>
-
 				</plugins>
 			</build>
 		</profile>
-
 		<profile>
 			<id>deb</id>
 			<build>
@@ -616,10 +528,7 @@
 					</plugin>
 				</plugins>
 			</build>
-
 		</profile>
-
-
 		<profile>
 			<id>dist</id>
 			<build>
@@ -668,12 +577,8 @@
 					</plugin>
 				</plugins>
 			</build>
-
 		</profile>
-
 	</profiles>
-
-
 	<repositories>
 		<!-- Repo for latest jena snapshots -->
 		<repository>
@@ -686,37 +591,31 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>University Leipzig, AKSW Maven2 Internal Repository</name>
 			<url>https://maven.aksw.org/repository/internal/</url>
 		</repository>
-
 		<repository>
 			<id>maven.aksw.snapshots</id>
 			<name>University Leipzig, AKSW Maven2 Snapshot Repository</name>
 			<url>https://maven.aksw.org/repository/snapshots/</url>
 		</repository>
 	</repositories>
-
 	<distributionManagement>
 		<!-- <repository> -->
 		<!-- <id>maven.aksw.internal</id> -->
 		<!-- <name>AKSW Internal Release Repository</name> -->
 		<!-- <url>http://maven.aksw.org/repository/internal</url> -->
 		<!-- </repository> -->
-
 		<repository>
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
-
 		<snapshotRepository>
 			<id>maven.aksw.snapshots</id>
 			<name>AKSW Snapshot Repository</name>
 			<url>https://maven.aksw.org/repository/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-
 </project>

@@ -26,12 +26,12 @@ import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
-import org.aksw.jena_sparql_api.concepts.UnaryXExpr;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.arq.util.binding.QuerySolutionUtils;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
-import org.aksw.jenax.connection.query.QueryExecutionDecoratorTxn;
-import org.aksw.jenax.path.core.PathOpsNode;
+import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperTxn;
+import org.aksw.jenax.path.core.PathNode;
+import org.aksw.jenax.sparql.fragment.impl.UnaryXExpr;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
@@ -497,7 +497,7 @@ public class GroupMgmtViewLegacy
             HierarchicalConfigurableFilterDataProvider<org.aksw.commons.path.core.Path<Node>, Void, UnaryXExpr> folderDataProvider =
                     new HierarchicalDataProviderFromCompositeId(groupMgr.get().getDataset(), false).withConfigurableFilter();
 
-            Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathOpsNode.newAbsolutePath());
+            Function<org.aksw.commons.path.core.Path<Node>, String> pathToString = pathToString(PathNode.newAbsolutePath());
 
             TreeGrid<org.aksw.commons.path.core.Path<Node>> artifactTreeGrid = new TreeGrid<>();
             //folderTreeGrid.setSizeFull();
@@ -634,7 +634,7 @@ public class GroupMgmtViewLegacy
 
             VaadinSparqlUtils.setQueryForGridResource(
                     datasetGrid,
-                    (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
+                    (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
                     q,
                     DcatDataset.class,
                     "s",

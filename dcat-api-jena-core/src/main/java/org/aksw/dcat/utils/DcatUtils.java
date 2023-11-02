@@ -12,9 +12,7 @@ import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
-import org.aksw.jenax.arq.util.exec.QueryExecutionUtils;
-import org.apache.jena.ext.com.google.common.collect.Sets;
-import org.apache.jena.ext.com.google.common.collect.Streams;
+import org.aksw.jenax.arq.util.exec.query.QueryExecutionUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -32,6 +30,9 @@ import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+
+import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 public class DcatUtils {
 

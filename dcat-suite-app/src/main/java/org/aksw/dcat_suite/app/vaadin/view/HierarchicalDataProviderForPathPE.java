@@ -5,14 +5,13 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
-import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
-import org.aksw.jenax.path.core.PathOpsPE;
 import org.aksw.jenax.path.core.PathPE;
 import org.aksw.jenax.path.relgen.RelationGeneratorSimple;
+import org.aksw.jenax.sparql.fragment.api.Fragment;
+import org.aksw.jenax.sparql.fragment.api.Fragment1;
+import org.aksw.jenax.sparql.fragment.impl.FragmentUtils;
 import org.aksw.jenax.sparql.query.rx.SparqlRx;
-import org.aksw.jenax.sparql.relation.api.Relation;
-import org.aksw.jenax.sparql.relation.api.UnaryRelation;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -48,11 +47,11 @@ public class HierarchicalDataProviderForPathPE
     protected RelationGeneratorSimple relgen;
 
 
-    public static Relation createShaclRelation() {
+    public static Fragment createShaclFragment() {
 
         Query query;
         query = SparqlStmtMgr.loadQuery("shacl-relation.rq");
-        Relation result = RelationUtils.fromQuery(query);
+        Fragment result = FragmentUtils.fromQuery(query);
 
         return result;
     }
@@ -62,11 +61,11 @@ public class HierarchicalDataProviderForPathPE
         Node root = NodeFactory.createURI("http://data.europa.eu/r5r#Catalog_Shape");
 
         RDFConnection conn = RDFConnectionFactory.connect(m);
-        Relation r = createShaclRelation();
+        Fragment r = createShaclFragment();
         RelationGeneratorSimple gen = RelationGeneratorSimple.create(r);
 
 
-        PathPE exprs = PathOpsPE.newAbsolutePath();
+        PathPE exprs = PathPE.newAbsolutePath();
 
         // gen.process(exprs);
 
@@ -127,7 +126,7 @@ public class HierarchicalDataProviderForPathPE
         PathPE parent = p;
 
         relgen.process(parent);
-        UnaryRelation ur = relgen.getCurrentConcept();
+        Fragment1 ur = relgen.getCurrentConcept();
         Query q = ur.toQuery();
         q.setLimit(query.getLimit());
         q.setOffset(query.getOffset());

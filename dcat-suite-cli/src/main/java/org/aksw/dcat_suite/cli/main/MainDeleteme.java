@@ -23,11 +23,11 @@ import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilder;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureBuilderImpl;
 import org.aksw.jena_sparql_api.conjure.fluent.ConjureContext;
-import org.aksw.jenax.arq.connection.core.RDFConnectionBuilder;
 import org.aksw.jenax.arq.util.prefix.PrefixUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.jenax.dataaccess.sparql.connection.common.RDFConnectionBuilder;
 import org.aksw.jenax.reprogen.core.JenaPluginUtils;
-import org.aksw.jenax.sparql.relation.api.TernaryRelation;
+import org.aksw.jenax.sparql.fragment.api.Fragment3;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
@@ -149,7 +149,7 @@ public class MainDeleteme {
 //		Query latestVersionQuery = RDFDataMgrEx.loadQuery("latest-version.sparql");
 //		Query relatedDataset = RDFDataMgrEx.loadQuery("related-dataset.sparql");
 //
-//		List<TernaryRelation> views = new ArrayList<>();
+//		List<Fragment3> views = new ArrayList<>();
 //
 //		views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
 //		views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
@@ -157,7 +157,7 @@ public class MainDeleteme {
 //
 //		views.add(RelationUtils.SPO);
 
-        List<TernaryRelation> views = CatalogResolverUtils.loadViews(Collections.emptyList());
+        List<Fragment3> views = CatalogResolverUtils.loadViews(Collections.emptyList());
 
         RDFConnection conn = RDFConnectionFactory.connect(RDFDataMgr.loadDataset("/home/raven/Projects/limbo/git/metadata-catalog/catalog.all.ttl"));
         CatalogResolverSparql cr = CatalogResolverUtils.createCatalogResolver(conn, Collections.emptyList());

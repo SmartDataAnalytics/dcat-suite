@@ -7,7 +7,7 @@ import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
-import org.aksw.jenax.connection.query.QueryExecutionDecoratorTxn;
+import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperTxn;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
@@ -111,7 +111,7 @@ public class CatalogMgmtView
         VaadinSparqlUtils.setQueryForGridBinding(
                 catalogsGrid,
                 catalogsGridHeaderRow,
-                (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, ds), ds),
+                (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, ds), ds),
                 q,
                 vars);
 

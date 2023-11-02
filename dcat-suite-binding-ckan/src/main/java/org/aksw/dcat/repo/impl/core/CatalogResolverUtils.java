@@ -20,17 +20,17 @@ import org.aksw.dcat.repo.impl.model.CatalogResolverSparql;
 import org.aksw.dcat.repo.impl.model.DcatResolver;
 import org.aksw.jena_sparql_api.algebra.utils.VirtualPartitionedQuery;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
-import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPods;
 import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.RdfDataRef;
 import org.aksw.jena_sparql_api.conjure.resourcespec.ResourceSpecUtils;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
-import org.aksw.jenax.arq.connection.RDFConnectionModular;
-import org.aksw.jenax.arq.connection.core.QueryExecutionFactoryOverSparqlQueryConnection;
-import org.aksw.jenax.arq.connection.core.RDFConnectionBuilder;
-import org.aksw.jenax.arq.connection.core.SparqlQueryConnectionJsa;
-import org.aksw.jenax.sparql.relation.api.TernaryRelation;
+import org.aksw.jenax.dataaccess.sparql.connection.common.RDFConnectionBuilder;
+import org.aksw.jenax.dataaccess.sparql.connection.common.RDFConnectionModular;
+import org.aksw.jenax.dataaccess.sparql.connection.query.SparqlQueryConnectionJsa;
+import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFactoryOverSparqlQueryConnection;
+import org.aksw.jenax.sparql.fragment.api.Fragment3;
+import org.aksw.jenax.sparql.fragment.impl.FragmentUtils;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl;
@@ -65,12 +65,12 @@ public class CatalogResolverUtils {
     }
 
     // No longer needed, as this is now part of the settings.ttl
-    public static List<TernaryRelation> loadViews(Collection<String> extraViews) throws FileNotFoundException, IOException, ParseException {
+    public static List<Fragment3> loadViews(Collection<String> extraViews) throws FileNotFoundException, IOException, ParseException {
         //Query inferenceQuery = RDFDataMgrEx.loadQuery("dcat-inferences.sparql");
         Query latestVersionQuery = SparqlStmtMgr.loadQuery("latest-version.sparql");
         Query relatedDataset = SparqlStmtMgr.loadQuery("related-dataset.sparql");
 
-        List<TernaryRelation> views = new ArrayList<>();
+        List<Fragment3> views = new ArrayList<>();
 
         //views.addAll(VirtualPartitionedQuery.toViews(inferenceQuery));
         views.addAll(VirtualPartitionedQuery.toViews(latestVersionQuery));
@@ -83,14 +83,14 @@ public class CatalogResolverUtils {
             views.addAll(VirtualPartitionedQuery.toViews(query));
         }
 
-        views.add(RelationUtils.SPO);
+        views.add(FragmentUtils.SPO);
         //views.add(Ternar);
 
         return views;
     }
 
     public static CatalogResolverSparql createCatalogResolver(SparqlQueryConnection conn, List<String> extraViews) throws FileNotFoundException, IOException, ParseException {
-        List<TernaryRelation> views = loadViews(extraViews);
+        List<Fragment3> views = loadViews(extraViews);
 //
 //
         RDFConnection _conn = RDFConnectionBuilder.from(new RDFConnectionModular(conn, null, null))

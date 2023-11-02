@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.aksw.dcat_suite.cli.main.DcatOps;
-import org.apache.jena.ext.com.google.common.collect.Iterables;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
@@ -22,6 +21,7 @@ import org.apache.jena.riot.RDFFormat;
 
 import com.beust.jcommander.Parameter;
 import com.github.jsonldjava.shaded.com.google.common.collect.Maps;
+import com.google.common.collect.Iterables;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

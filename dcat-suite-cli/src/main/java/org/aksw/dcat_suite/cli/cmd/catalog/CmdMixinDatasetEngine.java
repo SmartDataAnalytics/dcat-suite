@@ -1,7 +1,7 @@
 package org.aksw.dcat_suite.cli.cmd.catalog;
 
-import org.aksw.jenax.arq.datasource.RdfDataSourceSpecBasicFromMap;
-import org.aksw.jenax.arq.datasource.RdfDataSourceSpecBasicMutable;
+import org.aksw.jenax.dataaccess.sparql.factory.datasource.RdfDataSourceSpecBasicFromMap;
+import org.aksw.jenax.dataaccess.sparql.factory.datasource.RdfDataSourceSpecBasicMutable;
 
 import picocli.CommandLine.Option;
 

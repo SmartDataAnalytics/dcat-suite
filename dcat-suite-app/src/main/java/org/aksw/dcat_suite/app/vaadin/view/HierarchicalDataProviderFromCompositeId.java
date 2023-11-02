@@ -8,11 +8,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.aksw.commons.path.core.Path;
-import org.aksw.jena_sparql_api.concepts.UnaryXExpr;
 import org.aksw.jenax.arq.util.var.Vars;
-import org.aksw.jenax.path.core.PathOpsNode;
+import org.aksw.jenax.path.core.PathNode;
+import org.aksw.jenax.sparql.fragment.api.Fragment1;
+import org.aksw.jenax.sparql.fragment.impl.UnaryXExpr;
 import org.aksw.jenax.sparql.query.rx.SparqlRx;
-import org.aksw.jenax.sparql.relation.api.UnaryRelation;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -25,104 +25,104 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataPr
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 
 public class HierarchicalDataProviderFromCompositeId
-	extends AbstractBackEndHierarchicalDataProvider<Path<Node>, UnaryXExpr>
+    extends AbstractBackEndHierarchicalDataProvider<Path<Node>, UnaryXExpr>
 {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	protected Dataset dataset;
-	protected Path<Node> basePath;
+    protected Dataset dataset;
+    protected Path<Node> basePath;
 
     protected boolean includeBasePath;
 
 
-	public HierarchicalDataProviderFromCompositeId(Dataset dataset) {
-		this(dataset, PathOpsNode.newAbsolutePath());
-	}
+    public HierarchicalDataProviderFromCompositeId(Dataset dataset) {
+        this(dataset, PathNode.newAbsolutePath());
+    }
 
-	public HierarchicalDataProviderFromCompositeId(Dataset dataset, Path<Node> basePath) {
-		this(dataset, PathOpsNode.newAbsolutePath(), true);
-	}
+    public HierarchicalDataProviderFromCompositeId(Dataset dataset, Path<Node> basePath) {
+        this(dataset, PathNode.newAbsolutePath(), true);
+    }
 
-	public HierarchicalDataProviderFromCompositeId(Dataset dataset, boolean includeBasePath) {
-		this(dataset, PathOpsNode.newAbsolutePath(), includeBasePath);
-	}
+    public HierarchicalDataProviderFromCompositeId(Dataset dataset, boolean includeBasePath) {
+        this(dataset, PathNode.newAbsolutePath(), includeBasePath);
+    }
 
-	public HierarchicalDataProviderFromCompositeId(Dataset dataset, Path<Node> basePath, boolean includeBasePath) {
-		super();
-		this.dataset = dataset;
-		this.basePath = basePath;
-		this.includeBasePath = includeBasePath;
-	}
+    public HierarchicalDataProviderFromCompositeId(Dataset dataset, Path<Node> basePath, boolean includeBasePath) {
+        super();
+        this.dataset = dataset;
+        this.basePath = basePath;
+        this.includeBasePath = includeBasePath;
+    }
 
-	@Override
-	public int getChildCount(HierarchicalQuery<Path<Node>, UnaryXExpr> query) {
-		int result;
-		Path<Node> parent = query.getParent();
+    @Override
+    public int getChildCount(HierarchicalQuery<Path<Node>, UnaryXExpr> query) {
+        int result;
+        Path<Node> parent = query.getParent();
 
-		if (parent == null && includeBasePath) {
+        if (parent == null && includeBasePath) {
             result = 1;
         } else {
-        	parent = nullToRoot(parent);
-			Query q = createRelation(query.getParent(), query.getFilter().orElse(null)).toQuery();
-			q.setDistinct(true);
-			result = Txn.calculateRead(dataset,
-					() -> SparqlRx.fetchCountQuery((Query qq) -> QueryExecutionFactory.create(qq, dataset), q, null, null)
-						.blockingGet().lowerEndpoint().intValue());
+            parent = nullToRoot(parent);
+            Query q = createRelation(query.getParent(), query.getFilter().orElse(null)).toQuery();
+            q.setDistinct(true);
+            result = Txn.calculateRead(dataset,
+                    () -> SparqlRx.fetchCountQuery((Query qq) -> QueryExecutionFactory.create(qq, dataset), q, null, null)
+                        .blockingGet().lowerEndpoint().intValue());
         }
-		return result;
-	}
+        return result;
+    }
 
-	public static UnaryRelation createRelation(Path<Node> path, UnaryXExpr predicateExpr) {
-		List<Node> nodes = new ArrayList<>(path == null ? Collections.emptyList() : path.getSegments());
-		List<Expr> exprs = Optional.ofNullable(predicateExpr).map(UnaryXExpr::getExpr).map(Collections::singletonList).orElse(Collections.emptyList());
+    public static Fragment1 createRelation(Path<Node> path, UnaryXExpr predicateExpr) {
+        List<Node> nodes = new ArrayList<>(path == null ? Collections.emptyList() : path.getSegments());
+        List<Expr> exprs = Optional.ofNullable(predicateExpr).map(UnaryXExpr::getExpr).map(Collections::singletonList).orElse(Collections.emptyList());
 
-		Var v = predicateExpr == null ? Vars.y : predicateExpr.getVar();
-		nodes.add(v);
+        Var v = predicateExpr == null ? Vars.y : predicateExpr.getVar();
+        nodes.add(v);
 
-		UnaryRelation result = GraphEntityUtils.createRelationForEntity(nodes, true)
-				.filter(exprs)
-				.project(v)
-				.toUnaryRelation();
-		return result;
-	}
+        Fragment1 result = GraphEntityUtils.createRelationForEntity(nodes, true)
+                .filter(exprs)
+                .project(v)
+                .toFragment1();
+        return result;
+    }
 
 
-	@Override
-	public boolean hasChildren(Path<Node> item) {
+    @Override
+    public boolean hasChildren(Path<Node> item) {
         boolean result;
-		if (item == null && includeBasePath) {
+        if (item == null && includeBasePath) {
             result = true;
         } else {
-			Query q = createRelation(item, null).toQuery();
-			q.setQueryAskType();
-			result = Txn.calculateRead(dataset, () -> SparqlRx.execAsk(qq -> QueryExecutionFactory.create(qq, dataset), q).blockingGet());
+            Query q = createRelation(item, null).toQuery();
+            q.setQueryAskType();
+            result = Txn.calculateRead(dataset, () -> SparqlRx.execAsk(qq -> QueryExecutionFactory.create(qq, dataset), q).blockingGet());
         }
-		return result;
-	}
+        return result;
+    }
 
     protected Path<Node> nullToRoot(Path<Node> path) {
         return path == null ? basePath : path;
     }
 
 
-	@Override
-	protected Stream<Path<Node>> fetchChildrenFromBackEnd(HierarchicalQuery<Path<Node>, UnaryXExpr> query) {
-		Path<Node> parent = query.getParent();
+    @Override
+    protected Stream<Path<Node>> fetchChildrenFromBackEnd(HierarchicalQuery<Path<Node>, UnaryXExpr> query) {
+        Path<Node> parent = query.getParent();
 
-		List<Path<Node>> list;
-		if (parent == null && includeBasePath) {
+        List<Path<Node>> list;
+        if (parent == null && includeBasePath) {
             list = Collections.singletonList(basePath);
         } else {
-        	parent = nullToRoot(parent);
-			Query q = createRelation(parent, query.getFilter().orElse(null)).toQuery();
-			q.setDistinct(true);
+            parent = nullToRoot(parent);
+            Query q = createRelation(parent, query.getFilter().orElse(null)).toQuery();
+            q.setDistinct(true);
 
-			Path<Node> tmp = query.getParent();
+            Path<Node> tmp = query.getParent();
 
-			Path<Node> basePath = tmp == null ? PathOpsNode.newAbsolutePath() : tmp;
+            Path<Node> basePath = tmp == null ? PathNode.newAbsolutePath() : tmp;
 
-			list = Txn.calculateRead(dataset, () -> SparqlRx.execConceptRaw(qq -> QueryExecutionFactory.create(qq, dataset), q)
-					.map(basePath::resolve)
+            list = Txn.calculateRead(dataset, () -> SparqlRx.execConceptRaw(qq -> QueryExecutionFactory.create(qq, dataset), q)
+                    .map(basePath::resolve)
 //					.map(node -> {
 //						Path<Node> x = basePath.resolve(node);
 //
@@ -131,10 +131,10 @@ public class HierarchicalDataProviderFromCompositeId
 //						System.out.println("GOT PATH: " + y);
 //						return y;
 //					})
-					.toList()
-					.blockingGet());
+                    .toList()
+                    .blockingGet());
         }
 
-		return list.stream();
-	}
+        return list.stream();
+    }
 }

@@ -20,15 +20,14 @@ import org.aksw.facete.v3.api.ConstraintFacade;
 import org.aksw.facete.v3.api.FacetNode;
 import org.aksw.facete.v3.api.FacetedQuery;
 import org.aksw.facete.v3.impl.FacetedQueryBuilder;
-import org.aksw.jena_sparql_api.concepts.Concept;
-import org.aksw.jena_sparql_api.concepts.RelationUtils;
 import org.aksw.jena_sparql_api.data_query.api.DataQuery;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.jenax.sparql.fragment.api.Fragment;
+import org.aksw.jenax.sparql.fragment.api.Fragment1;
+import org.aksw.jenax.sparql.fragment.impl.Concept;
+import org.aksw.jenax.sparql.fragment.impl.FragmentUtils;
 import org.aksw.jenax.sparql.query.rx.SparqlRx;
-import org.aksw.jenax.sparql.relation.api.Relation;
-import org.aksw.jenax.sparql.relation.api.UnaryRelation;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
-import org.apache.jena.ext.com.google.common.collect.Maps;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
@@ -42,6 +41,7 @@ import org.apache.jena.vocabulary.RDF;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.Ordering;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -83,7 +83,7 @@ public class CatalogResolverSparql
     @Override
     public Flowable<DatasetResolver> search(String pattern) {
         return resolveAny(pattern, patternToQuery, null)
-        		.map(searchResult -> new DatasetResolverImpl(this, searchResult.as(DcatDataset.class)));
+                .map(searchResult -> new DatasetResolverImpl(this, searchResult.as(DcatDataset.class)));
                 //.map(RDFNode::asResource);
     }
 
@@ -115,7 +115,7 @@ public class CatalogResolverSparql
                 .create();
 
 
-        UnaryRelation baseConcept = RelationUtils.fromQuery(instanceQuery).toUnaryRelation();
+        Fragment1 baseConcept = FragmentUtils.fromQuery(instanceQuery).toFragment1();
 
         // System.out.println(baseConcept);
 
@@ -134,8 +134,8 @@ public class CatalogResolverSparql
 
 
         fq.baseConcept(baseConcept);
-//			KeywordSearchUtils.createConceptRegexLabelOnly(BinaryRelationImpl.create(DCTerms.identifier), "org.limbo:train_3:0.0.2")
-                //KeywordSearchUtils.createConceptRegex(BinaryRelationImpl.create(DCTerms.identifier), "org.limbo.*", true)
+//			KeywordSearchUtils.createConceptRegexLabelOnly(BinaryFragmentImpl.create(DCTerms.identifier), "org.limbo:train_3:0.0.2")
+                //KeywordSearchUtils.createConceptRegex(BinaryFragmentImpl.create(DCTerms.identifier), "org.limbo.*", true)
 
 //		q.startUnion()
 //			.add(x -> x.fwd(DCTerms.identifier).one().constraints().regex(pattern).activate())
@@ -147,7 +147,7 @@ public class CatalogResolverSparql
 //		fq.focus().fwd(DCAT.downloadURL).one().constraints().regex(pattern).activate();
 //		fq.focus().constraints().regex(pattern).activate();
 
-        fq.focus().fwd(RDF.type).one().constraints().eq(DCAT.Dataset).activate();
+        fq.focus().fwd(RDF.type).one().enterConstraints().eq(DCAT.Dataset).activate();
 
         boolean doCounting = true;
         long count = -1;
@@ -214,10 +214,10 @@ public class CatalogResolverSparql
         Var shapeRootVar = Var.alloc("DATASET");
 
         Entry<Node, Query> e = dq.toConstructQuery();
-        UnaryRelation ur = new Concept(e.getValue().getQueryPattern(), (Var)e.getKey());
+        Fragment1 ur = new Concept(e.getValue().getQueryPattern(), (Var)e.getKey());
 
-        Relation r = RelationUtils.fromQuery(shape);
-        Relation el = r.joinOn(shapeRootVar)
+        Fragment r = FragmentUtils.fromQuery(shape);
+        Fragment el = r.joinOn(shapeRootVar)
             .filterRelationFirst(true)
             .with(ur)
             ;
@@ -242,7 +242,7 @@ public class CatalogResolverSparql
 //
 //		System.out.println("Printed " + items.size() + " items");
 //
-//		System.out.println("Relation");
+//		System.out.println("Fragment");
 //		System.out.println(el);
     }
 
@@ -312,12 +312,12 @@ public class CatalogResolverSparql
 
         Query instanceQuery = patternToQuery.apply(pattern);
 
-        UnaryRelation baseConcept = RelationUtils.fromQuery(instanceQuery).toUnaryRelation();
+        Fragment1 baseConcept = FragmentUtils.fromQuery(instanceQuery).toFragment1();
         fq.baseConcept(baseConcept);
 
         List<RDFNode> validTypes = Arrays.asList(DCAT.Dataset, DCAT.Distribution, DCATX.DownloadURL);
 
-        ConstraintFacade<? extends FacetNode> constraints = fq.focus().fwd(RDF.type).one().constraints();
+        ConstraintFacade<? extends FacetNode> constraints = fq.focus().fwd(RDF.type).one().enterConstraints();
         if(type != null) {
             constraints.eq(type).activate();
         } else {

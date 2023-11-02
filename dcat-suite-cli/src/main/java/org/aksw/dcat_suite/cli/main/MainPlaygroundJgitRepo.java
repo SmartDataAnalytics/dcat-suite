@@ -20,7 +20,6 @@ import org.aksw.commons.io.util.UriToPathUtils;
 import org.aksw.jenax.arq.dataset.orderaware.DatasetFactoryEx;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
-import org.apache.jena.ext.com.google.common.base.StandardSystemProperty;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -41,6 +40,7 @@ import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.FS;
 
+import com.google.common.base.StandardSystemProperty;
 import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;

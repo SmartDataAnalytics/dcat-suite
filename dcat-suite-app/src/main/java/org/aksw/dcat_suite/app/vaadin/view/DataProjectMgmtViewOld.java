@@ -20,10 +20,9 @@ import org.aksw.commons.io.util.FileUtils;
 import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
-import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
-import org.aksw.jenax.connection.query.QueryExecutionDecoratorTxn;
+import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperTxn;
 import org.aksw.jenax.path.core.PathPE;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
 import org.aksw.jenax.stmt.parser.query.SparqlQueryParser;
@@ -47,8 +46,8 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -69,8 +68,6 @@ import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
 
 //@Route(value = "group/:groupIdOld*", layout = DmanMainLayout.class)
 //@PageTitle("Data Project Management")
@@ -167,7 +164,7 @@ public class DataProjectMgmtViewOld
             VaadinSparqlUtils.setQueryForGridBinding(
                     datasetGrid,
                     datasetGridHeaderRow,
-                    (Query query) -> QueryExecutionDecoratorTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
+                    (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
                     q);
 
             logoImg.setSrc("http://localhost/webdav/gitalog/logo.png");

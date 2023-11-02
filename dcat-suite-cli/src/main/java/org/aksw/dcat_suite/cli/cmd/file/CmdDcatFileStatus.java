@@ -18,7 +18,7 @@ import org.aksw.dcat.jena.domain.api.MavenEntityCore;
 import org.aksw.jena_sparql_api.lookup.LookupServiceSparqlQuery;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
-import org.aksw.jenax.connection.query.QueryExecutionFactoryDataset;
+import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFactoryDataset;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;

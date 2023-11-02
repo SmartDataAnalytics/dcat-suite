@@ -27,7 +27,6 @@ import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jena_sparql_api.http.repository.api.RdfHttpEntityFile;
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl;
 import org.apache.http.message.BasicHttpRequest;
-import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.irix.IRIx;
 import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.rdf.model.Model;
@@ -42,6 +41,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 
 import eu.trentorise.opendata.jackan.CkanClient;
@@ -222,6 +222,7 @@ public class DcatCkanDeployUtils {
         String datasetName = rawDatasetName
                 .replace(":", "-")
                 .replace(".", "-")
+                .toLowerCase()
 //                .replaceAll("[0-9]", "x");
                 ;
         // datasetName = "test";
@@ -348,24 +349,24 @@ public class DcatCkanDeployUtils {
                     pathReference = DcatCkanDeployUtils.pathsGet(fileUrl);
                     downloadFilename = pathReference.get().getFileName().toString();
                 } else {
-                	// Assume web url - try to download locally and upload
-                	if (!webUrls.isEmpty()) {
-	                    // TODO This should go through the conjure resource cache
-	                    root = Files.createTempDirectory("http-cache-");
-	                    URI webUrl = webUrls.iterator().next();
-	                    String webUrlPathStr = webUrl.getPath();
-	                    Path tmp =  Paths.get(webUrlPathStr);
-	                    downloadFilename = tmp.getFileName().toString();
-	
-	                    HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
-	
-	                    BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
-	    //                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
-	    //                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
-	
-	                    RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
-	                    pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
-                	}
+                    // Assume web url - try to download locally and upload
+                    if (!webUrls.isEmpty()) {
+                        // TODO This should go through the conjure resource cache
+                        root = Files.createTempDirectory("http-cache-");
+                        URI webUrl = webUrls.iterator().next();
+                        String webUrlPathStr = webUrl.getPath();
+                        Path tmp =  Paths.get(webUrlPathStr);
+                        downloadFilename = tmp.getFileName().toString();
+
+                        HttpResourceRepositoryFromFileSystemImpl manager = HttpResourceRepositoryFromFileSystemImpl.create(root);
+
+                        BasicHttpRequest r = new BasicHttpRequest("GET", webUrl.toASCIIString());
+        //                r.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtleAlt2);
+        //                r.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip,identity;q=0");
+
+                        RdfHttpEntityFile httpEntity = manager.get(r, HttpResourceRepositoryFromFileSystemImpl::resolveRequest);
+                        pathReference = Optional.ofNullable(httpEntity).map(RdfHttpEntityFile::getAbsolutePath);
+                    }
                 }
 
                 // TODO This breaks if the downloadURLs are web urls.
