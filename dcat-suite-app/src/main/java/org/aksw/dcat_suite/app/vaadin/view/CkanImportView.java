@@ -23,7 +23,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.system.Txn;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.Iterables;
+import com.google.common.collect.Iterables;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
@@ -45,84 +45,84 @@ import eu.trentorise.opendata.jackan.CkanClient;
 @Route(value = DmanRoutes.CKAN_IMPORT, layout = DmanMainLayout.class)
 @PageTitle("Ckan Import")
 public class CkanImportView
-	extends VerticalLayout
-	implements BeforeEnterObserver
+    extends VerticalLayout
+    implements BeforeEnterObserver
 {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	protected String catalogUrl;
-	protected String datasetId;
-	
-	protected DcatDataset dcatDataset;
-	protected TextField groupField;
-	
-	@Autowired
-	protected GroupMgrFactory groupMgrFactory;
-	
-	@Override
-	public void beforeEnter(BeforeEnterEvent event) {
-		Map<String, List<String>> params = event.getLocation().getQueryParameters().getParameters();
-		catalogUrl = Iterables.getOnlyElement(params.get("url"));
-		datasetId = Iterables.getOnlyElement(params.get("id"));
-		refresh();
-	}
+    protected String catalogUrl;
+    protected String datasetId;
 
-	public void refresh() {
-		removeAll();
-		
-		add(new H1("CKAN Import"));
-		add(new Paragraph(datasetId + " from " + catalogUrl));
+    protected DcatDataset dcatDataset;
+    protected TextField groupField;
 
-		// TODO Avoid re-downloading the data when we come from the search view
-		CatalogResolver catalogResolver = new CatalogResolverCkan(new CkanClient(catalogUrl));
-		dcatDataset = catalogResolver.resolveDataset(datasetId)
-				.map(dr -> dr.getDataset())
-				.map(ds -> MainCliDcatSuite.skolemizeDcatDataset(ds, catalogUrl))
-				.blockingGet();
+    @Autowired
+    protected GroupMgrFactory groupMgrFactory;
 
-		URI uri = UriUtils.newURI(catalogUrl);
-		String[] hostSegments = UriToPathUtils.javaifyHostnameSegments(uri.getHost());
-		String groupId = Arrays.asList(hostSegments).stream().collect(Collectors.joining("."));
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Map<String, List<String>> params = event.getLocation().getQueryParameters().getParameters();
+        catalogUrl = Iterables.getOnlyElement(params.get("url"));
+        datasetId = Iterables.getOnlyElement(params.get("id"));
+        refresh();
+    }
 
-		
-		groupField = new TextField("GroupId", groupId, "org.mydomain.mygroup");
+    public void refresh() {
+        removeAll();
+
+        add(new H1("CKAN Import"));
+        add(new Paragraph(datasetId + " from " + catalogUrl));
+
+        // TODO Avoid re-downloading the data when we come from the search view
+        CatalogResolver catalogResolver = new CatalogResolverCkan(new CkanClient(catalogUrl));
+        dcatDataset = catalogResolver.resolveDataset(datasetId)
+                .map(dr -> dr.getDataset())
+                .map(ds -> MainCliDcatSuite.skolemizeDcatDataset(ds, catalogUrl))
+                .blockingGet();
+
+        URI uri = UriUtils.newURI(catalogUrl);
+        String[] hostSegments = UriToPathUtils.javaifyHostnameSegments(uri.getHost());
+        String groupId = Arrays.asList(hostSegments).stream().collect(Collectors.joining("."));
+
+
+        groupField = new TextField("GroupId", groupId, "org.mydomain.mygroup");
 //		groupField.addKeyDownListener(com.vaadin.flow.component.Key.ENTER, ev -> doImport());
 
-		Button importBtn = new Button(VaadinIcon.CHECK.create());
-		groupField.setSuffixComponent(importBtn);
-		
-		importBtn.addClickShortcut(Key.ENTER);
-		importBtn.addClickListener(ev -> doImport());
+        Button importBtn = new Button(VaadinIcon.CHECK.create());
+        groupField.setSuffixComponent(importBtn);
 
-		add(groupField);
+        importBtn.addClickShortcut(Key.ENTER);
+        importBtn.addClickListener(ev -> doImport());
 
-		String str = RDFDataMgrEx.toString(dcatDataset.getModel(), RDFFormat.TURTLE_PRETTY);
+        add(groupField);
 
-		
-		AceEditor textArea = new AceEditor();
-		textArea.setWidthFull();
-		textArea.setValue(str);
-		textArea.setMode(AceMode.turtle);
+        String str = RDFDataMgrEx.toString(dcatDataset.getModel(), RDFFormat.TURTLE_PRETTY);
+
+
+        AceEditor textArea = new AceEditor();
+        textArea.setWidthFull();
+        textArea.setValue(str);
+        textArea.setMode(AceMode.turtle);
         textArea.setTheme(AceTheme.chrome);
         textArea.setFontSize(18);
         textArea.setMinHeight(10, Unit.EM);
-				
-		add(textArea);
 
-	}
+        add(textArea);
 
-	public void doImport() {
-		String groupId = groupField.getValue();
-		GroupMgr groupMgr = groupMgrFactory.create(groupId);
-		groupMgr.createIfNotExists();
-		DcatRepoLocal dcatRepo = groupMgr.get();
-		Dataset dataset = dcatRepo.getDataset();
-		
-		Txn.executeWrite(dataset, () -> {
-			String u = dcatDataset.getURI();
-			dataset.getNamedModel(u).add(dcatDataset.getModel());
-		});
-	}
-	
+    }
+
+    public void doImport() {
+        String groupId = groupField.getValue();
+        GroupMgr groupMgr = groupMgrFactory.create(groupId);
+        groupMgr.createIfNotExists();
+        DcatRepoLocal dcatRepo = groupMgr.get();
+        Dataset dataset = dcatRepo.getDataset();
+
+        Txn.executeWrite(dataset, () -> {
+            String u = dcatDataset.getURI();
+            dataset.getNamedModel(u).add(dcatDataset.getModel());
+        });
+    }
+
 }
 

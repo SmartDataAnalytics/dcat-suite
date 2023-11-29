@@ -84,7 +84,7 @@ public class CmdDcatFileStatus
                         Entry<String, Instant> r = null;
                         if (it.hasNext()) {
                             Binding b = it.next();
-                            r = new SimpleEntry<>(b.get("value").toString(false), ((XSDDateTime)b.get("timestamp").getLiteralValue()).asCalendar().toInstant());
+                            r = new SimpleEntry<>(b.get("value").getLiteralLexicalForm(), ((XSDDateTime)b.get("timestamp").getLiteralValue()).asCalendar().toInstant());
                         }
                         return r;
                     });

@@ -32,4 +32,7 @@ bin
 dcat-suite-app/build
 dcat-suite-app/config
 
+# Vaadin generated files
+tsconfig.json
+types.d.ts
 

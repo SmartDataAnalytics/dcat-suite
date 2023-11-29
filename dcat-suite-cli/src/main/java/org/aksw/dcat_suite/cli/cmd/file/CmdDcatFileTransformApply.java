@@ -369,7 +369,7 @@ public class CmdDcatFileTransformApply
                 String tgtContentType = tgtEntityInfo.getContentType();
 
                 Table<Lang, RDFFormatVariant, RDFFormat> cands = HashBasedTable.create();
-                RDFWriterRegistry.registered().stream()
+                RDFWriterRegistry.registeredFormats().stream()
                     .filter(rdfFormat -> RDFLanguagesEx.matchesContentType(rdfFormat.getLang(), tgtContentType))
                     .forEach(rdfFormat -> cands.put(rdfFormat.getLang(), rdfFormat.getVariant(), rdfFormat));
 
@@ -525,7 +525,7 @@ public class CmdDcatFileTransformApply
                     String str = ExprUtils.fmtSPARQL(expr);
                     String str2 = Envsubst.envsubst(str, x -> {
                         Node e = Objects.requireNonNull(envMap.get(x), "No entry for " + x);
-                        return e.toString(false);
+                        return e.getLiteralLexicalForm(); // e.toString(false);
                     });
                     expr = ExprUtils.parse(str2);
 
@@ -539,7 +539,7 @@ public class CmdDcatFileTransformApply
                     //Set<Var> vars = expr.getVarsMentioned();
 
                     NodeValue nv = ExprUtils.eval(finalExpr, b);
-                    envMap.put(name, NodeFactory.createLiteral(nv.getNode().toString(false)));
+                    envMap.put(name, NodeFactory.createLiteral(nv.getNode().getLiteralLexicalForm()));
                 }
             }
         }

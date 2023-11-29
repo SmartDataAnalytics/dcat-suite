@@ -245,7 +245,7 @@ public class CmdDcatFileAnnotationApply
 
                             if (expr != null) {
                                 String str = expr.toString();
-                                String str2 = Envsubst.envsubst(str, x -> envMap.get(x).toString(false));
+                                String str2 = Envsubst.envsubst(str, x -> envMap.get(x).getLiteralLexicalForm());
                                 expr = ExprUtils.parse(str2);
                                 Map<Var, Node> tmp = envMap.entrySet().stream().collect(Collectors
                                         .toMap(e -> Var.alloc(e.getKey()), Entry::getValue));
@@ -253,7 +253,7 @@ public class CmdDcatFileAnnotationApply
                                 //Set<Var> vars = expr.getVarsMentioned();
 
                                 NodeValue nv = ExprUtils.eval(expr, b);
-                                envMap.put(name, NodeFactory.createLiteral(nv.getNode().toString(false)));
+                                envMap.put(name, NodeFactory.createLiteral(nv.getNode().getLiteralLexicalForm()));
                             }
                         }
                     }

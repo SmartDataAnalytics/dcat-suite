@@ -4,12 +4,9 @@ import java.nio.file.Path;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.other.G;
 import org.apache.jena.system.Txn;
 import org.eclipse.jgit.lib.Repository;
-
 
 public interface DcatRepoLocal {
     Path getBasePath();

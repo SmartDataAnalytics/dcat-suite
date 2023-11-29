@@ -32,8 +32,8 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 
 import com.beust.jcommander.Parameter;
-import com.github.jsonldjava.shaded.com.google.common.collect.Maps;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

@@ -3,9 +3,9 @@ package org.aksw.dcat_suite.app.git;
 import java.io.File;
 import java.io.IOException;
 
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.http.server.GitServlet;
@@ -58,9 +58,9 @@ public class MainTestGit {
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
 
-        ServletHolder holder = new ServletHolder(gs);
-
-        handler.addServletWithMapping(holder, "/git/*");
+        if (true) { throw new RuntimeException("Git servlet needs to be updated for jakarta - 2023-11-29 ~ Claus"); }
+        // ServletHolder holder = new ServletHolder(gs);
+        // handler.addServletWithMapping(holder, "/git/*");
 
         server.start();
         return server;

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.aksw.dcat-suite</groupId>
 		<artifactId>dcat-suite-parent</artifactId>
-		<version>1.1.2-SNAPSHOT</version>
+		<version>1.5.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -17,7 +17,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<packaging.type>jar</packaging.type>
 
-		<vaadin.version>14.6.1</vaadin.version>
+		<vaadin.version>14.10.10</vaadin.version>
+		<spring-boot.version>2.7.18</spring-boot.version>
+		<spring.version>5.3.31</spring.version>
+
 		<!-- <spring-boot.version>2.3.3.RELEASE</spring-boot.version> -->
 
 
@@ -60,11 +63,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- <dependency> -->
-			<!-- <groupId>org.springframework.boot</groupId> -->
-			<!-- <artifactId>spring-boot-starter-parent</artifactId> -->
-			<!-- <version>2.2.0.RELEASE</version> -->
-			<!-- </dependency> -->
 			<dependency>
 				<groupId>com.vaadin</groupId>
 				<artifactId>vaadin-bom</artifactId>
@@ -73,20 +71,20 @@
 				<scope>import</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${spring.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
-			<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-framework-bom</artifactId> 
-				<type>pom</type> <version>5.1.14.RELEASE</version> <scope>import</scope> 
-				<! - - <exclusions> <exclusion> <groupId>javax.servlet</groupId> <artifactId>servlet-api</artifactId> 
-				</exclusion> </exclusions> - - > </dependency> -->
+			<dependency>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>6.0.0</version>
+			</dependency>
 
-
-			<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-web</artifactId> 
-				</dependency> -->
-			<!-- <dependency> -->
-			<!-- <groupId>org.springframework</groupId> -->
-			<!-- <artifactId>spring-cloud-starter-config</artifactId> -->
-			<!-- <version>2.2.5.RELEASE</version> -->
-			<!-- </dependency> -->
 		</dependencies>
 	</dependencyManagement>
 
@@ -95,8 +93,6 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
 		</dependency>
-
-
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<!-- Replace artifactId with vaadin-core to use only free components -->
@@ -128,17 +124,18 @@
 					<groupId>org.webjars.bowergithub.webcomponents</groupId>
 					<artifactId>*</artifactId>
 				</exclusion>
-
 				<exclusion>
 					<groupId>org.webjars.bowergithub.webcomponents</groupId>
 					<artifactId>*</artifactId>
 				</exclusion>
-
 				<exclusion>
 					<groupId>org.webjars.npm</groupId>
 					<artifactId>*</artifactId>
 				</exclusion>
-
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

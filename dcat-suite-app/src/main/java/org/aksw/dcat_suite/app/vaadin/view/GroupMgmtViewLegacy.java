@@ -476,7 +476,7 @@ public class GroupMgmtViewLegacy
 
             Node node = path == null || path.getNameCount() == 0 ? null : path.getFileName().toSegment();
 
-            String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.toString(false)); // + ": " + node.getClass());
+            String str = path == null ? "(null)" : (Objects.equals(path, basePath) ? "/" : node.getLiteralLexicalForm()); // + ": " + node.getClass());
 
             if (location != null) {
                 str += " --- " + location;

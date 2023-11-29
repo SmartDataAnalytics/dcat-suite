@@ -34,7 +34,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.claspina.confirmdialog.ConfirmDialog;
 
-import com.github.jsonldjava.shaded.com.google.common.io.MoreFiles;
+import com.google.common.io.MoreFiles;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -57,157 +57,157 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 
 public class FileBrowserComponent
-	extends VerticalLayout
+    extends VerticalLayout
 {
-	protected TreeGrid<Path> folderGrid;
-	protected TreeGrid<Path> fileGrid;
-	protected TextField searchField;
-	protected Checkbox recursiveSearchCb;
-	protected Button showUploadDlgBtn;
-	
-	protected Button changeFolderBtn;
-	
-	protected Path path;
-	
+    protected TreeGrid<Path> folderGrid;
+    protected TreeGrid<Path> fileGrid;
+    protected TextField searchField;
+    protected Checkbox recursiveSearchCb;
+    protected Button showUploadDlgBtn;
+
+    protected Button changeFolderBtn;
+
+    protected Path path;
+
     /** The active path within the file repository; used e.g. for uploads and searches */
     protected ObservableValue<Path> activePath;
 
-	public FileBrowserComponent(Path path) {
-		
-		// setWidthFull();
-		// setHeight("500px");
-		
-		// path = Path.of("/tmp/dman");
-		this.path = path;
-		
-	    TreeData<Path> treeData = new TreeData<>();
-	    TreeDataProvider<Path> treeDataProvider = new TreeDataProvider<>(treeData);
+    public FileBrowserComponent(Path path) {
 
-		activePath = ObservableValueImpl.create(path);
+        // setWidthFull();
+        // setHeight("500px");
+
+        // path = Path.of("/tmp/dman");
+        this.path = path;
+
+        TreeData<Path> treeData = new TreeData<>();
+        TreeDataProvider<Path> treeDataProvider = new TreeDataProvider<>(treeData);
+
+        activePath = ObservableValueImpl.create(path);
         activePath.addValueChangeListener(ev -> {
             // searchField.setLabel("Search " + pathToString2(path).apply(ev.getNewValue()));
-        	updateFileSearch();
+            updateFileSearch();
         });
 
         recursiveSearchCb = new Checkbox("recursive");
         recursiveSearchCb.addValueChangeListener(ev -> updateFileSearch());
         recursiveSearchCb.setValue(false);
-        
-	    folderGrid = createFolderGrid(path);
-		fileGrid = createFileGrid(treeDataProvider, path);
-		fileGrid.setSelectionMode(SelectionMode.MULTI);
-		fileGrid.setDetailsVisibleOnClick(true);
-		
-		configureFileGridContextMenu();
-		
+
+        folderGrid = createFolderGrid(path);
+        fileGrid = createFileGrid(treeDataProvider, path);
+        fileGrid.setSelectionMode(SelectionMode.MULTI);
+        fileGrid.setDetailsVisibleOnClick(true);
+
+        configureFileGridContextMenu();
+
         searchField = new TextField();
         searchField.setMinWidth(20, Unit.EM);
         // searchField.setWidthFull();
         searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
         searchField.setSuffixComponent(recursiveSearchCb);
 
-        
+
         // searchField.setWidthFull();
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
 
         showUploadDlgBtn = new Button(VaadinIcon.UPLOAD.create());
         showUploadDlgBtn.addClickListener(ev -> {
-        	UploadDialog dlg = new UploadDialog(activePath.get());
-        	// TODO Analyze the uploaded file
-        	dlg.getUpload().addFinishedListener(ev2 -> updateFileSearch());
+            UploadDialog dlg = new UploadDialog(activePath.get());
+            // TODO Analyze the uploaded file
+            dlg.getUpload().addFinishedListener(ev2 -> updateFileSearch());
 //        	dlg.getUpload().addSucceededListener(ev2 -> {
 //        		// ev2.get
 //        	});
-        	dlg.open();
+            dlg.open();
         });
 
-        
+
         // This button does not really belong here;
         // The FileBrowser should have an extensible getToolBar() method
         Button generateWorkflowBtn = new Button(VaadinIcon.WRENCH.create());
         generateWorkflowBtn.addClickListener(ev -> {
-        	List<Path> paths = toAbsPaths(fileGrid.getSelectedItems());
-        	Collection<SparqlStmt> sparqlStmts = NewConjureWorkflowComponent.getSparqlStmts(paths);
-        	
-        	Dialog dlg = new Dialog();
-        	NewConjureWorkflowComponent content = new NewConjureWorkflowComponent();
-        	content.refresh(sparqlStmts);
-        	dlg.add(content);
+            List<Path> paths = toAbsPaths(fileGrid.getSelectedItems());
+            Collection<SparqlStmt> sparqlStmts = NewConjureWorkflowComponent.getSparqlStmts(paths);
 
-        	
-        	Button okBtn = new Button("Generate");
-        	okBtn.addClickListener(ev2 -> {        		
-        		
-        		Set<String> optionalArgs = new HashSet<>();
-        		Map<Var, Expr> bindingMap = content.getDefaultBindings();
-        		
-        		Job job = JobUtils.fromSparqlStmts(sparqlStmts, optionalArgs, bindingMap);
-        		
-        		Path outFile = activeAbsPath().resolve(content.getFileName());
-        		try (OutputStream out = Files.newOutputStream(outFile)) {
-        			RDFDataMgr.write(out, job.getModel(), RDFFormat.TURTLE_BLOCKS);
-        		} catch (IOException e) {
-        			throw new RuntimeException(e);
-				}
-        		dlg.close();
-        	});
-        	dlg.add(okBtn);
-        	
-        	dlg.open();
+            Dialog dlg = new Dialog();
+            NewConjureWorkflowComponent content = new NewConjureWorkflowComponent();
+            content.refresh(sparqlStmts);
+            dlg.add(content);
+
+
+            Button okBtn = new Button("Generate");
+            okBtn.addClickListener(ev2 -> {
+
+                Set<String> optionalArgs = new HashSet<>();
+                Map<Var, Expr> bindingMap = content.getDefaultBindings();
+
+                Job job = JobUtils.fromSparqlStmts(sparqlStmts, optionalArgs, bindingMap);
+
+                Path outFile = activeAbsPath().resolve(content.getFileName());
+                try (OutputStream out = Files.newOutputStream(outFile)) {
+                    RDFDataMgr.write(out, job.getModel(), RDFFormat.TURTLE_BLOCKS);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                dlg.close();
+            });
+            dlg.add(okBtn);
+
+            dlg.open();
         });
 
-        
+
         Button moveBtn = new Button(VaadinIcon.FILE_O.create());
         moveBtn.setEnabled(false);
-        
-		fileGrid.addSelectionListener(ev -> {
-			Set<Path> pathTips = ev.getAllSelectedItems();
 
-			moveBtn.setEnabled(!pathTips.isEmpty());
-			
-		});
+        fileGrid.addSelectionListener(ev -> {
+            Set<Path> pathTips = ev.getAllSelectedItems();
 
-        moveBtn.addClickListener(ev -> {
-        	VerticalLayout content = new VerticalLayout();
-        	Button newFolderBtn = new Button(VaadinIcon.FOLDER_ADD.create());
-        	content.add(newFolderBtn);
+            moveBtn.setEnabled(!pathTips.isEmpty());
 
-        	Grid<Path> grid = createFolderGrid(path);
-
-        	newFolderBtn.addClickListener(ev2 -> {
-        		Path ap = grid.getSelectionModel().getFirstSelectedItem().orElse(null);
-            	Path p = ap == null ? path : path.resolve(ap);
-
-            	VaadinDialogUtils.confirmInputDialog("Create Folder", "Name", "Create", name -> {
-            		try {
-            			Files.createDirectory(p.resolve(name));
-            			grid.getDataProvider().refreshAll();
-                		folderGrid.getDataProvider().refreshAll();
-            		} catch (Exception e) {
-            			throw new RuntimeException(e);
-            		}
-    			}, "Cancel", ev3 -> {}).open();
-        	});
-        	
-        	
-        	content.add("Select a new current folder");
-        	content.add(grid);
-
-        	VaadinDialogUtils.confirmDialog("Move Files", content, "Move", ev2 -> {
-        		Path item = grid.getSelectionModel().getFirstSelectedItem().orElse(null);
-        		if (item != null) {
-                	Path tgt = path.resolve(item);
-
-        			for (Path src : fileGrid.getSelectedItems()) {
-        				// TODO resolve src
-        				System.out.println("Moving " + src + " to " + tgt);
-        			}
-        		}
-        		
-        	}, "Abort", ev3 -> {}).open();
         });
 
-        
+        moveBtn.addClickListener(ev -> {
+            VerticalLayout content = new VerticalLayout();
+            Button newFolderBtn = new Button(VaadinIcon.FOLDER_ADD.create());
+            content.add(newFolderBtn);
+
+            Grid<Path> grid = createFolderGrid(path);
+
+            newFolderBtn.addClickListener(ev2 -> {
+                Path ap = grid.getSelectionModel().getFirstSelectedItem().orElse(null);
+                Path p = ap == null ? path : path.resolve(ap);
+
+                VaadinDialogUtils.confirmInputDialog("Create Folder", "Name", "Create", name -> {
+                    try {
+                        Files.createDirectory(p.resolve(name));
+                        grid.getDataProvider().refreshAll();
+                        folderGrid.getDataProvider().refreshAll();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }, "Cancel", ev3 -> {}).open();
+            });
+
+
+            content.add("Select a new current folder");
+            content.add(grid);
+
+            VaadinDialogUtils.confirmDialog("Move Files", content, "Move", ev2 -> {
+                Path item = grid.getSelectionModel().getFirstSelectedItem().orElse(null);
+                if (item != null) {
+                    Path tgt = path.resolve(item);
+
+                    for (Path src : fileGrid.getSelectedItems()) {
+                        // TODO resolve src
+                        System.out.println("Moving " + src + " to " + tgt);
+                    }
+                }
+
+            }, "Abort", ev3 -> {}).open();
+        });
+
+
 
         folderGrid.setMinWidth(30, Unit.EM);
         folderGrid.setMinHeight(30, Unit.EM);
@@ -222,28 +222,28 @@ public class FileBrowserComponent
 
         changeFolderBtn = new Button("Change folder...");
         changeFolderBtn.addClickListener(ev -> {
-        	Dialog dlg = new Dialog();
-        	Button btn = new Button("Close");
+            Dialog dlg = new Dialog();
+            Button btn = new Button("Close");
 
-        	Button newFolderBtn = new Button(VaadinIcon.FOLDER_ADD.create());
-        	dlg.add(newFolderBtn);
-        	newFolderBtn.addClickListener(ev2 -> {
-        		Path ap = activePath.get();
-        			VaadinDialogUtils.confirmInputDialog("Create Folder", "Name", "Create", name -> {
-                		try {
-                			Files.createDirectory(ap.resolve(name));
-                    		folderGrid.getDataProvider().refreshAll();
-                		} catch (Exception e) {
-                			throw new RuntimeException(e);
-                		}
-        			}, "Cancel", null).open();
-        	});
-        	
-        	dlg.add("Select a new current folder");
-        	dlg.add(folderGrid, btn);
-        	btn.addClickListener(ev2 -> dlg.close());
-        	
-        	dlg.open();
+            Button newFolderBtn = new Button(VaadinIcon.FOLDER_ADD.create());
+            dlg.add(newFolderBtn);
+            newFolderBtn.addClickListener(ev2 -> {
+                Path ap = activePath.get();
+                    VaadinDialogUtils.confirmInputDialog("Create Folder", "Name", "Create", name -> {
+                        try {
+                            Files.createDirectory(ap.resolve(name));
+                            folderGrid.getDataProvider().refreshAll();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, "Cancel", null).open();
+            });
+
+            dlg.add("Select a new current folder");
+            dlg.add(folderGrid, btn);
+            btn.addClickListener(ev2 -> dlg.close());
+
+            dlg.open();
         });
 
         FlexLayout hl = new FlexLayout();
@@ -252,10 +252,10 @@ public class FileBrowserComponent
         hl.add(changeFolderBtn, showUploadDlgBtn, moveBtn, generateWorkflowBtn, searchField);
 
         add(hl, fileGrid);
-        
+
         updateFileSearch();
-        
-//        VerticalLayout left = new VerticalLayout();        
+
+//        VerticalLayout left = new VerticalLayout();
 //        left.add(showUploadDlgBtn, folderGrid);
 //
 ////        SlideTab sliderPanel = new SlideTabBuilder(left)
@@ -266,11 +266,11 @@ public class FileBrowserComponent
 ////      		  .build();
 //
 //        ToggleTab sliderPanel = new ToggleTab("Folders", left);
-//        
+//
 //        VerticalLayout right = new VerticalLayout();
 //        right.setWidthFull();
 //        right.add(searchField, fileGrid);
-//        
+//
 ////        SplitLayout hl = new SplitLayout(left, right);
 ////        hl.setOrientation(Orientation.HORIZONTAL);
 //        HorizontalLayout hl = new HorizontalLayout();
@@ -278,24 +278,24 @@ public class FileBrowserComponent
 //        hl.add(sliderPanel, right);
 ////        hl.setFlexGrow(1.0, left);
 ////        hl.setFlexGrow(2.0, right);
-//        
+//
 //        add(hl);
 
-	}
+    }
 
-	
-	public void configureFileGridContextMenu() {
-		GridContextMenu<Path> contextMenu = fileGrid.addContextMenu();
-		
+
+    public void configureFileGridContextMenu() {
+        GridContextMenu<Path> contextMenu = fileGrid.addContextMenu();
+
         contextMenu.setDynamicContentHandler(tipPath -> {
-        	contextMenu.removeAll();
+            contextMenu.removeAll();
 //        	Path ap = activePath.get();
 //        	Path p = ap == null ? path : path.resolve(ap);
 ////            Path fileRepoRootPath = groupMgr.getBasePath();
 //            Path absPath = p.resolve(tipPath);
 //            Path relPath = path.relativize(absPath);
-			Path absPath = path.resolve(activePath.getOrDefault(path)).resolve(tipPath);
-			Path relPath = path.relativize(absPath);
+            Path absPath = path.resolve(activePath.getOrDefault(path)).resolve(tipPath);
+            Path relPath = path.relativize(absPath);
 
             contextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
             contextMenu.add(new Hr());
@@ -303,9 +303,9 @@ public class FileBrowserComponent
             int numOptions = 0;
 
             numOptions += addExtraOptions(contextMenu, relPath);
-            
+
             // Delete action
-            
+
             contextMenu.addItem("Delete", ev -> {
                 ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
                         "You are about to delete: " + relPath,
@@ -319,8 +319,8 @@ public class FileBrowserComponent
                 dialog.open();
             });
             ++numOptions;
-            
-            
+
+
             if (numOptions == 0) {
                 contextMenu.addItem("(no actions available)").setEnabled(false);
             }
@@ -328,38 +328,38 @@ public class FileBrowserComponent
             return true;
         });
 
-	}
-	
-	
-	/** Convert the paths of the file grid to abs paths - allows for opening them*/
-	public List<Path> toAbsPaths(Collection<Path> tipPaths) {
-		List<Path> result = tipPaths.stream().map(this::tipPathToAbsPath).collect(Collectors.toList());
-		return result;
-	}
+    }
 
-	public Path activeAbsPath() {
-		Path activeAbsPath = path.resolve(activePath.getOrDefault(path));
-		return activeAbsPath;
-	}
 
-	/** Return the absolute path for a path in the file grid */
-	public Path tipPathToAbsPath(Path tipPath) {
-		Path absPath = activeAbsPath().resolve(tipPath);
-		return absPath;
-	}
+    /** Convert the paths of the file grid to abs paths - allows for opening them*/
+    public List<Path> toAbsPaths(Collection<Path> tipPaths) {
+        List<Path> result = tipPaths.stream().map(this::tipPathToAbsPath).collect(Collectors.toList());
+        return result;
+    }
 
-	/** Return the path relative to the repo root for a path in the file grid */
-	public Path tipPathtoRelPath(Path tipPath) {
-		Path absPath = tipPathToAbsPath(tipPath);
-		Path relPath = path.relativize(absPath);
-		return relPath;
-	}
+    public Path activeAbsPath() {
+        Path activeAbsPath = path.resolve(activePath.getOrDefault(path));
+        return activeAbsPath;
+    }
 
-	
-	public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
-		return 0;
-	}
-	
+    /** Return the absolute path for a path in the file grid */
+    public Path tipPathToAbsPath(Path tipPath) {
+        Path absPath = activeAbsPath().resolve(tipPath);
+        return absPath;
+    }
+
+    /** Return the path relative to the repo root for a path in the file grid */
+    public Path tipPathtoRelPath(Path tipPath) {
+        Path absPath = tipPathToAbsPath(tipPath);
+        Path relPath = path.relativize(absPath);
+        return relPath;
+    }
+
+
+    public int addExtraOptions(GridContextMenu<Path> contextMenu, Path relPath) {
+        return 0;
+    }
+
     public static Entity createProvenanceData(
             Resource inputEntity,
             JobInstance jobInstance,
@@ -390,7 +390,7 @@ public class FileBrowserComponent
 //		String filename = gtfsInPath.getFileName().toString();
 //		Path relOutPath = relInPath.resolveSibling(filename + ".report.ttl");
 //		Path gtfsOutPath = basePath.resolve(relOutPath);
-//	
+//
 //		Model m = ModelFactory.createDefaultModel();
 //		Entity result = createProvenanceData(
 //				m.createResource(relInPath.toString()),
@@ -400,44 +400,44 @@ public class FileBrowserComponent
 //	}
 
 
-	
-    
-    public void updateFileSearch() {
-    	Path ap = activePath.get();
-    	Path p = ap == null ? path : path.resolve(ap);
 
-    	changeFolderBtn.setText(pathToString2(path).apply(ap));
-    	
-    	folderGrid.getDataProvider().refreshAll();
+
+    public void updateFileSearch() {
+        Path ap = activePath.get();
+        Path p = ap == null ? path : path.resolve(ap);
+
+        changeFolderBtn.setText(pathToString2(path).apply(ap));
+
+        folderGrid.getDataProvider().refreshAll();
 
         updateFileSearch((TreeDataProvider<Path>)fileGrid.getDataProvider(), p, searchField.getValue(), recursiveSearchCb.getValue());
     }
 
 
-    
+
     public TreeGrid<Path> createFolderGrid(Path fileRepoRootPath) {
-    	TreeGrid<Path> folderGrid = createCoreFolderGrid(fileRepoRootPath);
-    	
+        TreeGrid<Path> folderGrid = createCoreFolderGrid(fileRepoRootPath);
+
         folderGrid.setSelectionMode(SelectionMode.SINGLE);
-        
+
         GridContextMenu<Path> folderContextMenu = folderGrid.addContextMenu();
         folderContextMenu.setDynamicContentHandler(tipPath -> {
-        	folderContextMenu.removeAll();
+            folderContextMenu.removeAll();
 //        	Path ap = activePath.get();
 //        	Path p = ap == null ? path : path.resolve(ap);
 ////            Path fileRepoRootPath = groupMgr.getBasePath();
 //            Path absPath = p.resolve(tipPath);
 //            Path relPath = path.relativize(absPath);
-			Path absPath = path.resolve(activePath.getOrDefault(path)).resolve(tipPath);
-			Path relPath = path.relativize(absPath);
+            Path absPath = path.resolve(activePath.getOrDefault(path)).resolve(tipPath);
+            Path relPath = path.relativize(absPath);
 
-			folderContextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
-			folderContextMenu.add(new Hr());
+            folderContextMenu.addItem("Actions for " + relPath.toString()).setEnabled(false);
+            folderContextMenu.add(new Hr());
 
             int numOptions = 0;
-            
+
             // Delete action
-            
+
             folderContextMenu.addItem("Delete", ev -> {
                 ConfirmDialog dialog = VaadinDialogUtils.confirmDialog("Confirm delete",
                         "You are about to RECURSIVELY delete: " + relPath,
@@ -451,55 +451,55 @@ public class FileBrowserComponent
                 dialog.open();
             });
             ++numOptions;
-            
-            
+
+
             if (numOptions == 0) {
                 folderContextMenu.addItem("(no actions available)").setEnabled(false);
             }
 
             return true;
         });
-        
+
         return folderGrid;
     }
-    
+
     public static TreeGrid<Path> createCoreFolderGrid(Path fileRepoRootPath) {
-    	
+
         HierarchicalConfigurableFilterDataProvider<Path, Void, String> folderDataProvider =
                 HierarchicalDataProviderForPath.createForFolderStructure(fileRepoRootPath).withConfigurableFilter();
 
-    	Function<Path, String> pathToString = pathToString(fileRepoRootPath);
-    	
-        TreeGrid<Path> folderTreeGrid = new TreeGrid<>();
-	    //folderTreeGrid.setSizeFull();
+        Function<Path, String> pathToString = pathToString(fileRepoRootPath);
 
-	    Column<?> hierarchyColumn = folderTreeGrid.addHierarchyColumn(path -> {
+        TreeGrid<Path> folderTreeGrid = new TreeGrid<>();
+        //folderTreeGrid.setSizeFull();
+
+        Column<?> hierarchyColumn = folderTreeGrid.addHierarchyColumn(path -> {
             // System.out.println(path);
             // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
             return pathToString.apply(path);
             // return path.toString();
         });
-	    // folderTreeGrid.addColumn(p -> "");
+        // folderTreeGrid.addColumn(p -> "");
         hierarchyColumn.setResizable(true);
         hierarchyColumn.setFrozen(true);
-    	
+
         folderTreeGrid.setDataProvider(folderDataProvider);
 
-        
+
         folderTreeGrid.addItemClickListener(ev -> {
-        	Path item = ev.getItem();
-        	if (!folderTreeGrid.isExpanded(item)) {
-        		folderTreeGrid.expand(item);
-        	}
-    	});
-        
+            Path item = ev.getItem();
+            if (!folderTreeGrid.isExpanded(item)) {
+                folderTreeGrid.expand(item);
+            }
+        });
+
         return folderTreeGrid;
     }
 
     public static Function<Path, String> pathToString(Path fileRepoRootPath) {
         return path -> path == null ? "(null)" : (fileRepoRootPath.equals(path) ? "/" : path.getFileName().toString());
     }
-        
+
 
     public static Function<Path, String> pathToString2(Path fileRepoRootPath) {
         return path -> path == null ? "(null)" : (fileRepoRootPath.equals(path) ? "/" : fileRepoRootPath.relativize(path).toString());
@@ -507,11 +507,11 @@ public class FileBrowserComponent
 
 
     public static TreeGrid<Path> createFileGrid(TreeDataProvider<Path> treeDataProvider, Path fileRepoRootPath) {
-	
-	    TreeGrid<Path> fileGrid = new TreeGrid<>(treeDataProvider);
-	    
-	    
-	    //fileGrid.setSizeFull();
+
+        TreeGrid<Path> fileGrid = new TreeGrid<>(treeDataProvider);
+
+
+        //fileGrid.setSizeFull();
         Column<?> hierarchyColumn = fileGrid.addHierarchyColumn(path -> {
             // System.out.println(path);
             // return "" + Optional.ofNullable(path).map(Path::getFileName).map(Object::toString).orElse("");
@@ -520,12 +520,12 @@ public class FileBrowserComponent
         });
         hierarchyColumn.setResizable(true);
         hierarchyColumn.setFrozen(true);
- 	    
-	    return fileGrid;
+
+        return fileGrid;
     }
-    
-    
-    
+
+
+
     public static void updateFileSearch(TreeDataProvider<Path> treeDataProvider, Path fileRepoRootPath, String value, boolean recursive) {
 
         TreeData<Path> treeData = treeDataProvider.getTreeData();
@@ -549,14 +549,14 @@ public class FileBrowserComponent
             Stream<Path> stream = fileRepoRootPath == null || !Files.exists(fileRepoRootPath)
                     ? Stream.empty()
                     : recursive
-                    	? Files.walk(fileRepoRootPath)
-                    	: Files.list(fileRepoRootPath);
-                    		
+                        ? Files.walk(fileRepoRootPath)
+                        : Files.list(fileRepoRootPath);
+
             List<Path> matches = stream
-            		.filter(Files::isRegularFile)
-            		.filter(pathMatcher::matches)
-            		.map(fileRepoRootPath::relativize)
-            		.collect(Collectors.toList());
+                    .filter(Files::isRegularFile)
+                    .filter(pathMatcher::matches)
+                    .map(fileRepoRootPath::relativize)
+                    .collect(Collectors.toList());
 
             // List<Path> matches = FileUtils.listPaths(repoRootPath, v);
 
@@ -587,7 +587,7 @@ public class FileBrowserComponent
 
         }
     }
-    
+
     public static String buildPattern(String str) {
         StringBuilder sb = new StringBuilder();
 

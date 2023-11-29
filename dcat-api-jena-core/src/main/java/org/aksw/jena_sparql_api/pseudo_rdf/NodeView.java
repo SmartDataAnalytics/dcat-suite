@@ -9,12 +9,12 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.aksw.commons.accessors.PropertySource;
-import org.apache.jena.graph.BlankNodeId;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.NodeVisitor;
-import org.apache.jena.graph.Node_Concrete;
+import org.apache.jena.graph.Node_Ext;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.NullIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -33,7 +33,7 @@ import org.apache.jena.util.iterator.WrappedIterator;
  *
  */
 public class NodeView
-    extends Node_Concrete
+    extends Node_Ext<Node>
 {
     //protected PropertySource entity;
     //protected Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor;
@@ -53,9 +53,9 @@ public class NodeView
             PropertySource source,
             Map<String, Function<PropertySource, PseudoRdfProperty>> propertyToAccessor) {
             //Function<? super PropertySource, ? extends Object> getIdentifier) {
-        super(source);
+        super(NodeFactory.createBlankNode());
 
-        this.blankNodeId = NodeFactory.createBlankNode(); //BlankNodeId.create();
+        // this.blankNodeId = NodeFactory.createBlankNode(); //BlankNodeId.create();
 
         this.source = source;
         this.predicateToAccessor = propertyToAccessor;
@@ -84,7 +84,7 @@ public class NodeView
     }
 
     @Override
-    public BlankNodeId getBlankNodeId()  { return blankNodeId.getBlankNodeId(); } //return (BlankNodeId) label; }
+    public String getBlankNodeLabel()  { return get().getBlankNodeLabel(); } //return (BlankNodeId) label; }
 
     @Override
     public Object visitWith(NodeVisitor v) {
@@ -117,13 +117,11 @@ public class NodeView
         return result;
     }
 
-    @Override
-    public int hashCode() {
-        int result = this.blankNodeId.hashCode(); // Objects.hash(source, predicateToAccessor);
-        return result;
-    }
-
-
+//    @Override
+//    public int hashCode() {
+//        int result = this.blankNodeId.hashCode(); // Objects.hash(source, predicateToAccessor);
+//        return result;
+//    }
 
     public PseudoRdfProperty getProperty(String property) {
         Function<PropertySource, PseudoRdfProperty> schemaProperty = predicateToAccessor.get(property);
@@ -173,7 +171,7 @@ public class NodeView
                 //Property p = ResourceFactory.createProperty(str);
                 Node p = NodeFactory.createURI(str);
 
-                result = result.andThen(it.mapWith(o -> new Triple(this, p, o)));//new StatementImpl(this, p, o)));
+                result = result.andThen(it.mapWith(o -> Triple.create(this, p, o)));//new StatementImpl(this, p, o)));
             }
             //((ExtendedIterator<PseudoRdfNode>>)getPropertyValues(str).iterator())
         }
@@ -183,8 +181,18 @@ public class NodeView
 
     @Override
     public String toString() {
-        return super.toString() + " " + blankNodeId.getBlankNodeLabel();
+        return get().getBlankNodeLabel();
     }
+
+    @Override
+    public String toString(PrefixMapping pmap) {
+        return toString();
+    }
+
+//    @Override
+//    public String toString() {
+//        return super.toString() + " " + blankNodeId.getBlankNodeLabel();
+//    }
 
 //        if ( this == other ) return true ;
 //        return other instanceof Node_Blank && label.equals( ((Node_Blank) other).label ); }
