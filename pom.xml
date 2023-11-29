@@ -62,7 +62,7 @@
 		<jackson.version>2.13.2</jackson.version>
 		<junit.version>4.13</junit.version>
 		<apache-http.version>4.5.10</apache-http.version>
-		<spring-boot.version>2.3.3.RELEASE</spring-boot.version>
+		<spring-boot.version>2.7.18</spring-boot.version>
 		<!-- Project Settings -->
 		<maven.compiler.release>17</maven.compiler.release>
 		<java.version.javadoc>http://java.sun.com/javase/8/docs/api/</java.version.javadoc>
@@ -92,6 +92,12 @@
 				<groupId>org.aksw.conjure</groupId>
 				<artifactId>conjure-datasources</artifactId>
 				<version>${conjure.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.aksw.jenax</groupId>
+						<artifactId>jenax-server-standalone</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>

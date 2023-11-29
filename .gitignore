@@ -36,3 +36,7 @@ dcat-suite-app/config
 tsconfig.json
 types.d.ts
 
+
+package.json
+package-lock.json
+

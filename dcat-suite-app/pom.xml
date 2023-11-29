@@ -79,11 +79,11 @@
 				<scope>import</scope>
 			</dependency>
 
-			<dependency>
-				<groupId>jakarta.servlet</groupId>
-				<artifactId>jakarta.servlet-api</artifactId>
-				<version>6.0.0</version>
-			</dependency>
+<!--			<dependency>-->
+<!--				<groupId>jakarta.servlet</groupId>-->
+<!--				<artifactId>jakarta.servlet-api</artifactId>-->
+<!--				<version>6.0.0</version>-->
+<!--			</dependency>-->
 
 		</dependencies>
 	</dependencyManagement>
@@ -96,7 +96,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<!-- Replace artifactId with vaadin-core to use only free components -->
-			<artifactId>vaadin</artifactId>
+			<artifactId>vaadin-core</artifactId>
 			<exclusions>
 				<!-- Webjars are only needed when running in Vaadin 13 compatibility 
 					mode -->
@@ -293,7 +293,13 @@
 		<dependency>
 			<groupId>org.vaadin.alejandro</groupId>
 			<artifactId>pdf-browser</artifactId>
-			<version>3.0.1</version>
+			<version>3.1.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin</artifactId>
+				</exclusion>				
+			</exclusions>
 		</dependency>
 
 

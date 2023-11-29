@@ -11,9 +11,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 @SpringBootApplication
 @ServletComponentScan
 public class MainAppDcatSuiteVaadin extends SpringBootServletInitializer {
-
     public static void main(String[] args) {
         SpringApplication.run(MainAppDcatSuiteVaadin.class, args);
     }
-
 }

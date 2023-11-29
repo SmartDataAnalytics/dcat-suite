@@ -1,17 +1,5 @@
 package org.aksw.dcat_suite.app.git;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.eclipse.jetty.ee10.servlet.ServletHandler;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.http.server.GitServlet;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-
 /**
  * A very simple Git Server which allows to clone a Git repository. Currently
  * it will return the same repository for any name that is requested, there is no
@@ -32,6 +20,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
  *
  * Expect some work if you want to do anything useful with this!
  */
+/*
 public class MainTestGit {
     public static void main(String[] args) throws Exception {
         Repository repository = createNewRepository();
@@ -102,3 +91,4 @@ public class MainTestGit {
         return repository;
     }
 }
+*/
