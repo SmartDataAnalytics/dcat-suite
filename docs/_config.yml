@@ -1,5 +1,6 @@
 title: "DCAT Suite"
-#remote_theme: pmarsceill/just-the-docs
+
+remote_theme: just-the-docs/just-the-docs
 search_enabled: true
 #logo: "assets/images/dcat-suite-logo.png"
 markdown: kramdown
@@ -25,7 +26,7 @@ gh_edit_source: "docs" # the source that your files originate from
 gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into the editor immediately
 
 
-remote_theme: aklakan/jekyll-theme-rtd@aksw-fixes
+#remote_theme: aklakan/jekyll-theme-rtd@aksw-fixes
 repo_url: 'https://github.com/SmartDataAnalytics/dcat-suite/'
 
 edit_on_github: true
@@ -34,3 +35,5 @@ sticky_navigation: true
 prev_next_buttons_location: both
 search_enabled: true
 hljs_style: github
+
+
