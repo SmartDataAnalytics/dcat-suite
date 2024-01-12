@@ -1,0 +1,18 @@
+version: "3.3"
+
+services:
+  # Sync process
+  mvn-sync:
+    # image: tenforce/virtuoso
+    build:
+      context: .
+    environment:
+      VIRT_SPARQL_MaxDataSourceSize: "10737418240"
+    volumes:
+      - ~/.m2/repository:/repository
+    network_mode: "host"
+    ports:
+      - "1111:1111"
+      - "8890:8890"
+    restart: always
+
