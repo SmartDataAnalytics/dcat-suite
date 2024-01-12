@@ -11,8 +11,8 @@ services:
     volumes:
       - ~/.m2/repository:/repository
     network_mode: "host"
-    ports:
-      - "1111:1111"
-      - "8890:8890"
-    restart: always
+#    ports:
+#      - "1111:1111"
+#      - "8890:8890"
+    restart: on-failure
 
