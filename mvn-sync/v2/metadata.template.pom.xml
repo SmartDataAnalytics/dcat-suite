@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>${OUT_GROUPID}</groupId>
+	<artifactId>${OUT_ARTIFACTID}</artifactId>
+	<version>${OUT_VERSION}</version>
+
+	<parent><groupId>org.aksw.data.config</groupId><artifactId>aksw-data-deployment</artifactId><version>0.0.8</version><relativePath></relativePath></parent>
+
+	<packaging>pom</packaging>
+
+	<properties>
+		<input.groupId>${IN_GROUPID}</input.groupId>
+		<input.artifactId>${IN_ARTIFACTID}</input.artifactId>
+		<input.version>${IN_VERSION}</input.version>
+		<input.type>${IN_TYPE}</input.type>
+
+		<output.type>ttl.bz2</output.type>
+		<output.classifier>dcat</output.classifier>
+		<output.path>${project.build.directory}/${project.artifactId}-${output.classifier}.${output.type}</output.path>
+
+
+		<input.urn.base>urn:mvn:${input.groupId}:${input.artifactId}:${input.version}</input.urn.base>
+		<input.urn.file>${input.urn.base}:${input.type}</input.urn.file>
+		<input.urn.dataset>${input.urn.base}#dataset</input.urn.dataset>
+		<input.urn.distribution>${input.urn.base}#distribution</input.urn.distribution>
+
+		<input.urn.void>${input.urn.dataset}/void</input.urn.void>
+
+		<input.urn.pom>${input.urn.base}:pom</input.urn.pom>
+		<input.urn.data>${input.urn.base}:${input.type}</input.urn.data>
+		<input.urn.activity>${input.urn.data}#activity</input.urn.activity>
+		<input.urn.plan>${input.urn.data}#plan</input.urn.plan>
+
+		<output.urn.base>urn:mvn:${project.groupId}:${project.artifactId}:${project.version}</output.urn.base>
+
+		<output.urn.pom>${output.urn.base}:pom</output.urn.pom>
+		<output.urn.data>${output.urn.base}:${output.type}</output.urn.data>
+		<output.urn.activity>${output.urn.base}#activity</output.urn.activity>
+
+		<datasetDirectory>${project.build.directory}/datasets</datasetDirectory>
+		<input.path>${datasetDirectory}/${input.artifactId}.${input.type}</input.path>
+
+
+		<jenax.version>5.0.0-1-SNAPSHOT</jenax.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-resources-prefixes</artifactId>
+			<version>${jenax.version}</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<resources>
+			<resource>
+				<directory>${project.build.directory}/datasets</directory>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>resource-dependencies</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<localRepositoryDirectory>${project.build.directory}/cache</localRepositoryDirectory>
+							<stripVersion>true</stripVersion>
+							<artifactItems>
+
+								<artifactItem>
+									<groupId>${input.groupId}</groupId>
+									<artifactId>${input.artifactId}</artifactId>
+									<version>${input.version}</version>
+									<type>pom</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${datasetDirectory}</outputDirectory>
+								</artifactItem>
+								
+								<artifactItem>
+									<groupId>${input.groupId}</groupId>
+									<artifactId>${input.artifactId}</artifactId>
+									<version>${input.version}</version>
+									<type>${input.type}</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${datasetDirectory}</outputDirectory>
+								</artifactItem>
+								
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.aksw.maven.plugins</groupId>
+				<artifactId>sparql-maven-plugin</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<id>generate-metadata</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<outputFile>${output.path}</outputFile>
+							<outputFormat>${output.type}</outputFormat>
+							<env>
+								<B>${input.urn.void}</B>
+								<D>${input.urn.dataset}</D>
+							</env>
+							<args>
+								<arg>${input.path}</arg>
+
+								<arg>void/sportal/compact/qbAllBut2.rq</arg>
+								<arg>void/sportal/compact/qb2.rq</arg>
+
+								<arg>void/sportal/compact/qcAllBut35.rq</arg>
+								<arg>void/sportal/compact/qc3.rq</arg>
+								<arg>void/sportal/compact/qc5.rq</arg>
+
+								<arg>void/sportal/compact/qdAll.rq</arg>
+								<arg>void/sportal/compact/qeAll.rq</arg>
+								
+								<arg>void/sportal/compact/qf1.rq</arg>
+								<arg>void/sportal/compact/qf2.rq</arg>
+								<arg>void/sportal/compact/qf3.rq</arg>
+								<arg>void/sportal/compact/qf4.rq</arg>
+								<arg>void/sportal/compact/qf5.rq</arg>
+								<arg>void/sportal/compact/qf6.rq</arg>
+								<arg>void/sportal/compact/qf7.rq</arg>
+								<arg>void/sportal/compact/qf8.rq</arg>
+								<arg>void/sportal/compact/qf9.rq</arg>
+								<arg>void/sportal/compact/qf10.rq</arg>
+
+								<arg>void/sportal/compact/qx1.rq</arg>
+
+								<!-- TODO Make this pom.xml itself accessible from sparql so that we can create a PROVO model about which sparql queries were run -->
+
+								<arg>rdf-prefixes/prefix.cc.2019-12-17.ttl</arg>
+								<arg><![CDATA[
+									CONSTRUCT {
+									  <${input.urn.dataset}>
+										a dcat:Dataset ;
+										prov:wasGeneratedBy <${input.urn.activity}> ;
+										dcat:distribution <${input.urn.distribution}> ;
+										.
+
+									  <${input.urn.distribution}>
+										dcat:downloadURL <${input.urn.file}> ;
+										.
+
+									  <${input.urn.activity}>
+										prov:hadPlan <${input.urn.plan}> ;
+										.
+
+									  <${input.urn.plan}>
+									  	a eg:MavenBuild ;
+									  	eg:urn <${input.urn.pom}> ;
+									  	.
+
+									} WHERE { }]]>
+								</arg>
+													
+								<!-- <arg><![CDATA[SELECT (COUNT(*) AS ?c) { ?s ?p ?o }]]></arg> -->
+							</args>
+						</configuration>
+					</execution>
+<!-- Ugly hack to move all data into a graph that matches this artifact-->
+					<!--
+					<execution>
+						<id>postprocess-metadata</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<outputFile>${output.path}</outputFile>
+							<args>
+							<arg>${output.path}</arg>
+		<arg>
+<![CDATA[
+DELETE { ?s ?p ?o }
+INSERT { GRAPH <${output.urn.base}> { ?s ?p ?o } }
+WHERE { ?s ?p ?o }
+]]>
+								</arg>
+								</args>
+						</configuration>
+					</execution>
+					-->			
+
+
+				</executions>
+			</plugin>
+			      <!-- Declare that the output file of the data generator should become part of this artifact -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${output.path}</file>
+                  <classifier>${output.classifier}</classifier>
+                  <type>${output.type}</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+		</plugins>
+	</build>
+	
+	<!--
+	  <profiles>
+    <profile>
+      <id>generate-data</id>
+      <activation>
+        <property>
+          <name>skipPrepareInput</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>resource-dependencies</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<localRepositoryDirectory>${project.build.directory}/cache</localRepositoryDirectory>
+							<stripVersion>true</stripVersion>
+							<artifactItems>
+
+								<artifactItem>
+									<groupId>${input.groupId}</groupId>
+									<artifactId>${input.artifactId}</artifactId>
+									<version>${input.version}</version>
+									<type>pom</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${datasetDirectory}</outputDirectory>
+								</artifactItem>
+								
+								<artifactItem>
+									<groupId>${input.groupId}</groupId>
+									<artifactId>${input.artifactId}</artifactId>
+									<version>${input.version}</version>
+									<type>${input.type}</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${datasetDirectory}</outputDirectory>
+								</artifactItem>
+								
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+</plugins>
+</build>
+</profile>
+</profiles>
+-->
+
+</project>

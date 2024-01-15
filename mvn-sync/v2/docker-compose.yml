@@ -6,10 +6,18 @@ services:
     # image: tenforce/virtuoso
     build:
       context: .
+    user: "${UID}:${GID}"
     environment:
-      VIRT_SPARQL_MaxDataSourceSize: "10737418240"
+      UID: "${UID}"
+      GID: "${GID}"
+      WORKDIR: /workdir
     volumes:
+      # - ~/.m2/repository:/home/user/.m2/host-repository
+      - ~/.m2/repository:/home/user/.m2/repository
       - ~/.m2/repository:/repository
+      - ./target/repository:/home/user/.m2/cache-repository
+      - ./settings.xml:/home/user/.m2/settings.xml
+      - ./workdir:/workdir
     network_mode: "host"
 #    ports:
 #      - "1111:1111"

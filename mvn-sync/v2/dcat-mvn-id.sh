@@ -5,6 +5,23 @@
 # dcatFile=`realpath -e "$1"`
 
 parent-find() {
+  local pattern="$1"
+  local search_dir="$2"
+
+  while [ "$search_dir" != "/" ]; do
+    file=$(find "$search_dir" -maxdepth 1 -name "$pattern" -print -quit)
+    if [[ -n $file ]]; then
+        echo "$file"
+        return 0
+    fi
+    search_dir=$(dirname "$search_dir")
+  done
+  return 1
+}
+
+
+# old version does not support file name patterns
+parent-find-old() {
   local file="$1"
   local dir="$2"
 
@@ -15,25 +32,25 @@ parent-find() {
 }
 
 
-dcat-mvn-id() {
-  dcatFile="$1"
+dcat-mvn-id-core() {
+  declare -n amap="$1"
+  dcatFile="$2"
 
-  # TODO The metadata file must be a file pattern because it can carry qualifiers such as
-  # maven-metadata-local.xml or maven-metadata-myrepo.xml
-  metaName='maven-metadata-local.xml'
-  metaFolder=`parent-find "$metaName" "$dcatFile"`
-
-  if [ -z "$metaFolder" ]; then
-    echo "No $metaName file found in any parent of $dcatFile"
-    exit 1
+  metaFilePattern='maven-metadata*.xml'
+  metaFile=`parent-find "$metaFilePattern" "$(dirname "$dcatFile")"`
+  if [ -z "$metaFile" ]; then
+    echo "No $metaFilePattern file found in any parent of $dcatFile"
+    return 1
   fi
 
-  metaFile="$metaFolder/$metaName"
+  metaFolder=`dirname "$metaFile"`
+
+  # metaFile="$metaFolder/$metaName"
 
   # Parse groupId, artifactId and version from the maven-metadata.xml file
-  groupId=`xmlstarlet sel -t -v "/metadata/groupId" "$metaFile"`
+  amap['groupId']=`xmlstarlet sel -t -v "/metadata/groupId" "$metaFile"`
   rawArtifactId=`xmlstarlet sel -t -v "/metadata/artifactId" "$metaFile"`
-  artifactId=`echo "$rawArtifactId" | sed -E "s|^(.*)-dcat-metadata$|\1|g"`
+  amap['artifactId']=`echo "$rawArtifactId" | sed -E "s|^(.*)-dcat-metadata$|\1|g"`
 
   givenVersion=`xmlstarlet sel -t -v "/metadata/version" "$metaFile"`
 
@@ -42,13 +59,26 @@ dcat-mvn-id() {
     derivedVersion=`dirname "$relPath"`
     if [ "$derivedVersion" == "." ]; then
       echo "No version could be derived for given file $dcatFile"
-      exit 1
+      return 1
     fi
     version="$derivedVersion"
   else
     version="$givenVersion"
   fi
 
-  echo "$groupId:$artifactId:$version"
+  # echo "$groupId:$artifactId:$version"
+  amap['version']="$version"
 }
+
+
+dcat-mvn-id() {
+  dcatFile="$1"
+  declare -A map
+
+  dcat-mvn-id-core "map" "$dcatFile"
+  echo "${map['groupId']}:${map['artifactId']}:${map['version']}"
+}
+
+# dcat-mvn-id "/home/raven/.m2/repository/dcat/org/coypu/data/climatetrace/disasters/0.20240108.1501-SNAPSHOT/disasters-0.20240108.1501-SNAPSHOT-dcat.ttl.bz2"
+
 

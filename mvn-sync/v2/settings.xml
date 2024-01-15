@@ -1,0 +1,48 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+	http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+
+<profiles>
+<profile>
+    <id>myProfile</id>
+    <activation>
+      <activeByDefault>true</activeByDefault>
+    </activation>
+
+    <repositories>
+	<!--
+    <repository>
+      <id>host-repo</id>
+      <name>host repository</name>
+      <url>file://${user.home}/.m2/host-repository</url>
+		</repository>
+	-->
+
+		    <repository>
+      <id>watched-repo</id>
+      <name>watched repository</name>
+      <url>file:///repository</url>
+                </repository>
+
+
+    <repository>
+      <id>cache-repo</id>
+      <name>cache repository</name>
+      <url>file://${user.home}/.m2/cache-repository</url>
+    </repository>
+
+    <!-- Always use the default repository for lookups even if it is overridden -->
+    <repository>
+      <id>default-repo</id>
+      <name>default repository</name>
+      <url>file://${user.home}/.m2/repository</url>
+    </repository>
+
+    </repositories>
+
+    </profile>
+    </profiles>
+
+</settings>
