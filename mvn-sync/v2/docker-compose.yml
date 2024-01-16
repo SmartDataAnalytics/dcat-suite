@@ -1,16 +1,29 @@
 version: "3.3"
 
 services:
-  # Sync process
+  mvn-db:
+    image: aksw/rpt
+    #environment:
+      #USER_ID: "${USER_ID}"
+      #GROUP_ID: "${GROUP_ID}"
+    user: "${USER_ID}:${GROUP_ID}"
+    volumes:
+      - ./data:/data
+    working_dir: /
+    command: integrate -X --server --db-engine tdb2 --db-loc /data --db-keep
+    network_mode: "host"
+    ports:
+      - "7531:7351"  # Sync process
+    restart: on-failure
   mvn-sync:
     # image: tenforce/virtuoso
     build:
       context: .
-    user: "${UID}:${GID}"
     environment:
-      UID: "${UID}"
-      GID: "${GID}"
-      WORKDIR: /workdir
+      USER_ID: "${USER_ID}"
+      GROUP_ID: "${GROUP_ID}"
+    user: "${USER_ID}:${GROUP_ID}"
+      # WORKDIR: /workdir
     volumes:
       # - ~/.m2/repository:/home/user/.m2/host-repository
       - ~/.m2/repository:/home/user/.m2/repository

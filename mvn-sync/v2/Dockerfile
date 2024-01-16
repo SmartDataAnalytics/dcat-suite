@@ -28,8 +28,8 @@ RUN sed -i -E 's|(^\|:)/app/|\1/rpt/|g' /rpt/jib-classpath-file
 RUN echo 'java -cp @/rpt/jib-classpath-file @/rpt/jib-main-class-file "$@"' > /bin/rpt && chmod +x /bin/rpt
 
 
-RUN groupadd group && useradd -m -g group user
-USER user
+#RUN groupadd group && useradd -m -g group user
+#USER user
 
 #ADD target/repository $HOME/.m2/repository
 
