@@ -138,10 +138,15 @@
                   <outputFile>${output.path}</outputFile>
                   <outputFormat>${output.type}</outputFormat>
                   <env>
+                    <!-- B(base) and D(dataset) are used for Void -->
                     <B>${input.urn.void}</B>
-                    <D>${input.urn.dataset}</D>
+                    <D>${input.urn.void}</D>
+                    <!-- The void is quite large and makes the DCAT hard to read. -->
+                    <!-- Therefore, attach the void to separate resource and link to it from the dcat:Dataset with owl:sameAs -->
+                    <!-- <D>${input.urn.dataset}</D> -->
 
-                    <BASE>$input.urn.base}#</BASE>
+                    <DATASET>${input.urn.dataset}</DATASET>
+                    <BASE>${input.urn.base}#</BASE>
                     <POM>${input.pom.path}</POM>
                   </env>
                   <args>
@@ -178,16 +183,29 @@
 CONSTRUCT {
   <${input.urn.dataset}>
 	a dcat:Dataset ;
+    eg:groupId "${input.groupId}" ;
+    eg:artifactId "${input.artifactId}" ;
+    dcat:version "${input.version}" ;
+	dct:identifier "${input.urn.base}" ;
 	prov:wasGeneratedBy <${input.urn.activity}> ;
 	dcat:distribution <${input.urn.distribution}> ;
+    owl:sameAs <${input.urn.void}> ;
 	.
 
   <${input.urn.distribution}>
-	dcat:downloadURL <${input.urn.file}> ;
+    a dcat:Distribution ;
+    eg:groupId "${input.groupId}" ;
+    eg:artifactId "${input.artifactId}" ;
+    dcat:version "${input.version}" ;
+    eg:type "${input.type}" ;
+    dct:identifier "${input.urn.file}" ;
+    dcat:downloadURL <${input.urn.file}> ;
+	# TODO Split type into dcat:mediaType and dcat:compressFormat, e.g. using a property transform plugin
 	.
 
   <${input.urn.activity}>
 	prov:hadPlan <${input.urn.plan}> ;
+    # TODO Devise convention from which input artifacts of the plan could be extracted 
 	.
 
   <${input.urn.plan}>
@@ -198,42 +216,53 @@ CONSTRUCT {
 } WHERE { }
 ]]></arg>
 
-                    <arg><![CDATA[
+<arg><![CDATA[
 PREFIX norse: <https://w3id.org/aksw/norse#>
-
 PREFIX dcat: <http://www.w3.org/ns/dcat#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX org: <http://www.w3.org/ns/org#>
 PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX ex: <http://example.org/resource/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX sdo: <http://schema.org/>
+PREFIX t:   <https://schema.coypu.org/metadata-template#>
 
 CONSTRUCT { ?s ?p ?o }
 WHERE {
-  BIND(<env:BASE> AS ?base)
-  BIND(<env:D> AS ?datasetIdStr)
+  BIND(<env:DATASET> AS ?datasetIdStr)
   BIND(IRI(?datasetIdStr) AS ?datasetId)
+  BIND(<env:BASE> AS ?base)
   BIND(<env:POM> AS ?input)
 
   BIND(norse:xml.parse(?input) AS ?xml)
   LATERAL {
-      {
-        BIND(dct:license AS ?p)
+      { # Basic Project Information (Name, Description, URL)
+        BIND(IRI(norse:xml.path(?xml, "/*/:url/text()")) AS ?url)
+        BIND(norse:xml.path(?xml, "/*/:name/text()") AS ?name)
+        BIND(norse:xml.path(?xml, "/*/:description/text()") AS ?description)
+        LATERAL {
+            { BIND(?datasetId AS ?s) BIND(dcat:landingPage AS ?p) BIND(?url AS ?o) }
+          UNION
+            { BIND(?datasetId AS ?s) BIND(rdfs:label AS ?p) BIND(?name AS ?o) }
+          UNION
+            { BIND(?datasetId AS ?s) BIND(rdfs:comment AS ?p) BIND(?description AS ?o) }
+        }        
+      }
+    UNION
+      { # Licenses
         ?xml norse:xml.unnest ("/*/:licenses/:license" ?license) .
         BIND(IRI(norse:xml.path(?license, "/*/:url/text()")) AS ?licenseUrl)
-        BIND(?datasetId AS ?s)
+        BIND(norse:xml.path(?license, "/*/:name/text()") AS ?licenseName)
         LATERAL {
-            {
-              BIND(?licenseUrl AS ?o)
-            }
-          #UNION {
-          #  BIND(norse:xml.path(?license, "//:name") AS ?licenseName)
-          #}
+            { BIND(?datasetId AS ?s) BIND(dct:license AS ?p) BIND(?licenseUrl AS ?o) }
+          UNION
+            { BIND(?datasetId AS ?s) BIND(t:licenseNote AS ?p) BIND(?licenseName AS ?o) }
         }
       }
     UNION
-      {
+      { # Developers
         ?xml norse:xml.unnest ("/*/:developers/:developer" ?dev) .
         BIND(norse:xml.path(?dev, "/*/:name/text()") AS ?devName)
         BIND(norse:xml.path(?dev, "/*/:url/text()") AS ?devUrl)
@@ -253,6 +282,29 @@ WHERE {
             { BIND(?devOrgId AS ?s) BIND(rdfs:label AS ?p) BIND(?devOrgName AS ?o) }
           UNION
             { BIND(?devOrgId AS ?s) BIND(eg:website AS ?p) BIND(?devOrgUrl AS ?o) }
+        }
+      }
+    UNION
+      { # Contributors
+        ?xml norse:xml.unnest ("/*/:contributors/:contributor" ?contrib) .
+        BIND(norse:xml.path(?contrib, "/*/:name/text()") AS ?contribName)
+        BIND(norse:xml.path(?contrib, "/*/:url/text()") AS ?contribUrl)
+        BIND(IRI(CONCAT(?base, 'contributor/', ENCODE_FOR_URI(COALESCE(STR(?contribUrl), ?contribName)))) AS ?contribId)
+
+        BIND(norse:xml.path(?contrib, "/*/:organization/text()") AS ?contribOrgName)
+        BIND(IRI(norse:xml.path(?contrib, "/*/:organizationUrl/text()")) AS ?contribOrgUrl)
+        BIND(IRI(CONCAT(?base, 'org/', ENCODE_FOR_URI(COALESCE(STR(?contribOrgUrl), ?contribOrgName)))) AS ?contribOrgId)
+
+        LATERAL {
+            { BIND(?datasetId AS ?s) BIND(dcat:contributor AS ?p) BIND(?contribId AS ?o) }
+          UNION
+            { BIND(?contribId AS ?s) BIND(foaf:name AS ?p) BIND(?contribName AS ?o) }
+          UNION
+            { BIND(?contribId AS ?s) BIND(org:memberOf AS ?p) BIND(?contribOrgId AS ?o) }
+          UNION
+            { BIND(?contribOrgId AS ?s) BIND(rdfs:label AS ?p) BIND(?contribOrgName AS ?o) }
+          UNION
+            { BIND(?contribOrgId AS ?s) BIND(eg:website AS ?p) BIND(?contribOrgUrl AS ?o) }
         }
       }
   }
