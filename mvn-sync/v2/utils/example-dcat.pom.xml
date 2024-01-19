@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dcat.org.coypu.data.disasters</groupId>
+  <artifactId>disasters</artifactId>
+  <version>0.20240118.1453-1</version>
+
+  <parent>
+    <groupId>org.aksw.data.config</groupId>
+    <artifactId>dcat-generator</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath></relativePath>
+  </parent>
+
+  <packaging>pom</packaging>
+
+  <properties>
+    <input.groupId>org.coypu.data.disasters</input.groupId>
+    <input.artifactId>disasters</input.artifactId>
+    <input.version>0.20240118.1453</input.version>
+    <input.type>nt.bz2</input.type>
+  </properties>
+</project>
