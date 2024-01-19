@@ -16,7 +16,7 @@ RUN \
 #    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
     apt-get update
 
-RUN echo "18"
+RUN echo "20"
 
 # RUN apt-get install -y build-essential libxml2-dev libpq-dev libbz2-dev libtool automake libproj-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libexpat-dev gcc proj-bin libgeos-c1v5 libgeos++-dev libexpat-dev php php-pear php-pgsql php-json php-db libapache2-mod-php postgresql postgis postgresql-contrib postgresql-${POSTGRES_VERSION}-postgis-${POSTGIS_VERSION} postgresql-server-dev-${POSTGRES_VERSION} wget
 
@@ -40,10 +40,10 @@ ENV HOME /home/user
 
 WORKDIR /hove/user/mvn-sync
 
-ADD run-dcat-mvn-sync.sh .
-ADD sync-mvn.sh .
-ADD dcat-mvn-id.sh .
-ADD metadata.template.pom.xml .
+#ADD run-dcat-mvn-sync.sh .
+#ADD sync-mvn.sh .
+#ADD dcat-mvn-id.sh .
+#ADD metadata.template.pom.xml .
 
 
 ENTRYPOINT ["./run-dcat-mvn-sync.sh"]

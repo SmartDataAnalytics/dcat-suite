@@ -1,8 +1,13 @@
 #!/bin/bash
 
+#echoerr() { echo "$@" 1>&2; }
+
+SCRIPT_FILE="$(realpath "${BASH_SOURCE:-$0}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_FILE")"
+
 set -eu
 
-. dcat-mvn-id.sh
+. ${SCRIPT_DIR}/dcat-mvn-id.sh
 
 export baseUrl="http://maven.aksw.org/repository/"
 
@@ -19,12 +24,15 @@ tmpFile=`mktemp /tmp/dcat-mvn-sync.XXXXXX.trig`
 
 echo "Filtering data"
 # Filter the content to the graph that matches the mvnUrn
+# "DELETE { ?s ?p ?o } INSERT { GRAPH <$mvnUrn> { ?s ?p ?o } } WHERE { ?s ?p ?o }"
 rpt integrate -X "$file" \
-  "DELETE { ?s ?p ?o } INSERT { GRAPH <$mvnUrn> { ?s ?p ?o } } WHERE { ?s ?p ?o }" \
+  "MOVE DEFAULT TO <$mvnUrn>" \
   "CONSTRUCT { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" > "$tmpFile"
 
 # TODO The link to the pom file is a stub - eg:urn
-rpt integrate -X --io "$tmpFile" --out-format trig/blocks "DELETE { GRAPH ?g { ?s ?p ?o } } INSERT { GRAPH ?g { ?s ?p ?x } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER (?p IN( <http://www.w3.org/ns/dcat#downloadURL>, <http://www.example.org/urn> )&& STRSTARTS(STR(?o), 'urn:mvn:')) BIND(IRI(CONCAT('$baseUrl', mvn:toPath(STR(?o)))) AS ?x) }" gspo.rq
+#rpt integrate -X --io "$tmpFile" --out-format trig/blocks "DELETE { GRAPH ?g { ?s ?p ?o } } INSERT { GRAPH ?g { ?s ?p ?x } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER (?p IN( <http://www.w3.org/ns/dcat#downloadURL>, <http://www.example.org/urn> )&& STRSTARTS(STR(?o), 'urn:mvn:')) BIND(IRI(CONCAT('$baseUrl', mvn:toPath(STR(?o)))) AS ?x) }" gspo.rq
+
+rpt integrate -X --io "$tmpFile" --out-format trig/blocks $(find ./prepublish/ -name '*.ru' -print0 | sort -zu | xargs -0 printf '%q ')
 
 echo "New data:"
 cat "$tmpFile"

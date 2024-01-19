@@ -1,0 +1,783 @@
+@prefix :      <https://metadata.coypu.org/dataset/> .
+@prefix dcat:  <http://www.w3.org/ns/dcat#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix t:     <https://schema.coypu.org/metadata-template#> .
+
+:acled
+    dcat:landingPage        <https://acleddata.com/data-export-tool/> ;
+    t:graph
+            <https://data.coypu.org/events/acled/2022/> ,
+            <https://data.coypu.org/events/acled/2023/> ;
+    t:licenseNote           'Citation "Armed Conflict Location & Event Data Project (ACLED); www.acleddata.com"' ;
+    t:licensePage           <https://acleddata.com/terms-of-use/> ;
+    t:theme                 "Conflict events" ;
+    t:type                  "Dump"
+.
+
+:airports
+    a                       dcat:Dataset ;
+    dct:creator             "The World Bank - SRV-DDH2-PRD" ;
+    dct:description         "Global Airports" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :airports-distribution ;
+    dcat:landingPage        <https://datacatalog.worldbank.org/search/dataset/0038117/Global-Airports> ;
+    t:graph                 <https://data.coypu.org/infrastructure/airports/> ;
+    t:licenseNote           "CC-BY-4.0 by Worldbank" ;
+    t:licensePage           <https://datacatalog.worldbank.org/search/dataset/0038117/Global-Airports> ;
+    t:theme                 "Global airports" ;
+    t:type                  "Dump"
+.
+
+:airports-distribution
+    a                       dcat:Distribution ;
+    dct:format              "text/csv" ;
+    dct:modified            "2023-01-19T11:18:15Z" ;
+    dct:title               "0038117" ;
+    dcat:downloadURL        <https://datacatalogfiles.worldbank.org/ddh-published/0038117/DR0046411/airport_volume_airport_locations.csv?versionId=2023-01-19T11:18:11.1423140Z>
+.
+
+:baci
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Pierre Cotterlaz" ;
+    dct:description         "B A C I" ;
+    dct:license             <https://metadata.coypu.org/licenses/EtaLab20> ;
+    dcat:distribution       :baci-distribution ;
+    dcat:landingPage        <http://www.cepii.fr/CEPII/en/bdd_modele/bdd_modele_item.asp?id=37> ;
+    t:graph                 <https://data.coypu.org/trade/baci/> ;
+    t:licenseNote           "EtaLab Open Licence v2.0, original data downloaded from http://www.cepii.fr/CEPII/en/bdd_modele/bdd_modele_item.asp?id=37" ;
+    t:licensePage           <https://www.etalab.gouv.fr/wp-content/uploads/2018/11/open-licence.pdf> ;
+    t:theme                 "Global product trade flows" ;
+    t:type                  "Dump"
+.
+
+:baci-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/zip" ;
+    dct:modified            "2023-02-01" ;
+    dct:title               "HS12 (2012-2021)" ;
+    dcat:downloadURL        <http://www.cepii.fr/DATA_DOWNLOAD/baci/data/BACI_HS12_V202301.zip>
+.
+
+:catalog
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:landingPage        <https://metadata.coypu.org/catalog> ;
+    t:graph                 <https://metadata.coypu.org/> ;
+    t:licenseNote           "CC-BY-4.0 by CoyPu Project" ;
+    t:theme                 "Metadata" ;
+    t:type                  "Catalog"
+.
+
+:cities
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    t:graph                 <https://data.coypu.org/cities/> ;
+    t:licenseNote           "CC0" ;
+    t:theme                 "Global cities" ;
+    t:type                  "Wikidata"
+.
+
+:climatetrace
+    rdfs:comment            "Source file is unclear - perhaps multiple distributions needed but not supported by tools" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY-NC-SA_v4> ;
+    dcat:landingPage        <https://climatetrace.org/> ;
+    t:graph                 <https://data.coypu.org/infrastructure/climatetrace/> ;
+    t:licenseNote           "CC-BY-NC-SA-4.0 by Climate TRACE" ;
+    t:licensePage           <https://climatetrace.org/tos/> ;
+    t:theme                 "Natural resource extraction and processing" ;
+    t:type                  "Dump"
+.
+
+:commodities-ecb
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "European Central Bank (ECB)" ;
+    dct:description         "Euro foreign exchange reference rates" ;
+    dcat:distribution       :commodities-ecb-distribution ;
+    dcat:landingPage        <https://www.ecb.europa.eu/stats/eurofxref/> ;
+    t:graph                 <https://data.coypu.org/commodities/> ;
+    t:licenseNote           "Data provided by EZB" ;
+    t:licensePage           <https://www.ecb.europa.eu/services/disclaimer/html/index.en.html> ;
+    t:theme                 "Commodity prices" ;
+    t:type                  "APIs"
+.
+
+:commodities-ecb-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/xml" ;
+    dct:modified            "2023-12-01" ;
+    dct:title               "Time series" ;
+    dcat:downloadURL        <https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml?7ed8fdc8b5e1fe364d53aac13d08c0c8>
+.
+
+:commodities-wb
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "The World Bank Data Catalog" ;
+    dct:description         "Commodity Markets" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :commodities-wb-distribution ;
+    dcat:landingPage        <https://www.worldbank.org/en/research/commodity-markets/> ;
+    t:graph                 <https://data.coypu.org/commodities/> ;
+    t:licenseNote           "CC-BY-4.0 by Worldbank" ;
+    t:licensePage           <https://data.worldbank.org/summary-terms-of-use> ;
+    t:theme                 "Commodity prices" ;
+    t:type                  "APIs"
+.
+
+:commodities-wb-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/vnd.sealed.xls" ;
+    dct:modified            "2023-11-03" ;
+    dct:title               "Monthly prices" ;
+    dcat:downloadURL        <https://thedocs.worldbank.org/en/doc/5d903e848db1d1b83e0ec8f744e55570-0350012021/related/CMO-Historical-Data-Monthly.xlsx>
+.
+
+:companies
+    t:graph                 <https://data.coypu.org/companies/demo/> ;
+    t:licenseNote           "© as noted on each entity, internal only" ;
+    t:theme                 "Tier 1 supply chains of select corporations" ;
+    t:type                  "Scraped"
+.
+
+:corruption
+    a                       dcat:Dataset ;
+    dct:creator             "Transparency International" ;
+    dct:description         "CORRUPTION PERCEPTIONS INDEX 2021" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY-ND_v4> ;
+    dcat:distribution       :corruption-distribution ;
+    dcat:landingPage        <https://www.transparency.org/en/cpi/2021/> ;
+    t:graph                 <https://data.coypu.org/country-statistic/corruption/> ;
+    t:licenseNote           "CC-BY-ND 4.0 by Transparency International " ;
+    t:licensePage           <https://www.transparency.org/en/news/how-cpi-scores-are-calculated> ;
+    t:theme                 "Corruption perception index per country" ;
+    t:type                  "Dump"
+.
+
+:corruption-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/zip" ;
+    dct:modified            "2022" ;
+    dct:title               "CPI 2021 full data set" ;
+    dcat:downloadURL        <https://images.transparencycdn.org/images/CPI-2021-Full-Data-Set.zip>
+.
+
+:countries
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Wikidata" ;
+    dct:description         "country" ;
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    dcat:distribution       :wikidata-distribution ;
+    t:graph                 <https://data.coypu.org/countries/> ;
+    t:licenseNote           "CC0" ;
+    t:theme                 "Counties and regions" ;
+    t:type                  "Wikidata"
+.
+
+:dalicc
+    dct:license             <http://dalicc.net/licenselibrary/MIT> ;
+    dcat:landingPage        <https://www.dalicc.net/> ;
+    t:graph                 <http://dalicc.net/licenselibrary/> ;
+    t:licenseNote           "MIT License" ;
+    t:licensePage           <https://github.com/dalicc/dalicc/blob/main/LICENSE> ;
+    t:theme                 "License graph from DaliCC framework" ;
+    t:type                  "Dump"
+.
+
+:em-dat
+    dcat:landingPage        "https://public.emdat.be/ (needs to register first)" ;
+    t:graph                 <https://data.coypu.org/events/emdat/> ;
+    t:licenseNote           "Citation 'EM-DAT, CRED / UCLouvain, Brussels, Belgium – www.emdat.be'" ;
+    t:licensePage           <https://www.emdat.be/frequently-asked-questions> ;
+    t:theme                 "Disaster events" ;
+    t:type                  "Dump"
+.
+
+:exiobase
+    dct:license             <https://metadata.coypu.org/licenses/CreativeCommonsAttributionSharealike20Germany> ;
+    dcat:landingPage        <https://zenodo.org/record/5589597> ;
+    t:graph                 <https://data.coypu.org/industry/exiobase/> ;
+    t:licenseNote           "CC-BY-SA by the EXIOBASE consortium" ;
+    t:licensePage           <https://www.exiobase.eu/index.php/terms-of-use> ;
+    t:theme                 "Global macro-economic supply chain dependencies" ;
+    t:type                  "Dump"
+.
+
+:exiobase-ext
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    t:graph                 <https://data.coypu.org/industry/exiobase-ext/> ;
+    t:licenseNote           "CC0" ;
+    t:theme                 "Exiobase metadata" ;
+    t:type                  "Dump"
+.
+
+:gdacs
+    a
+    dcat:Dataset ,
+    t:Dataset ;
+    dct:creator             "" ;
+    dct:description         "Near real-time alerts about natural disaster with a potential humanitarian impact" ;
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    dcat:distribution       :gdacs-distribution ;
+    dcat:landingPage        <https://www.gdacs.org> ;
+    t:graph                 <https://data.coypu.org/disasters/> ;
+    t:licenseNote           "public domain" ;
+    t:licensePage           <https://www.gdacs.org/About/termofuse.aspx> ;
+    t:theme                 "Natural disasters" ;
+    t:type                  "API" ;
+    t:alias                 :disasters ;
+.
+
+
+:gdacs-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/rss+xml" ;
+    dct:modified            "2023-12-04" ;
+    dct:title               "GDACS RSS information" ;
+    dcat:downloadURL        <https://www.gdacs.org/xml/rss.xml>
+.
+
+:genesis
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Statistisches Bundesamt Germany" ;
+    dct:description         "German observations of foreign trade (kalender- und saisonbereinigt)" ;
+    dct:license             <https://metadata.coypu.org/licenses/DLDEBY20> ;
+    dcat:distribution       :genesis-distribution ;
+    dcat:landingPage        <https://www-genesis.destatis.de/genesis/online> ;
+    t:graph                 <https://data.coypu.org/genesis-foreign-trade/> ;
+    t:licenseNote           "DL-DE->BY-2.0 by Statistisches Bundesamt Germany" ;
+    t:licensePage           <https://www.govdata.de/dl-de/by-2-0> ;
+    t:theme                 "German observations of foreign trade" ;
+    t:type                  "API"
+.
+
+:genesis-distribution
+    a                       dcat:Distribution ;
+    dct:format              "text/csv" ;
+    dct:modified            "2023-10" ;
+    dct:title               "Code: 51000 Inhalt: Außenhandel" ;
+    dcat:downloadURL        <https://www-genesis.destatis.de/genesis/online?operation=statistic&code=51000#abreadcrumb>
+.
+
+:geoboundaries0
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "" ;
+    dct:description         "geoBoundaries ADM0 (Countries)" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :geoboundaries0-distribution ;
+    dcat:landingPage        <https://www.geoboundaries.org/> ;
+    t:graph                 <https://data.coypu.org/administrative-regions/> ;
+    t:licenseNote           "Citation 'Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. https://doi.org/10.1371/journal.pone.0231866'" ;
+    t:licensePage           <https://www.geoboundaries.org/index.html#citation> ;
+    t:theme                 "Administrative boundaries of level 0 from Geoboundaries" ;
+    t:type                  "Dump"
+.
+
+:geoboundaries0-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/geo+json" ;
+    dct:modified            "2023" ;
+    dct:title               "Comprehensive Global Administrative Zones (CGAZ) ADM0 (Countries)" ;
+    dcat:downloadURL        <https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.geojson>
+.
+
+:geoboundaries1
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "" ;
+    dct:description         "geoBoundaries ADM1 (Districts)" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :geoboundaries1-distribution ;
+    dcat:landingPage        <https://www.geoboundaries.org/> ;
+    t:graph                 <https://data.coypu.org/administrative-regions/> ;
+    t:licenseNote           "Citation 'Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. https://doi.org/10.1371/journal.pone.0231866'" ;
+    t:licensePage           <https://www.geoboundaries.org/index.html#citation> ;
+    t:theme                 "Administrative boundaries of level 1  from Geoboundaries" ;
+    t:type                  "Dump"
+.
+
+:geoboundaries1-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/geo+json" ;
+    dct:modified            "2023" ;
+    dct:title               "Comprehensive Global Administrative Zones (CGAZ) ADM1 (Districts)" ;
+    dcat:downloadURL        <https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM1.geojson>
+.
+
+:geonames
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "GeoNames" ;
+    dct:description         "Gazetteer" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :geonames-distribution ;
+    dcat:landingPage        <https://www.geonames.org/> ;
+    t:graph                 <https://data.coypu.org/geonames/> ;
+    t:licenseNote           "CC-BY-4.0" ;
+    t:licensePage           <https://www.geonames.org/about.html> ;
+    t:theme                 "Populated places and admin boundaries of level 0, 1 and 2 (country and state) from Geonames" ;
+    t:type                  "Dump"
+.
+
+:geonames-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/zip" ;
+    dct:modified            "2023-12-04 04:55" ;
+    dct:title               "Simplified country boundarie" ;
+    dcat:downloadURL        <https://download.geonames.org/export/dump/shapes_all_low.zip>
+.
+
+:gleif
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Global Legal Entity Identifier Foundation (GLEIF)" ;
+    dct:description         "GLEIF Golden Copy and Delta Files" ;
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    dcat:distribution       :gleif-distribution ;
+    dcat:landingPage        <https://www.gleif.org/en/lei-data/gleif-golden-copy/download-the-golden-copy#/> ;
+    t:graph                 <https://data.coypu.org/companies/glei/> ;
+    t:licenseNote           "CC0" ;
+    t:licensePage           <https://www.gleif.org/en/about/open-data> ;
+    t:theme                 "Company ownership information" ;
+    t:type                  "Dump"
+.
+
+:gleif-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/zip" ;
+    dct:modified            "2023.12.04 08:00" ;
+    dct:title               "Level 2 Relationship Record (RR) CDF Golden Copy" ;
+    dcat:downloadURL        <https://www.gleif.org/en/lei-data/gleif-golden-copy/download-the-golden-copy#.zip>
+.
+
+:gta
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Global Trade Alert (GTA)" ;
+    dct:description         "Global trade sanctions and alerts" ;
+    dcat:distribution       :gta-distribution ;
+    dcat:landingPage        <https://www.globaltradealert.org> ;
+    t:graph                 <https://data.coypu.org/events/gta/> ;
+    t:licenseNote           "Citation 'Global Trade Alert. (2021). Database. Retrieved 01.10.2022 from https://www.globaltradealert.org'" ;
+    t:licensePage           <https://www.globaltradealert.org/about> ;
+    t:theme                 "Global trade sanctions and alerts" ;
+    t:type                  "Dump"
+.
+
+:gta-distribution
+    a                       dcat:Distribution ;
+    rdfs:comment            "Citation 'Global Trade Alert. (2021). Database. Retrieved 01.10.2022 from https://www.globaltradealert.org'" ;
+    dct:format              "Rdata" ;
+    dct:modified            "2022-10-01" ;
+    dct:title               "GTA DATABASE" ;
+    dcat:downloadURL        <https://www.globaltradealert.org/data_extraction>
+.
+
+:icews
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Boschee, Elizabeth; Lautenschlager, Jennifer; O'Brien, Sean; Shellman, Steve; Starz, James, 2018, 'ICEWS Weekly Event Data', https://doi.org/10.7910/DVN/QI2T9A, Harvard Dataverse, V380, DEACCESSIONED VERSION" ;
+    dct:description         "Integrated Crisis Early Warning System (ICEWS) Dataverse" ;
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    dcat:distribution       :icews-distribution ;
+    dcat:landingPage        <https://dataverse.harvard.edu/dataverse/icews> ;
+    t:graph                 <https://data.coypu.org/events/icews/> ;
+    t:licenseNote           "CC0" ;
+    t:theme                 "Crisis events" ;
+    t:type                  "Dump"
+.
+
+:icews-distribution
+    a                       dcat:Distribution ;
+    dct:format              "" ;
+    dct:modified            "2023-04-11" ;
+    dct:title               "ICEWS Weekly Event Data" ;
+    dcat:downloadURL        <https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/QI2T9A>
+.
+
+:industries
+    t:graph                 <https://data.coypu.org/industry/nace2/> ;
+    t:licenseNote           "CC0?" ;
+    t:theme                 "Sector classifications (CPC 2.1, ISIC rev. 4, NACE 1/2, HS 2012)" ;
+    t:type                  "Dump"
+.
+
+:internationalOrganizations
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Wikidata" ;
+    dct:description         "International organizations" ;
+    dct:license             <https://metadata.coypu.org/licenses/Cc010Universal> ;
+    dcat:distribution       :wikidata-distribution ;
+    t:graph                 <https://data.coypu.org/international-organizations/> ;
+    t:licenseNote           "CC0" ;
+    t:theme                 "International organizations" ;
+    t:type                  "Wikidata"
+.
+
+:ips
+    t:graph                 <https://data.coypu.org/companies/ips/> ;
+    t:licenseNote           "© Implisense GmbH, internal use only" ;
+    t:theme                 "German company data" ;
+    t:type                  "Monthly Dump"
+.
+
+:licenses
+    dct:license             <http://dalicc.net/licenselibrary/MIT> ;
+    dcat:landingPage        <https://gitlab.com/coypu-project/dalicc> ;
+    t:graph                 <https://metadata.coypu.org/licenses/> ;
+    t:licenseNote           "MIT License" ;
+    t:licensePage           <https://gitlab.com/coypu-project/dalicc/-/blob/main/LICENSE> ;
+    t:theme                 "Local license graph extending DaliCC knowledge" ;
+    t:type                  "Dump"
+.
+
+:ontology
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:landingPage        <https://schema.coypu.org/> ;
+    t:graph
+            <https://schema.coypu.org/em-dat/> ,
+            <https://schema.coypu.org/global/> ,
+            <https://schema.coypu.org/gta/> ,
+            <https://schema.coypu.org/metadata-template/> ,
+            <https://schema.coypu.org/ta/> ,
+            <https://schema.coypu.org/vtf/> ,
+            <https://schema.coypu.org/world-port-index/> ;
+    t:licenseNote           "CC-BY-4.0 by CoyPu Project" ;
+    t:theme                 "Schema" ;
+    t:type                  "Ontology"
+.
+
+:osm-distribution
+    a                       dcat:Distribution ;
+    rdfs:comment            "Is missing a date" ;
+    dct:format              "" ;
+    dct:modified            "" ;
+    dct:title               "Overpass API" ;
+    dcat:downloadURL        <https://overpass-api.de/api/map>
+.
+
+:pipe
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Jan Diettrich1, Wided Medjroubi1, Adam Pluta1" ;
+    dct:description         "European pipelines and terminals" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :pipe-distribution ;
+    dcat:landingPage        <https://zenodo.org/record/4288459#.X83p-7MxmUk> ;
+    t:graph                 <https://data.coypu.org/infrastructure/pipelines/> ;
+    t:licenseNote           "CC-BY-4.0 by Citation'Jan Diettrich, Wided Medjroubi, & Adam Pluta. (2020). SciGRID_gas IGGIN (1.0.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4288459'" ;
+    t:licensePage           <https://zenodo.org/record/4288459#.X83p-7MxmUk> ;
+    t:theme                 "European pipelines and terminals" ;
+    t:type                  "Dump"
+.
+
+:pipe-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/zip" ;
+    dct:modified            "2020-11-24" ;
+    dct:title               "SciGRID_gas IGGIN" ;
+    dcat:downloadURL        <https://zenodo.org/records/4288459/files/IGGIN.zip?download=1>
+.
+
+:ports_nga
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "NGA" ;
+    dct:description         "NGA's World Port Index 2019" ;
+    dct:license             <https://metadata.coypu.org/licenses/OdcPublicDomainDedicationAndLicence> ;
+    dcat:distribution       :ports_nga-distribution ;
+    dcat:landingPage        <https://www.arcgis.com/home/item.html?id=b04b76b94059436e93757c301c10026c> ;
+    t:graph                 <https://data.coypu.org/infrastructure/ports/> ;
+    t:licenseNote           "Public Domain" ;
+    t:licensePage           <http://en.wikipedia.org/wiki/Public_domain> ;
+    t:theme                 "Global sea ports" ;
+    t:type                  "Dump"
+.
+
+:ports_nga-distribution
+    a                       dcat:Distribution ;
+    dct:format              "" ;
+    dct:modified            "2023-10-17" ;
+    dct:title               "WorldPortIndex" ;
+    dcat:downloadURL        <https://www.arcgis.com/home/webscene/viewer.html?layers=b04b76b94059436e93757c301c10026c>
+.
+
+:ports_wfp
+    rdfs:comment            "metadata is missing and source is gone" ;
+    dct:license             <https://metadata.coypu.org/licenses/CreativeCommonsAttributionSharealike20Germany> ;
+    dcat:landingPage        <https://data.humdata.org/dataset/global-ports> ;
+    t:graph                 <https://data.coypu.org/infrastructure/ports/> ;
+    t:licenseNote           "CC-BY-SA by World Food Programe" ;
+    t:licensePage           <https://data.humdata.org/dataset/global-ports> ;
+    t:theme                 "Global sea ports" ;
+    t:type                  "Dump"
+.
+
+:powerplants
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Logan Byers, Johannes Friedrich, Roman Hennig, Gaston Astesiano, Xinyue Li, Laura Malaguzzi Valeri and Colin McCormick" ;
+    dct:description         "Global powerplants" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :powerplants-distribution ;
+    dcat:landingPage        <https://www.wri.org/research/global-database-power-plants> ;
+    t:graph                 <https://data.coypu.org/infrastructure/powerplants/> ;
+    t:licenseNote           "CC-BY-4.0 by World Research Institute" ;
+    t:licensePage           <https://www.wri.org/research/global-database-power-plants> ;
+    t:theme                 "Global powerplants" ;
+    t:type                  "Dump"
+.
+
+:powerplants-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/zip" ;
+    dct:modified            "2018-04-05" ;
+    dct:title               "Global Power Plant Database" ;
+    dcat:downloadURL        <https://wri-dataportal-prod.s3.amazonaws.com/manual/global_power_plant_database_v_1_3.zip>
+.
+
+:railway
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "OpenStreetMap (OSM)" ;
+    dct:description         "OpenRailwayMap" ;
+    dct:license             <https://metadata.coypu.org/licenses/OdcOpenDatabaseLicense> ;
+    dcat:distribution       :osm-distribution ;
+    t:graph                 <https://data.coypu.org/infrastructure/railway/> ;
+    t:licenseNote           "ODbL by OpenStreetMap" ;
+    t:licensePage           <https://www.openstreetmap.org/copyright> ;
+    t:theme                 "Global railway network" ;
+    t:type                  "OSM"
+.
+
+:reliefweb
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "ReliefWeb" ;
+    dct:description         "Natural disasters" ;
+    dcat:distribution       :reliefweb-distribution ;
+    dcat:landingPage        <https://apidoc.rwlabs.org/> ;
+    t:graph                 <https://data.coypu.org/disasters/> ;
+    t:licenseNote           "Data provided by OCHA / Reliefweb" ;
+    t:licensePage           <https://apidoc.rwlabs.org/#tos> ;
+    t:theme                 "Natural disasters" ;
+    t:type                  "API"
+.
+
+:reliefweb-distribution
+    a                       dcat:Distribution ;
+    rdfs:comment            "Is missing a date" ;
+    dct:format              "" ;
+    dct:modified            "" ;
+    dct:title               "ReliefWeb API" ;
+    dcat:downloadURL        <https://api.reliefweb.int/v1/report>
+.
+
+:risk
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Bündnis Entwicklung Hilft" ;
+    dct:description         "Crisis mitigation capabilities per country" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :risk-distribution ;
+    dcat:landingPage        <https://weltrisikobericht.de/download/2974> ;
+    t:graph                 <https://data.coypu.org/country-risks/> ;
+    t:licenseNote           "CC-BY-4.0 by Weltrisikobericht" ;
+    t:licensePage           <https://weltrisikobericht.de/> ;
+    t:theme                 "Crisis mitigation capabilities per country" ;
+    t:type                  "Dump"
+.
+
+:risk-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/vnd.sealed.xls" ;
+    dct:modified            "2022" ;
+    dct:title               "WorldRiskIndex Results 2022" ;
+    dcat:downloadURL        <https://weltrisikobericht.de/download/2974>
+.
+
+:rivers
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "OpenStreetMap (OSM)" ;
+    dct:description         "Global rivers" ;
+    dct:license             <https://metadata.coypu.org/licenses/OdcOpenDatabaseLicense> ;
+    dcat:distribution       :osm-distribution ;
+    dcat:landingPage        <https://sophox.org/> ;
+    t:graph                 <https://data.coypu.org/location/rivers/> ;
+    t:licenseNote           "ODbL by OpenStreetMap" ;
+    t:licensePage           <https://www.openstreetmap.org/copyright> ;
+    t:theme                 "Global rivers" ;
+    t:type                  "OSM"
+.
+
+:rta
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    rdfs:comment            "distribution is unclear" ;
+    dct:creator             "Worldbank" ;
+    dct:description         "Regional trade agreements" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:landingPage        <https://www.worldbank.org/en/topic/regional-integration/brief/regional-trade-agreements> ;
+    t:graph                 <https://data.coypu.org/events/rta/> ;
+    t:licenseNote           "CC-BY-4.0 by Worldbank" ;
+    t:licensePage           <https://www.worldbank.org/en/topic/regional-integration/brief/regional-trade-agreements> ;
+    t:theme                 "Regional trade agreements" ;
+    t:type                  "Dump"
+.
+
+:sirene
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "Institut National de la Statistique et des Etudes Economiques (Insee)" ;
+    dct:description         "Base Sirene des entreprises et de leurs établissements" ;
+    dct:license             <https://metadata.coypu.org/licenses/EtaLab20> ;
+    dcat:distribution       :sirene-distribution ;
+    dcat:landingPage        <https://www.data.gouv.fr/en/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/> ;
+    t:graph                 <https://data.coypu.org/companies/sirene/> ;
+    t:licenseNote           "LO 2.0 by Etalab" ;
+    t:licensePage           <https://www.etalab.gouv.fr/licence-ouverte-open-licence/> ;
+    t:theme                 "French company data" ;
+    t:type                  "Dump"
+.
+
+:sirene-distribution
+    a                       dcat:Distribution ;
+    dct:format              "" ;
+    dct:modified            "2023-12-02" ;
+    dct:title               "Sirene : Fichier StockEtablissement du 01 Decembre 2023" ;
+    dcat:downloadURL        <https://www.data.gouv.fr/fr/datasets/r/0835cd60-2c2a-497b-bc64-404de704ce89>
+.
+
+:tiva
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "OECD (2023), OECD Inter-Country Input-Output Database, http://oe.cd/icio" ;
+    dct:description         "OECD Inter-Country Input-Output (ICIO) Tables" ;
+    dct:license             <https://metadata.coypu.org/licenses/CreativeCommonsAttributionNoncommercialSharealike30UnitedStatesofAmerica> ;
+    dcat:distribution       :tiva-distribution ;
+    dcat:landingPage        <https://www.oecd.org/industry/ind/measuring-trade-in-value-added.htm> ;
+    t:graph                 <https://data.coypu.org/trade/tiva/> ;
+    t:licenseNote           "CC-BY-NC-SA by OECD" ;
+    t:licensePage           <https://www.oecd.org/termsandconditions/> ;
+    t:theme                 "Global rade flows in value-added" ;
+    t:type                  "Database"
+.
+
+:tiva-distribution
+    a                       dcat:Distribution ;
+    dct:format              "" ;
+    dct:modified            "2023" ;
+    dct:title               "2016-2020" ;
+    dcat:downloadURL        <http://stats.oecd.org/wbos/fileview2.aspx?IDFile=636c058d-bdf1-46bf-9d57-86767d0bc2f4>
+.
+
+:wikidata-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/sparql-results+xml" ;
+    dct:modified            "2023" ;
+    dct:title               "Wikidata Query Service" ;
+    dcat:downloadURL        <https://query.wikidata.org/>
+.
+
+:wikievents
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "https://github.com/larsmic" ;
+    dct:description         "This repository hosts a dataset sample in the range from January to December 2020." ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY-SA_v4> ;
+    dcat:distribution       :wikievents-distribution ;
+    dcat:landingPage        <https://github.com/semantic-systems/coypu-wiki-events> ;
+    t:graph
+            <https://data.coypu.org/events/wikievents-archive/> ,
+            <https://data.coypu.org/events/wikievents/> ,
+            <https://data.coypu.org/events/wikievents/daily/> ;
+    t:licenseNote           "CC-BY-SA 4.0 by Wikipedia" ;
+    t:licensePage           <https://github.com/semantic-systems/coypu-wiki-events/blob/main/LICENSE.md> ;
+    t:theme                 "Daily news" ;
+    t:type                  "Analytics"
+.
+
+:wikievents-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/ld+json" ;
+    dct:modified            "2023-01-09" ;
+    dct:title               "coypu-wiki-events" ;
+    dcat:downloadURL        <https://github.com/semantic-systems/coypu-wiki-events/tree/main/dataset>
+.
+
+:wildfires
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    rdfs:comment            "metadata is missing and source is gone" ;
+    dct:creator             "NASA" ;
+    dct:description         "Daily satellite wildfire data" ;
+    dcat:distribution       :wildfires-distribution ;
+    dcat:landingPage        <https://firms.modaps.eosdis.nasa.gov/active_fire/#firms-txt> ;
+    t:graph                 <https://data.coypu.org/events/wildfires/> ;
+    t:licenseNote           "Citation MODIS 'MODIS Collection 6 Hotspot / Active Fire Detections MCD14ML distributed from NASA FIRMS. Available on-line https://earthdata.nasa.gov/firms. doi:10.5067/FIRMS/MODIS/MCD14ML' / VIIRS 'NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT distributed from NASA FIRMS. Available on-line https://earthdata.nasa.gov/firms. doi:10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002'" ;
+    t:licensePage           <https://www.earthdata.nasa.gov/learn/find-data/near-real-time/citation#ed-firms-citations> ;
+    t:theme                 "Daily satellite wildfire data" ;
+    t:type                  "APIs"
+.
+
+:wildfires-distribution
+    a                       dcat:Distribution ;
+    dct:format              "" ;
+    dct:modified            "" ;
+    dct:title               "" ;
+    dcat:downloadURL        <https://firms.modaps.eosdis.nasa.gov/active_fire/#firms-txt>
+.
+
+:worldbank
+    a
+            dcat:Dataset ,
+            t:Dataset ;
+    dct:creator             "The World Bank" ;
+    dct:description         "Global ESG indicators" ;
+    dct:license             <https://metadata.coypu.org/licenses/CC-BY_v4> ;
+    dcat:distribution       :worldbank-distribution ;
+    dcat:landingPage        <https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation> ;
+    t:graph                 <https://data.coypu.org/worldbank/> ;
+    t:licenseNote           "CC-BY-4.0 by Worldbank" ;
+    t:licensePage           <http://api.worldbank.org/v2/en/topic/> ;
+    t:theme                 "Global ESG indicators" ;
+    t:type                  "API"
+.
+
+:worldbank-distribution
+    a                       dcat:Distribution ;
+    dct:format              "application/json" ;
+    dct:modified            "" ;
+    dct:title               "Indicators API" ;
+    dcat:downloadURL        <http://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL.>
+.

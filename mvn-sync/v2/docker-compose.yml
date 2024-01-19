@@ -31,6 +31,8 @@ services:
       - ./target/repository:/home/user/.m2/cache-repository
       - ./settings.xml:/home/user/.m2/settings.xml
       - ./workdir:/workdir
+      - ./resources:/home/user/mvn-sync/resources
+      - ./prepublish:/home/user/mvn-sync/prepublish
     network_mode: "host"
 #    ports:
 #      - "1111:1111"

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+echoerr() { echo "$@" 1>&2; }
+
+SCRIPT_FILE="$(realpath "${BASH_SOURCE:-$0}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_FILE")"
+
+echoerr "SCRIPT_DIR=$SCRIPT_DIR"
+
 WATCH_DIR="$1"
 WORK_DIR="$2"
 
@@ -13,7 +20,7 @@ if [ -z "$WORK_DIR" ]; then
   exit 1
 fi
 
-. dcat-mvn-id.sh
+. "$SCRIPT_DIR"/dcat-mvn-id.sh
 
 process-file() {
   REPO="$1"
@@ -24,9 +31,9 @@ process-file() {
   # Match dataset artifacts - for those files we instantiate metadata projects
   export IN_TYPE=`echo "$FILE" | sed -nE 's|^.*\.((nt\|ttl\|nq\|trig\|rdf(\.xml)?)(\.(gz\|bz2))?)$|\1|p'`
 
-  if  [[ "$FILE" =~ ^.*-dcat\..*\.*$ ]]; then
+  if  [[ "$FILE" =~ ^.*-dcat\..*\.*$ && ! -z "$IN_TYPE" ]]; then
     echo "Processing as dcat metadata: $FILE"
-    ./sync-mvn.sh "$FILE"
+    "$SCRIPT_DIR"/sync-mvn.sh "$FILE"
     echo "Completed as dcat metadata: $FILE"
   elif [ ! -z "$IN_TYPE" ]; then
     echo "Processing as data artifact: $FILE"
@@ -53,7 +60,7 @@ process-file() {
     echo "Outfolder: $OUT_FOLDER"
 
     mkdir -p "$OUT_FOLDER"
-    cat metadata.template.pom.xml | envsubst '$IN_GROUPID $IN_ARTIFACTID $IN_VERSION $IN_TYPE $OUT_GROUPID $OUT_ARTIFACTID $OUT_VERSION' > "$OUT_FILE"
+    cat "$SCRIPT_DIR/metadata.template.pom.xml" | envsubst '$IN_GROUPID $IN_ARTIFACTID $IN_VERSION $IN_TYPE $OUT_GROUPID $OUT_ARTIFACTID $OUT_VERSION' > "$OUT_FILE"
 
     (cd "$OUT_FOLDER" && mvn install)
 

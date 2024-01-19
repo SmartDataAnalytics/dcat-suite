@@ -34,7 +34,8 @@
     <output.path>${project.build.directory}/${project.artifactId}-${output.classifier}.${output.type}</output.path>
 
 
-    <input.urn.base>urn:mvn:${input.groupId}:${input.artifactId}:${input.version}</input.urn.base>
+    <input.urn.artifactGroup>urn:mvn:${input.groupId}:${input.artifactId}</input.urn.artifactGroup>
+    <input.urn.base>${input.urn.artifactGroup}:${input.version}</input.urn.base>
     <input.urn.file>${input.urn.base}:${input.type}</input.urn.file>
     <input.urn.dataset>${input.urn.base}#dataset</input.urn.dataset>
     <input.urn.distribution>${input.urn.data}#distribution</input.urn.distribution>
@@ -180,15 +181,18 @@
                     <arg>
                       rdf-prefixes/prefix.cc.2019-12-17.ttl</arg>
                     <arg><![CDATA[
+PREFIX dataid: <http://dataid.dbpedia.org/ns/core#>
 CONSTRUCT {
   <${input.urn.dataset}>
-	a dcat:Dataset ;
+    a dcat:Dataset ;
     eg:groupId "${input.groupId}" ;
+    dataid:group <${input.urn.artifactGroup}> ;
     eg:artifactId "${input.artifactId}" ;
     dcat:version "${input.version}" ;
-	dct:identifier "${input.urn.base}" ;
-	prov:wasGeneratedBy <${input.urn.activity}> ;
-	dcat:distribution <${input.urn.distribution}> ;
+    dct:identifier "${input.urn.base}" ;
+    rdfs:isDefinedBy <${output.urn.base}> ; # Link to the plain GAV (without type nor classifier)
+    prov:wasGeneratedBy <${input.urn.activity}> ;
+    dcat:distribution <${input.urn.distribution}> ;
     owl:sameAs <${input.urn.void}> ;
 	.
 
@@ -200,18 +204,18 @@ CONSTRUCT {
     eg:type "${input.type}" ;
     dct:identifier "${input.urn.file}" ;
     dcat:downloadURL <${input.urn.file}> ;
-	# TODO Split type into dcat:mediaType and dcat:compressFormat, e.g. using a property transform plugin
+    # TODO Split type into dcat:mediaType and dcat:compressFormat, e.g. using a property transform plugin
 	.
 
   <${input.urn.activity}>
-	prov:hadPlan <${input.urn.plan}> ;
+    prov:hadPlan <${input.urn.plan}> ;
     # TODO Devise convention from which input artifacts of the plan could be extracted 
 	.
 
   <${input.urn.plan}>
-  	a eg:MavenBuild ;
-  	eg:urn <${input.urn.pom}> ;
-  	.
+    a eg:MavenBuild ;
+    eg:urn <${input.urn.pom}> ;
+    .
 
 } WHERE { }
 ]]></arg>
