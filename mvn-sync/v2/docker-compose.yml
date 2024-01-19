@@ -33,6 +33,7 @@ services:
       - ./workdir:/workdir
       - ./resources:/home/user/mvn-sync/resources
       - ./prepublish:/home/user/mvn-sync/prepublish
+    entrypoint: ["/home/user/mvn-sync/resources/run-dcat-mvn-sync.sh", "/repository", "/workdir"]
     network_mode: "host"
 #    ports:
 #      - "1111:1111"

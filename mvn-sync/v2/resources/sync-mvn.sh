@@ -1,13 +1,15 @@
 #!/bin/bash
 
-#echoerr() { echo "$@" 1>&2; }
+echoerr() { echo "$@" 1>&2; }
+
+echoerr "PWD: $(pwd)"
 
 SCRIPT_FILE="$(realpath "${BASH_SOURCE:-$0}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_FILE")"
 
 set -eu
 
-. ${SCRIPT_DIR}/dcat-mvn-id.sh
+. "$SCRIPT_DIR"/dcat-mvn-id.sh
 
 export baseUrl="http://maven.aksw.org/repository/"
 

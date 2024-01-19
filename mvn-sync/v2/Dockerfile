@@ -16,7 +16,7 @@ RUN \
 #    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
     apt-get update
 
-RUN echo "20"
+RUN echo "21"
 
 # RUN apt-get install -y build-essential libxml2-dev libpq-dev libbz2-dev libtool automake libproj-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libexpat-dev gcc proj-bin libgeos-c1v5 libgeos++-dev libexpat-dev php php-pear php-pgsql php-json php-db libapache2-mod-php postgresql postgis postgresql-contrib postgresql-${POSTGRES_VERSION}-postgis-${POSTGIS_VERSION} postgresql-server-dev-${POSTGRES_VERSION} wget
 
@@ -38,7 +38,7 @@ ENV HOME /home/user
 
 #RUN [ -z "$(ls -A "$HOME"/.m2/repository)" ] && (echo "Please run ./init-mvn.sh first to populate the maven repository"; exit 1)
 
-WORKDIR /hove/user/mvn-sync
+WORKDIR /home/user/mvn-sync
 
 #ADD run-dcat-mvn-sync.sh .
 #ADD sync-mvn.sh .
@@ -46,8 +46,8 @@ WORKDIR /hove/user/mvn-sync
 #ADD metadata.template.pom.xml .
 
 
-ENTRYPOINT ["./run-dcat-mvn-sync.sh"]
-CMD ["/repository", "/workdir"]
+#ENTRYPOINT ["./resources/run-dcat-mvn-sync.sh"]
+#CMD ["/repository", "/workdir"]
 
 #ENTRYPOINT ["/bin/bash"]
 #CMD [ "-c", "groupmod -g $GID group && usermod -u $UID -g group user && ./run-dcat-mvn-sync.sh /repository /workdir"]
