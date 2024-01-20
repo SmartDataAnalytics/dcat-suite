@@ -28,6 +28,7 @@ services:
       # - ~/.m2/repository:/home/user/.m2/host-repository
       - ~/.m2/repository:/home/user/.m2/repository
       - ~/.m2/repository:/repository
+      - ~/.gnupg:/home/user/.gnupg
       - ./target/repository:/home/user/.m2/cache-repository
       - ./settings.xml:/home/user/.m2/settings.xml
       - ./workdir:/workdir

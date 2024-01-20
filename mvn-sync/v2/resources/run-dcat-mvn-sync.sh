@@ -62,7 +62,8 @@ process-file() {
     mkdir -p "$OUT_FOLDER"
     cat "$SCRIPT_DIR/metadata.template.pom.xml" | envsubst '$IN_GROUPID $IN_ARTIFACTID $IN_VERSION $IN_TYPE $OUT_GROUPID $OUT_ARTIFACTID $OUT_VERSION' > "$OUT_FILE"
 
-    (cd "$OUT_FOLDER" && mvn install)
+    # (cd "$OUT_FOLDER" && mvn install)
+    (cd "$OUT_FOLDER" && mvn -Prelease deploy -Dmaven.install.skip)
 
     echo "Completed processing as data artifact: $FILE"
     #mvn org.apache.maven.plugins:maven-install-plugin:3.1.1:install-file  -Dfile=path-to-your-artifact-jar \
