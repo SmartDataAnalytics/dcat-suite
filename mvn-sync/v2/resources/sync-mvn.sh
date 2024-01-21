@@ -11,7 +11,7 @@ set -eu
 
 . "$SCRIPT_DIR"/dcat-mvn-id.sh
 
-export baseUrl="http://maven.aksw.org/repository/"
+#export baseUrl="http://maven.aksw.org/repository/"
 
 file="$1"
 
