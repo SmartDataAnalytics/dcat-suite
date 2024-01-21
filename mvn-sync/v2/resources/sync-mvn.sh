@@ -34,7 +34,7 @@ rpt integrate -X "$file" \
 # TODO The link to the pom file is a stub - eg:urn
 #rpt integrate -X --io "$tmpFile" --out-format trig/blocks "DELETE { GRAPH ?g { ?s ?p ?o } } INSERT { GRAPH ?g { ?s ?p ?x } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER (?p IN( <http://www.w3.org/ns/dcat#downloadURL>, <http://www.example.org/urn> )&& STRSTARTS(STR(?o), 'urn:mvn:')) BIND(IRI(CONCAT('$baseUrl', mvn:toPath(STR(?o)))) AS ?x) }" gspo.rq
 
-rpt integrate -X --io "$tmpFile" --out-format trig/blocks $(find ./prepublish/ -name '*.ru' -print0 | sort -zu | xargs -0 printf '%q ')
+rpt integrate -X --io "$tmpFile" --out-format trig/blocks $(find ./prepublish/ -name '*.ru' -print0 | sort -zu | xargs -0 printf '%q ') gspo.rq
 
 echo "New data:"
 cat "$tmpFile"
