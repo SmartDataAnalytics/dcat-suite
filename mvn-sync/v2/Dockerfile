@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN \
     apt-get -y update --fix-missing && \
 #    apt-get upgrade -y && \
-    apt-get install -y software-properties-common wget git curl sudo inotify-tools xmlstarlet gettext-base openjdk-17-jdk maven && \
+    apt-get install -y software-properties-common wget git curl sudo inotify-tools xmlstarlet gettext-base lbzip2 bzip2 openjdk-17-jdk maven && \
 #    add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" && \
 #    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
     apt-get update
