@@ -19,6 +19,9 @@ services:
     # image: tenforce/virtuoso
     build:
       context: .
+      args:
+        USER_ID: "${USER_ID}"
+        GROUP_ID: "${GROUP_ID}"
     environment:
       USER_ID: "${USER_ID}"
       GROUP_ID: "${GROUP_ID}"
@@ -35,6 +38,7 @@ services:
       - ./resources:/home/user/mvn-sync/resources
       - ./prepublish:/home/user/mvn-sync/prepublish
     entrypoint: ["/home/user/mvn-sync/resources/run-dcat-mvn-sync.sh", "/repository", "/workdir"]
+    # entrypoint: ["/home/user/mvn-sync/resources/start.sh", "/repository", "/workdir"]
     network_mode: "host"
 #    ports:
 #      - "1111:1111"
