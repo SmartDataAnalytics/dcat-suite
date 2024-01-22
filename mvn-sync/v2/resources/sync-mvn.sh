@@ -42,7 +42,8 @@ cat "$tmpFile"
 echo "Replacing data"
 # Upload the graph to the endpoint (requires write access)
 # rpt integrate -e remote --loc http://localhost:8642/sparql "DROP GRAPH <$mvnUrn>" "$tmpFile"
-rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DELETE { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" "$tmpFile"
+# rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DELETE { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" "$tmpFile"
+rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DROP GRAPH <$mvnUrn>" "$tmpFile"
 
 rm "$tmpFile"
 
