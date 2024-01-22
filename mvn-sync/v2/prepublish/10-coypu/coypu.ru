@@ -3,6 +3,7 @@
 LOAD <datasets.ttl>
 
 PREFIX eg: <http://www.example.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX coypu: <https://metadata.coypu.org/dataset/>
 PREFIX t:     <https://schema.coypu.org/metadata-template#>
 PREFIX dcat: <http://www.w3.org/ns/dcat#>
@@ -29,8 +30,10 @@ WHERE {
   FILTER EXISTS { ?templateId ?x ?y }
   # BIND(afn:printf("s=%s - templateId=%s", ?s, ?templateId) AS ?dummy)
   LATERAL {
-    { SELECT DISTINCT ?templateId ?p { ?templateId ?p [] } }
-    FILTER(?p NOT IN (t:alias, dcat:distribution))
+    {
+      { SELECT DISTINCT ?templateId ?p { ?templateId ?p [] } }
+      FILTER(?p NOT IN (t:alias, rdf:type, dcat:distribution))
+    }
     LATERAL {
         { GRAPH ?g { ?s ?p ?o1 } }
       UNION
