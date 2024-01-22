@@ -5,6 +5,7 @@ LOAD <datasets.ttl>
 PREFIX eg: <http://www.example.org/>
 PREFIX coypu: <https://metadata.coypu.org/dataset/>
 PREFIX t:     <https://schema.coypu.org/metadata-template#>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
 
 DELETE { GRAPH ?g { ?s ?p ?o1 } }
 INSERT { GRAPH ?g { ?s ?p ?o2 } }
@@ -29,7 +30,7 @@ WHERE {
   # BIND(afn:printf("s=%s - templateId=%s", ?s, ?templateId) AS ?dummy)
   LATERAL {
     { SELECT DISTINCT ?templateId ?p { ?templateId ?p [] } }
-    FILTER(?p != t:alias)
+    FILTER(?p NOT IN (t:alias, dcat:distribution))
     LATERAL {
         { GRAPH ?g { ?s ?p ?o1 } }
       UNION
