@@ -89,10 +89,11 @@ process-file() {
 # process-file "/tmp/repo" "/home/raven/.m2/repository/org/coypu/data/disasters/disasters/0.20240108.1501/disasters-0.20240108.1501.nt.bz2"
 # "/home/raven/.m2/repository/org/coypu/data/climatetrace/disasters/0.20240108.1501-SNAPSHOT/disasters-0.20240108.1501-SNAPSHOT-dcat.nt.bz2"
 
-inotifywait "$WATCH_DIR" --recursive --monitor --format '%w%f\t%e' --event CLOSE_WRITE --event DELETE | \
+inotifywait "$WATCH_DIR" --recursive --monitor --format '%e %w%f' --event CLOSE_WRITE --event DELETE | \
   while read RECORD; do
-    FILE="$(echo "$RECORD" | cut -f 1)"
-    EVENT="$(echo "$RECORD" | cut -f 2)"
+    EVENT="$(echo "$RECORD" | cut -d' ' -f1)"
+    # -f2- outputs all columns starting from the 2nd one
+    FILE="$(echo "$RECORD" | cut -d' ' -f2-)"
     process-file "$WORK_DIR" "$FILE" "$EVENT"
   done
 
