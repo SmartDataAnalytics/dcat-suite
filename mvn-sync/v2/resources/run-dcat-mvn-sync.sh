@@ -25,8 +25,9 @@ fi
 process-file() {
   REPO="$1"
   FILE="$2"
+  EVENT=$3"
 
-  echo "Detected change in file: $FILE"
+  echo "Detected event $EVENT on file: $FILE"
 
   # Match dataset artifacts - for those files we instantiate metadata projects
   export IN_TYPE=`echo "$FILE" | sed -nE 's|^.*\.((nt\|ttl\|nq\|trig\|rdf(\.xml)?)(\.(gz\|bz2))?)$|\1|p'`
@@ -35,7 +36,10 @@ process-file() {
     echo "Processing as dcat metadata: $FILE"
     "$SCRIPT_DIR"/sync-mvn.sh "$FILE"
     echo "Completed as dcat metadata: $FILE"
-  elif [ ! -z "$IN_TYPE" ]; then
+  elif [ ! -z "$IN_TYPE" -a "$EVENT" != "DELETE" ]; then
+    # Note: Deletion of data so far does not trigger removal of metadata
+    # Future versions of this script could support options for that
+
     echo "Processing as data artifact: $FILE"
     declare -A map
     dcat-mvn-id-core "map" "$FILE"
@@ -85,8 +89,10 @@ process-file() {
 # process-file "/tmp/repo" "/home/raven/.m2/repository/org/coypu/data/disasters/disasters/0.20240108.1501/disasters-0.20240108.1501.nt.bz2"
 # "/home/raven/.m2/repository/org/coypu/data/climatetrace/disasters/0.20240108.1501-SNAPSHOT/disasters-0.20240108.1501-SNAPSHOT-dcat.nt.bz2"
 
-inotifywait "$WATCH_DIR" --recursive --monitor --format '%w%f' --event CLOSE_WRITE | \
-  while read FILE; do
-    process-file "$WORK_DIR" "$FILE"
+inotifywait "$WATCH_DIR" --recursive --monitor --format '%w%f\t%e' --event CLOSE_WRITE --event DELETE | \
+  while read RECORD; do
+    FILE=`echo "$RECORD" | cut -d$'\t' -f 1`
+    EVENT=`echo "$RECORD" | cut -d$'\t' -f 2`
+    process-file "$WORK_DIR" "$FILE" "$EVENT"
   done
 

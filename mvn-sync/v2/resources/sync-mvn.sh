@@ -22,28 +22,34 @@ mvnId=`dcat-mvn-id "$file"`
 
 mvnUrn="urn:mvn:$mvnId"
 
-tmpFile=`mktemp /tmp/dcat-mvn-sync.XXXXXX.trig`
+# If the dcat file exists, then apply post processing and load it into the store
+# Conversely, if the file does not exist then assume it was deleted and drop the corresponding graph
+if [ -f "$file" ]; then
+  tmpFile=`mktemp /tmp/dcat-mvn-sync.XXXXXX.trig`
 
-echo "Filtering data"
-# Filter the content to the graph that matches the mvnUrn
-# "DELETE { ?s ?p ?o } INSERT { GRAPH <$mvnUrn> { ?s ?p ?o } } WHERE { ?s ?p ?o }"
-rpt integrate -X "$file" \
-  "MOVE DEFAULT TO <$mvnUrn>" \
-  "CONSTRUCT { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" > "$tmpFile"
+  echo "Filtering data"
+  # Filter the content to the graph that matches the mvnUrn
+  # "DELETE { ?s ?p ?o } INSERT { GRAPH <$mvnUrn> { ?s ?p ?o } } WHERE { ?s ?p ?o }"
+  rpt integrate -X "$file" \
+    "MOVE DEFAULT TO <$mvnUrn>" \
+    "CONSTRUCT { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" > "$tmpFile"
 
-# TODO The link to the pom file is a stub - eg:urn
-#rpt integrate -X --io "$tmpFile" --out-format trig/blocks "DELETE { GRAPH ?g { ?s ?p ?o } } INSERT { GRAPH ?g { ?s ?p ?x } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER (?p IN( <http://www.w3.org/ns/dcat#downloadURL>, <http://www.example.org/urn> )&& STRSTARTS(STR(?o), 'urn:mvn:')) BIND(IRI(CONCAT('$baseUrl', mvn:toPath(STR(?o)))) AS ?x) }" gspo.rq
+  # TODO The link to the pom file is a stub - eg:urn
+  #rpt integrate -X --io "$tmpFile" --out-format trig/blocks "DELETE { GRAPH ?g { ?s ?p ?o } } INSERT { GRAPH ?g { ?s ?p ?x } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER (?p IN( <http://www.w3.org/ns/dcat#downloadURL>, <http://www.example.org/urn> )&& STRSTARTS(STR(?o), 'urn:mvn:')) BIND(IRI(CONCAT('$baseUrl', mvn:toPath(STR(?o)))) AS ?x) }" gspo.rq
 
-rpt integrate -X --io "$tmpFile" --out-format trig/blocks $(find ./prepublish/ -name '*.ru' -print0 | sort -zu | xargs -0 printf '%q ') gspo.rq
+  rpt integrate -X --io "$tmpFile" --out-format trig/blocks $(find ./prepublish/ -name '*.ru' -print0 | sort -zu | xargs -0 printf '%q ') gspo.rq
 
-echo "New data:"
-cat "$tmpFile"
+  echo "New data:"
+  cat "$tmpFile"
 
-echo "Replacing data"
-# Upload the graph to the endpoint (requires write access)
-# rpt integrate -e remote --loc http://localhost:8642/sparql "DROP GRAPH <$mvnUrn>" "$tmpFile"
-# rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DELETE { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" "$tmpFile"
-rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DROP GRAPH <$mvnUrn>" "$tmpFile"
+  echo "Replacing data"
+  # Upload the graph to the endpoint (requires write access)
+  # rpt integrate -e remote --loc http://localhost:8642/sparql "DROP GRAPH <$mvnUrn>" "$tmpFile"
+  # rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DELETE { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" "$tmpFile"
+  rpt integrate -X -e remote --loc http://localhost:8642/sparql --db-loader insert "DROP GRAPH <$mvnUrn>" "$tmpFile"
 
-rm "$tmpFile"
+  rm "$tmpFile"
+else
+  rpt integrate -X -e remote --loc http://localhost:8642/sparql "DROP GRAPH <$mvnUrn>"  
+fi
 
