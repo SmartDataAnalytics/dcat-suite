@@ -25,12 +25,12 @@ fi
 process-file() {
   REPO="$1"
   FILE="$2"
-  EVENT=$3"
+  EVENT="$3"
 
   echo "Detected event $EVENT on file: $FILE"
 
   # Match dataset artifacts - for those files we instantiate metadata projects
-  export IN_TYPE=`echo "$FILE" | sed -nE 's|^.*\.((nt\|ttl\|nq\|trig\|rdf(\.xml)?)(\.(gz\|bz2))?)$|\1|p'`
+  export IN_TYPE="$(echo "$FILE" | sed -nE 's|^.*\.((nt\|ttl\|nq\|trig\|rdf(\.xml)?)(\.(gz\|bz2))?)$|\1|p')"
 
   if  [[ "$FILE" =~ ^.*-dcat\..*\.*$ && ! -z "$IN_TYPE" ]]; then
     echo "Processing as dcat metadata: $FILE"
@@ -91,8 +91,8 @@ process-file() {
 
 inotifywait "$WATCH_DIR" --recursive --monitor --format '%w%f\t%e' --event CLOSE_WRITE --event DELETE | \
   while read RECORD; do
-    FILE=`echo "$RECORD" | cut -d$'\t' -f 1`
-    EVENT=`echo "$RECORD" | cut -d$'\t' -f 2`
+    FILE="$(echo "$RECORD" | cut -f 1)"
+    EVENT="$(echo "$RECORD" | cut -f 2)"
     process-file "$WORK_DIR" "$FILE" "$EVENT"
   done
 
