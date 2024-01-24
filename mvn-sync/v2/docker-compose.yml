@@ -30,14 +30,14 @@ services:
     volumes:
       # - ~/.m2/repository:/home/user/.m2/host-repository
       - ~/.m2/repository:/home/user/.m2/repository
-      - ~/.m2/repository:/repository
+      - ~/.m2/repository:/watches/repository
       - ~/.gnupg:/home/user/.gnupg
       - ./target/repository:/home/user/.m2/cache-repository
       - ./settings.xml:/home/user/.m2/settings.xml
       - ./workdir:/workdir
       - ./resources:/home/user/mvn-sync/resources
       - ./prepublish:/home/user/mvn-sync/prepublish
-    entrypoint: ["/home/user/mvn-sync/resources/run-dcat-mvn-sync.sh", "/repository", "/workdir"]
+    entrypoint: ["/home/user/mvn-sync/resources/run-dcat-mvn-sync.sh", "/watches", "/workdir"]
     # entrypoint: ["/home/user/mvn-sync/resources/start.sh", "/repository", "/workdir"]
     network_mode: "host"
 #    ports:

@@ -9,13 +9,15 @@ SCRIPT_DIR="$(dirname "$SCRIPT_FILE")"
 
 set -eu
 
-. "$SCRIPT_DIR"/dcat-mvn-id.sh
+. "$SCRIPT_DIR"/maven-utils.sh
 
 #export baseUrl="http://maven.aksw.org/repository/"
 
-file="$1"
+prefix="$1"
+relfile="$2"
+absfile="${1}${2}"
 
-mvnId=`dcat-mvn-id "$file"`
+mvnId="$(path-to-maven-gav "$relfile")"
 
 # TODO Only keep the latest metadata version in the target store
 # This means that we need to extract the number after the last '-'
@@ -24,13 +26,13 @@ mvnUrn="urn:mvn:$mvnId"
 
 # If the dcat file exists, then apply post processing and load it into the store
 # Conversely, if the file does not exist then assume it was deleted and drop the corresponding graph
-if [ -f "$file" ]; then
+if [ -f "$absfile" ]; then
   tmpFile=`mktemp /tmp/dcat-mvn-sync.XXXXXX.trig`
 
   echo "Filtering data"
   # Filter the content to the graph that matches the mvnUrn
   # "DELETE { ?s ?p ?o } INSERT { GRAPH <$mvnUrn> { ?s ?p ?o } } WHERE { ?s ?p ?o }"
-  rpt integrate -X "$file" \
+  rpt integrate -X "$absfile" \
     "MOVE DEFAULT TO <$mvnUrn>" \
     "CONSTRUCT { GRAPH ?g { ?s ?p ?o } } WHERE { GRAPH ?g { ?s ?p ?o } FILTER(STRSTARTS(STR(?g), '$mvnUrn')) }" > "$tmpFile"
 

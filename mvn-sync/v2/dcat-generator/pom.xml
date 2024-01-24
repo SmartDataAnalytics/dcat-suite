@@ -180,7 +180,7 @@
 
                     <arg>
                       rdf-prefixes/prefix.cc.2019-12-17.ttl</arg>
-                    <arg><![CDATA[
+<arg><![CDATA[
 PREFIX dataid: <http://dataid.dbpedia.org/ns/core#>
 CONSTRUCT {
   <${input.urn.dataset}>
@@ -314,7 +314,104 @@ WHERE {
   }
 }
 ]]>
-                    </arg>
+</arg>
+
+<!-- Spatial extent -->
+<arg><![CDATA[
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX locn: <http://www.w3.org/ns/locn#>
+CONSTRUCT {
+  <${input.urn.dataset}>
+    dcat:bbox ?bbox ;
+    dcterms:spatial <${input.urn.dataset}/spatial> ;
+    .
+   
+  <${input.urn.dataset}/spatial>
+    a dcterms:Location ;
+    locn:geometry ?finalGeom ;    
+    .
+}
+{
+  { SELECT (COUNT(*) AS ?geomCount) (geof:collect(?o) AS ?geom) {
+    { ?s ?p ?o } UNION { GRAPH ?g { ?s ?p ?o } }
+    FILTER(DATATYPE(?o) IN (geo:wktLiteral, geo:gmlLiteral, geo:geoJSONLiteral))
+  } }
+  BIND(IF(?geomCount <= 100, ?geom,  geof:convexHull(?geom)) AS ?finalGeom)
+  BIND(geof:envelope(?finalGeom) AS ?bbox)
+}
+]]></arg>
+
+<!-- Temporal extent -->
+<arg><![CDATA[
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX locn: <http://www.w3.org/ns/locn#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+CONSTRUCT {
+  <${input.urn.dataset}>
+    dcterms:temporal <${input.urn.dataset}/temporal> ;
+    .
+ 
+  <${input.urn.dataset}/temporal>
+    dcat:startDate ?minDate ;
+    dcat:endDate   ?maxDate ;
+    .
+}
+{
+  { SELECT (min(?date) AS ?minDate) (max(?date) AS ?maxDate) {
+    { ?s ?p ?o } UNION { GRAPH ?g { ?s ?p ?o } }
+    BIND(xsd:date(?o) AS ?date)
+    FILTER(bound(?o))
+  } }
+}
+]]></arg>
+
+
+<arg><![CDATA[
+PREFIX dcat: <http://dataid.dbpedia.org/ns/core#>
+CONSTRUCT {
+  <${input.urn.dataset}>
+    a dcat:Dataset ;
+    eg:groupId "${input.groupId}" ;
+    dataid:group <${input.urn.artifactGroup}> ;
+    eg:artifactId "${input.artifactId}" ;
+    dcat:version "${input.version}" ;
+    dct:identifier "${input.urn.base}" ;
+    rdfs:isDefinedBy <${output.urn.base}> ; # Link to the plain GAV (without type nor classifier)
+    prov:wasGeneratedBy <${input.urn.activity}> ;
+    dcat:distribution <${input.urn.distribution}> ;
+    owl:sameAs <${input.urn.void}> ;
+	.
+
+  <${input.urn.distribution}>
+    a dcat:Distribution ;
+    eg:groupId "${input.groupId}" ;
+    eg:artifactId "${input.artifactId}" ;
+    dcat:version "${input.version}" ;
+    eg:type "${input.type}" ;
+    dct:identifier "${input.urn.file}" ;
+    dcat:downloadURL <${input.urn.file}> ;
+    # TODO Split type into dcat:mediaType and dcat:compressFormat, e.g. using a property transform plugin
+	.
+
+  <${input.urn.activity}>
+    prov:hadPlan <${input.urn.plan}> ;
+    # TODO Devise convention from which input artifacts of the plan could be extracted 
+	.
+
+  <${input.urn.plan}>
+    a eg:MavenBuild ;
+    eg:urn <${input.urn.pom}> ;
+    .
+
+} WHERE { }
+]]></arg>
+
 
                     <!-- <arg><![CDATA[SELECT (COUNT(*) AS ?c) { ?s ?p ?o }]]></arg> -->
                   </args>
