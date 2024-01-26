@@ -16,7 +16,7 @@ Adjust the volumes in the docker-compose.yml file to your needs. The setup in th
 
 ```
 ./dc.sh up --build
-.dc.sh down
+./dc.sh down
 ```
 
 
