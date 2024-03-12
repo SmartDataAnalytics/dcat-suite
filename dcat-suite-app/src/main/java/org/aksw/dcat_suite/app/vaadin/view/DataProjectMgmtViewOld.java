@@ -21,6 +21,7 @@ import org.aksw.dcat_suite.app.gtfs.DetectorGtfs;
 import org.aksw.dcat_suite.app.model.api.GroupMgr;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
+import org.aksw.jena_sparql_api.vaadin.util.GridWrapperBase;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperTxn;
 import org.aksw.jenax.path.core.PathPE;
@@ -162,7 +163,7 @@ public class DataProjectMgmtViewOld
             Dataset dataset = repo.getDataset();
 
             VaadinSparqlUtils.setQueryForGridBinding(
-                    datasetGrid,
+                    new GridWrapperBase<>(datasetGrid),
                     datasetGridHeaderRow,
                     (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
                     q);

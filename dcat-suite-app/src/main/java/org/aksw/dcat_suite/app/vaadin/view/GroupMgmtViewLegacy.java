@@ -26,6 +26,7 @@ import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.cli.cmd.file.DcatRepoLocal;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import org.aksw.jena_sparql_api.vaadin.util.GridWrapperBase;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.arq.util.binding.QuerySolutionUtils;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFWriterEx;
@@ -633,7 +634,7 @@ public class GroupMgmtViewLegacy
             );
 
             VaadinSparqlUtils.setQueryForGridResource(
-                    datasetGrid,
+                    new GridWrapperBase<>(datasetGrid),
                     (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, dataset), dataset),
                     q,
                     DcatDataset.class,

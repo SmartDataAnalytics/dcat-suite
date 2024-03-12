@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aksw.commons.io.util.StdIo;
+import org.aksw.commons.txn.api.Txn;
 import org.aksw.commons.util.string.FileName;
 import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.conf.api.DcatRepoConfig;
@@ -85,14 +86,15 @@ public class CmdDcatFileAdd
         }
 
         Dataset repoDs = repo.getDataset();
-        repoDs.begin(ReadWrite.WRITE);
-
-        for (String file : files) {
-            addFile(repo, repoDs, file);
-        }
-
-        repoDs.commit();
-
+        org.apache.jena.system.Txn.executeWrite(repoDs, () -> {
+            for (String file : files) {
+                try {
+                    addFile(repo, repoDs, file);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
         return 0;
     }
 

@@ -2,7 +2,7 @@ package org.aksw.dcat_suite.cli.cmd.file;
 
 import java.nio.file.Path;
 
-import org.aksw.dcat.jena.domain.api.MavenEntityCore;
+import org.aksw.commons.model.maven.domain.api.MavenEntityCore;
 
 public class ArtifactResolverMavenLocal
     implements ArtifactResolver

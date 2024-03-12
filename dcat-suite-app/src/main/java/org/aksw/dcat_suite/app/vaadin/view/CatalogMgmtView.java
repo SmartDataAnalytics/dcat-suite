@@ -6,6 +6,7 @@ import java.util.List;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import org.aksw.jena_sparql_api.vaadin.util.GridWrapperBase;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperTxn;
 import org.aksw.jenax.stmt.core.SparqlParserConfig;
@@ -109,12 +110,12 @@ public class CatalogMgmtView
         Query q = parser.apply("SELECT * { [] rdfs:label ?Name ; eg:url ?Url ; eg:technology ?Technology }");
 
         VaadinSparqlUtils.setQueryForGridBinding(
-                catalogsGrid,
+                new GridWrapperBase<>(catalogsGrid),
                 catalogsGridHeaderRow,
                 (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, ds), ds),
                 q,
                 vars);
 
-        VaadinSparqlUtils.configureGridFilter(catalogsGrid, catalogsGridHeaderRow, vars, var -> str -> VaadinSparqlUtils.createFilterExpr(var, str).orElse(null));
+        VaadinSparqlUtils.configureGridFilter(new GridWrapperBase<>(catalogsGrid), catalogsGridHeaderRow, vars, var -> str -> VaadinSparqlUtils.createFilterExpr(var, str).orElse(null));
     }
 }

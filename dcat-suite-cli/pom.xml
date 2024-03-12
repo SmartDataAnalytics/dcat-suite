@@ -74,6 +74,11 @@
 
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-tika</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-conjure-core</artifactId>
 		</dependency>
 

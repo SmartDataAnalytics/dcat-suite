@@ -1,12 +1,13 @@
 package org.aksw.dcat_suite.cli.cmd.file;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,9 +45,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.jgit.lib.Repository;
@@ -129,35 +128,29 @@ public class DcatRepoLocalUtils {
 
     /**
      *
+     * Very similar to RDFDataMgrEx.probeEntityInfo but relies on Files.probeContentType
      *
      * @param basePath The base path (will be made absolute) against which to resolve relPath
      * @param relPath The path to the file which also becomes the IRI of a graph
      * @return
+     * @throws IOException
      */
-    public static RdfEntityInfo probeFile(Path basePath, Path relPath) {
-
+    public static RdfEntityInfo probeFile(Path basePath, Path relPath) throws IOException {
         Path tgtPath = basePath.toAbsolutePath().resolve(relPath);
 
-        RdfEntityInfo info;
-        try (InputStream in = Files.newInputStream(tgtPath)) {
-            List<Lang> PROBE_LANGS = Collections.unmodifiableList(Arrays.asList(
-                    RDFLanguages.NTRIPLES,
-                    RDFLanguages.TURTLE,
-                    RDFLanguages.NQUADS,
-                    RDFLanguages.TRIG,
-                    RDFLanguages.JSONLD,
-                    RDFLanguages.RDFXML,
-                    RDFLanguages.RDFTHRIFT
-                    // RDFLanguages.TRIX
-            ));
-            info = RDFDataMgrEx.probeEntityInfo(in, PROBE_LANGS);
-        } catch (IOException e1) {
-            throw new RuntimeException(e1);
+        List<String> encodings = new ArrayList<>();
+        try (InputStream in = RDFDataMgrEx.probeEncodings(new BufferedInputStream(Files.newInputStream(tgtPath)), encodings)) {
         }
 
+        String contentType = Files.probeContentType(tgtPath);
+                // String charset = tis.getCharset();
+
+        RdfEntityInfo info = ModelFactory.createDefaultModel().createResource().as(RdfEntityInfo.class);
+        info.getContentEncodings().addAll(encodings);
+        info.setContentType(contentType);
+        // result.setCharset(charset);
 
         RdfEntityInfo result = ResourceUtils.renameResource(info, relPath.toString()).as(RdfEntityInfo.class);
-
         try {
             long size = Files.size(tgtPath);
             result.setByteSize(size);
@@ -165,9 +158,24 @@ public class DcatRepoLocalUtils {
             logger.warn("Failed to obtain file size for " + tgtPath);
         }
 
-
-
         return result;
+
+//        RdfEntityInfo info;
+//        try (InputStream in = Files.newInputStream(tgtPath)) {
+//            List<Lang> PROBE_LANGS = Collections.unmodifiableList(Arrays.asList(
+//                    RDFLanguages.NTRIPLES,
+//                    RDFLanguages.TURTLE,
+//                    RDFLanguages.NQUADS,
+//                    RDFLanguages.TRIG,
+//                    RDFLanguages.JSONLD,
+//                    RDFLanguages.RDFXML,
+//                    RDFLanguages.RDFTHRIFT
+//                    // RDFLanguages.TRIX
+//            ));
+//            info = RDFDataMgrEx.probeEntityInfo(in, PROBE_LANGS);
+//        } catch (IOException e1) {
+//            throw new RuntimeException(e1);
+//        }
     }
 
     public static Path findDcatRepoConfig(Path path) {

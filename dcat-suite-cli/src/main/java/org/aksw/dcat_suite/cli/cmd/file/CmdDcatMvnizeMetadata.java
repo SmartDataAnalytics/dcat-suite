@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.aksw.commons.model.maven.domain.api.MavenEntityCore;
+import org.aksw.commons.model.maven.domain.impl.MavenEntityCoreImpl;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
-import org.aksw.dcat.jena.domain.api.MavenEntityCore;
-import org.aksw.dcat.jena.domain.api.MavenEntityCoreImpl;
 import org.aksw.dcat.utils.DcatUtils;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;

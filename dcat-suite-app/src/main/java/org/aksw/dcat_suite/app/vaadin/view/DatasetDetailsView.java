@@ -2,6 +2,7 @@ package org.aksw.dcat_suite.app.vaadin.view;
 
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import org.aksw.jena_sparql_api.vaadin.util.GridWrapperBase;
 import org.aksw.jena_sparql_api.vaadin.util.VaadinSparqlUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperTxn;
@@ -116,7 +117,7 @@ public class DatasetDetailsView
         QueryUtils.injectFilter(q, "dataset", dcatDataset.asNode());
 
         VaadinSparqlUtils.setQueryForGridResource(
-                distributionsGrid,
+                new GridWrapperBase<>(distributionsGrid),
                 (Query query) -> QueryExecutionWrapperTxn.wrap(QueryExecutionFactory.create(query, ds), ds),
                 q,
                 Resource.class,

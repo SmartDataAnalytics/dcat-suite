@@ -1,5 +1,7 @@
 # DCAT - Easy RDF Data Management
 
+**This project is under development/revision. Once its ready, we'll let you know! - 2023-12-10**
+
 Retrieving, publishing and loading data in a single DCAT-centric tool.
 
 One could say, DCAT is to datasets what the pom is to Java software projects.

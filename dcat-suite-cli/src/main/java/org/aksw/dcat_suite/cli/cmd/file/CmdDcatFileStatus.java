@@ -13,8 +13,8 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.model.maven.domain.api.MavenEntityCore;
 import org.aksw.commons.rx.lookup.LookupService;
-import org.aksw.dcat.jena.domain.api.MavenEntityCore;
 import org.aksw.jena_sparql_api.lookup.LookupServiceSparqlQuery;
 import org.aksw.jenax.arq.dataset.api.ResourceInDataset;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
@@ -37,6 +37,10 @@ import com.google.common.collect.Streams;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+/**
+ * For a given 
+ * 
+ */
 @Command(name = "status", separator = "=", description="Show local/remote DCAT status", mixinStandardHelpOptions = true)
 public class CmdDcatFileStatus
     implements Callable<Integer>

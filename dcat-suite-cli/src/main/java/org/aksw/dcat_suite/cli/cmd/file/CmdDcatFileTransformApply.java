@@ -17,14 +17,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.io.util.StdIo;
+import org.aksw.commons.model.maven.domain.api.MavenEntityCore;
+import org.aksw.commons.model.maven.domain.impl.MavenEntityCoreImpl;
 import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.commons.util.string.Envsubst;
 import org.aksw.commons.util.string.FileNameUtils;
 import org.aksw.dcat.jena.domain.api.DcatDataset;
 import org.aksw.dcat.jena.domain.api.DcatDistribution;
 import org.aksw.dcat.jena.domain.api.MavenEntity;
-import org.aksw.dcat.jena.domain.api.MavenEntityCore;
-import org.aksw.dcat.jena.domain.api.MavenEntityCoreImpl;
 import org.aksw.dcat_suite.cli.main.DcatOps;
 import org.aksw.jena_sparql_api.conjure.datapod.api.RdfDataPod;
 import org.aksw.jena_sparql_api.conjure.datapod.impl.DataPodFactoryAdvancedImpl;

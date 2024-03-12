@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
-import org.aksw.dcat.jena.domain.api.MavenEntityCore;
+import org.aksw.commons.model.maven.domain.api.MavenEntityCore;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.Invoker;
 

@@ -188,7 +188,7 @@ public class CatalogResolverSparql
 
         List<SearchResult> list = null;
         if(!abort) {
-            list = SparqlRx.execConstructGrouped(conn, q)
+            list = SparqlRx.execConstructGrouped(conn::query, q)
                     .map(x -> x.as(SearchResult.class))
                     .timeout(10, TimeUnit.SECONDS)
                     .sorted(Ordering.from(SearchResult::defaultCompare).reversed())

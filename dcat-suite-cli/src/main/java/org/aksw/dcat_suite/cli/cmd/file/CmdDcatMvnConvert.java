@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import org.aksw.dcat.jena.domain.api.MavenEntityCore;
+import org.aksw.commons.model.maven.domain.api.MavenEntityCore;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

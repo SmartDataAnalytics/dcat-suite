@@ -6,14 +6,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.aksw.dcat.mgmt.api.RdfsLabel;
 import org.aksw.dcat_suite.app.model.api.GroupMgrFactory;
 import org.aksw.dcat_suite.app.model.api.SystemSpace;
 import org.aksw.dcat_suite.app.model.api.UserProject;
 import org.aksw.dcat_suite.app.model.api.UserSpace;
 import org.aksw.dcat_suite.app.session.UserSession;
 import org.aksw.dcat_suite.app.vaadin.layout.DmanMainLayout;
-import org.aksw.dcat_suite.app.vaadin.layout.DmanRoutes;
+import org.aksw.jenax.model.rdfs.domain.api.HasRdfsLabel;
 import org.apache.jena.rdf.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -104,7 +103,7 @@ public class MyProjectsView
                 List<String> items;
                 try (Stream<Resource> stream = userSpace.getProjectMgr().list()) {
                     items = stream
-                            .map(item -> item.as(RdfsLabel.class).getLabel())
+                            .map(item -> item.as(HasRdfsLabel.class).getLabel())
                             .collect(Collectors.toList());
                 } catch (IOException e) {
                     throw new RuntimeException(e);

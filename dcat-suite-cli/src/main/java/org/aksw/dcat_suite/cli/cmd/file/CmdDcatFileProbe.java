@@ -32,7 +32,7 @@ public class CmdDcatFileProbe
     public List<String> files;
 
 
-    public Integer call() {
+    public Integer call() throws IOException {
         Path basePath = Path.of("").toAbsolutePath();
 
         for (String file : files) {
